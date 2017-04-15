@@ -25,7 +25,7 @@
 * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
 *                                                                                  *
 ***********************************************************************************/
-package com.projectswg.common.info;
+package com.projectswg.common.data.info;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

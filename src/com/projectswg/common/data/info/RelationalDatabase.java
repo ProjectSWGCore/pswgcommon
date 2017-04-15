@@ -25,7 +25,7 @@
 * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
 *                                                                                  *
 ***********************************************************************************/
-package com.projectswg.common.info;
+package com.projectswg.common.data.info;
 
 import java.io.Closeable;
 import java.sql.Connection;

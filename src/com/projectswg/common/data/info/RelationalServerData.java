@@ -25,7 +25,7 @@
 * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
 *                                                                                  *
 ***********************************************************************************/
-package com.projectswg.common.info;
+package com.projectswg.common.data.info;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -252,7 +252,7 @@ public class RelationalServerData extends RelationalDatabase {
 	
 	private boolean importFromSdb(String table, File sdb) {
 		try (TableReader reader = new TableReader(table, sdb)) {
-			Log.i("RelationalServerData", "Importing sdb... '" + sdb + "'");
+			Log.i("Importing sdb... '" + sdb + "'");
 			if (sdb.getName().endsWith(".msdb"))
 				reader.readMaster();
 			else
@@ -263,7 +263,7 @@ public class RelationalServerData extends RelationalDatabase {
 		} catch (SQLException e) {
 			Log.e(e);
 		} catch (IllegalArgumentException e) {
-			Log.e("RelationalServerData", "Invalid file format. Aborting read of %s! Message: %s", sdb, e.getMessage());
+			Log.e("Invalid file format. Aborting read of %s! Message: %s", sdb, e.getMessage());
 		}
 		return false;
 	}
@@ -324,15 +324,15 @@ public class RelationalServerData extends RelationalDatabase {
 			while ((line = reader.readLine()) != null) {
 				String [] parts = line.split("\t");
 				if (parts.length != 2) {
-					Log.e("RelationalServerData", "Invalid line [%d]: %s", lineNum, line);
+					Log.e("Invalid line [%d]: %s", lineNum, line);
 					continue;
 				}
 				boolean load = Boolean.parseBoolean(parts[1]);
 				if (load) {
 					File sdb = new File(file.getParent(), parts[0]);
-					Log.i("RelationalServerData", "  Importing sdb... '" + sdb + "'");
+					Log.i("  Importing sdb... '" + sdb + "'");
 					if (!sdb.isFile()) {
-						Log.e("RelationalServerData", "    Failed to import sdb! File is not file or does not exist");
+						Log.e("    Failed to import sdb! File is not file or does not exist");
 						continue;
 					}
 					@SuppressWarnings("resource") // This closes the database.. we don't want to do that yet
@@ -421,7 +421,7 @@ public class RelationalServerData extends RelationalDatabase {
 		
 		private void generateInsert(String [] data, int line) throws SQLException {
 			if (columnTypes.length != data.length) {
-				Log.e("RelationalServerData", "Could not load record: Types length and data length mismatch. Line: " + line);
+				Log.e("Could not load record: Types length and data length mismatch. Line: " + line);
 				return;
 			}
 			int column = 0;
@@ -438,7 +438,7 @@ public class RelationalServerData extends RelationalDatabase {
 				}
 				insert.addBatch();
 			} catch (NumberFormatException e) {
-				Log.e("RelationalServerData", "Could not load record: Record has invalid data. Line: " + line + "  Column: " + column);
+				Log.e("Could not load record: Record has invalid data. Line: " + line + "  Column: " + column);
 			}
 		}
 		

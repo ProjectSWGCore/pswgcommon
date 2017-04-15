@@ -25,12 +25,65 @@
 * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
 *                                                                                  *
 ***********************************************************************************/
-package com.projectswg.common.info;
+package com.projectswg.common.data.swgfile.visitors;
 
-public class PostgresqlDatabase extends RelationalDatabase {
-	
-	public PostgresqlDatabase(String host, String db, String user, String pass) {
-		super("org.postgresql.Driver", "postgresql", host, db, user, pass, "");
+import java.util.HashMap;
+import java.util.Map;
+
+import com.projectswg.common.data.swgfile.ClientData;
+import com.projectswg.common.data.swgfile.IffNode;
+import com.projectswg.common.data.swgfile.SWGFile;
+
+
+public class SlotDefinitionData extends ClientData {
+
+	private Map<String, SlotDefinition> definitions = new HashMap<>();
+
+	public static class SlotDefinition {
+		private String name;
+		private boolean isGlobal;
+		private boolean isModdable;
+		private boolean isExclusive;
+		private boolean hasHardpoint;
+		private String hardpointName;
+		
+		public String getName() { return name; }
+		public boolean isGlobal() { return isGlobal; }
+		public boolean isModdable() { return isModdable; }
+		public boolean isExclusive() { return isExclusive; }
+		public boolean hasHardpoint() { return hasHardpoint; }
+		public String getHardpointName() { return hardpointName; }
+		
+		public void setName(String name) { this.name = name; }
+		public void setGlobal(boolean isGlobal) { this.isGlobal = isGlobal; }
+		public void setModdable(boolean isModdable) { this.isModdable = isModdable; }
+		public void setExclusive(boolean isExclusive) { this.isExclusive = isExclusive; }
+		public void setHasHardpoint(boolean hasHardpoint) { this.hasHardpoint = hasHardpoint; }
+		public void setHardpointName(String hardpointName) { this.hardpointName = hardpointName; }
 	}
-	
+
+	@Override
+	public void readIff(SWGFile iff) {
+
+		IffNode data = iff.enterChunk("DATA");
+		data.readChunk((chunk) -> {
+			SlotDefinition def = new SlotDefinition();
+
+			def.setName(chunk.readString());
+			def.setGlobal(chunk.readBoolean());
+			def.setModdable(chunk.readBoolean());
+			def.setExclusive(chunk.readBoolean());
+			def.setHasHardpoint(chunk.readBoolean());
+			def.setHardpointName(chunk.readString());
+			chunk.readBoolean(); // "combat bone"
+			chunk.readBoolean(); // "observe with parent"
+			chunk.readBoolean(); // "expose with parent"
+
+			definitions.put(def.name, def);
+		});
+	}
+
+	public SlotDefinition getDefinition(String name) {
+		return definitions.get(name);
+	}
 }

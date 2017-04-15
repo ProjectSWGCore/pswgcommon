@@ -32,6 +32,10 @@ import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
+import com.projectswg.common.debug.Log;
+import com.projectswg.common.encoding.Encodable;
+import com.projectswg.common.encoding.StringType;
+
 
 public class NetBuffer {
 	
@@ -148,6 +152,10 @@ public class NetBuffer {
 		data.put(b);
 	}
 	
+	public void addEncodable(Encodable e) {
+		data.put(e.encode());
+	}
+	
 	public boolean getBoolean() {
 		return getByte() == 1 ? true : false;
 	}
@@ -170,6 +178,14 @@ public class NetBuffer {
 		byte [] str = new byte[length];
 		data.get(str);
 		return new String(str, UNICODE);
+	}
+	
+	public String getString(StringType type) {
+		if (type == StringType.ASCII)
+			return getAscii();
+		if (type == StringType.UNICODE)
+			return getUnicode();
+		throw new IllegalArgumentException("Unknown StringType: " + type);
 	}
 	
 	public byte getByte() {
@@ -214,6 +230,42 @@ public class NetBuffer {
 		byte [] bData = new byte[size];
 		data.get(bData);
 		return bData;
+	}
+	
+	public <T> Object getGeneric(Class<T> type) {
+		if (Encodable.class.isAssignableFrom(type)) {
+			T instance = null;
+			try {
+				instance = type.newInstance();
+				((Encodable) instance).decode(data);
+			} catch (InstantiationException | IllegalAccessException e) {
+				Log.e(e);
+			}
+			
+			return instance;
+		} else if (Integer.class.isAssignableFrom(type) || Integer.TYPE.isAssignableFrom(type))
+			return getInt();
+		else if (Long.class.isAssignableFrom(type) || Long.TYPE.isAssignableFrom(type))
+			return getLong();
+		else if (Float.class.isAssignableFrom(type) || Float.TYPE.isAssignableFrom(type))
+			return getFloat();
+		else if (StringType.ASCII.getClass().isAssignableFrom(type))
+			return getAscii();
+		else if (StringType.UNICODE.getClass().isAssignableFrom(type))
+			return getAscii();
+		return null;
+	}
+	
+	public <T extends Encodable> T getEncodable(Class<T> type) {
+		T instance = null;
+		try {
+			instance = type.newInstance();
+			instance.decode(data);
+		} catch (InstantiationException | IllegalAccessException e) {
+			Log.e(e);
+		}
+		
+		return instance;
 	}
 	
 	public byte [] array() {
