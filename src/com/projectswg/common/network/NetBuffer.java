@@ -29,8 +29,10 @@ package com.projectswg.common.network;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.projectswg.common.debug.Log;
 import com.projectswg.common.encoding.Encodable;
@@ -39,8 +41,8 @@ import com.projectswg.common.encoding.StringType;
 
 public class NetBuffer {
 	
-	public static final Charset ASCII   = Charset.forName("UTF-8");
-	public static final Charset UNICODE = Charset.forName("UTF-16LE");
+	public final Charset ASCII   = Charset.forName("UTF-8");
+	public final Charset UNICODE = Charset.forName("UTF-16LE");
 	
 	private final ByteBuffer data;
 	private final int size;
@@ -74,6 +76,14 @@ public class NetBuffer {
 		return data.position();
 	}
 	
+	public int limit() {
+		return data.limit();
+	}
+	
+	public int capacity() {
+		return data.capacity();
+	}
+	
 	public void position(int position) {
 		data.position(position);
 	}
@@ -82,8 +92,20 @@ public class NetBuffer {
 		data.position(data.position()+relative);
 	}
 	
+	public void flip() {
+		data.flip();
+	}
+	
 	public ByteBuffer getBuffer() {
 		return data;
+	}
+	
+	public void add(NetBuffer buffer) {
+		add(buffer.getBuffer());
+	}
+	
+	public void add(ByteBuffer buffer) {
+		data.put(buffer);
 	}
 	
 	public void addBoolean(boolean b) {
@@ -91,23 +113,11 @@ public class NetBuffer {
 	}
 	
 	public void addAscii(String s) {
-		data.order(ByteOrder.LITTLE_ENDIAN);
-		data.putShort((short)s.length());
-		data.put(s.getBytes(ASCII));
-	}
-	
-	public void addAscii(char [] s) {
-		data.order(ByteOrder.LITTLE_ENDIAN);
-		data.putShort((short)s.length);
-		ByteBuffer bb = ASCII.encode(CharBuffer.wrap(s));
-		byte [] bData = new byte[bb.limit()];
-		bb.get(bData);
-		data.put(bData);
+		addArray(s.getBytes(ASCII));
 	}
 	
 	public void addUnicode(String s) {
-		data.order(ByteOrder.LITTLE_ENDIAN);
-		data.putInt(s.length());
+		addInt(s.length());
 		data.put(s.getBytes(UNICODE));
 	}
 	
@@ -120,7 +130,7 @@ public class NetBuffer {
 	}
 	
 	public void addFloat(float f) {
-		data.putFloat(f);
+		data.order(ByteOrder.LITTLE_ENDIAN).putFloat(f);
 	}
 	
 	public void addShort(int i) {
@@ -148,8 +158,45 @@ public class NetBuffer {
 		data.put(b);
 	}
 	
+	public void addArrayLarge(byte [] b) {
+		addInt(b.length);
+		data.put(b);
+	}
+	
 	public void addRawArray(byte [] b) {
 		data.put(b);
+	}
+	
+	public void addList(Collection<? extends Encodable> list) {
+		if (list == null) {
+			addInt(0);
+			return;
+		}
+		
+		addInt(list.size());
+		for (Encodable encodable : list) {
+			addEncodable(encodable);
+		}
+	}
+	
+	public void addList(List<String> list, StringType type) {
+		addInt(list.size());
+		
+		switch (type) {
+			case ASCII:
+				for (String s : list) {
+					addAscii(s);
+				}
+				break;
+			case UNICODE:
+				for (String s : list) {
+					addUnicode(s);
+				}
+				break;
+			default:
+				Log.e("Cannot encode StringType " + type);
+				break;
+		}
 	}
 	
 	public void addEncodable(Encodable e) {
@@ -161,23 +208,11 @@ public class NetBuffer {
 	}
 	
 	public String getAscii() {
-		data.order(ByteOrder.LITTLE_ENDIAN);
-		short length = data.getShort();
-		if (length > data.remaining())
-			return "";
-		byte [] str = new byte[length];
-		data.get(str);
-		return new String(str, ASCII);
+		return new String(getArray(), ASCII);
 	}
 	
 	public String getUnicode() {
-		data.order(ByteOrder.LITTLE_ENDIAN);
-		int length = data.getInt() * 2;
-		if (length > data.remaining())
-			return "";
-		byte [] str = new byte[length];
-		data.get(str);
-		return new String(str, UNICODE);
+		return new String(getArray(getInt() * 2), UNICODE);
 	}
 	
 	public String getString(StringType type) {
@@ -221,9 +256,11 @@ public class NetBuffer {
 	}
 	
 	public byte [] getArray() {
-		byte [] bData = new byte[getShort()];
-		data.get(bData);
-		return bData;
+		return getArray(getShort());
+	}
+	
+	public byte [] getArrayLarge() {
+		return getArray(getInt());
 	}
 	
 	public byte [] getArray(int size) {
@@ -232,12 +269,33 @@ public class NetBuffer {
 		return bData;
 	}
 	
+	public int [] getIntArray() {
+		int [] ints = new int[getInt()];
+		for (int i = 0; i < ints.length; i++)
+			ints[i] = getInt();
+		return ints;
+	}
+	
+	public int [] getIntArray(int size) {
+		int [] ints = new int[size];
+		for (int i = 0; i < ints.length; i++)
+			ints[i] = getInt();
+		return ints;
+	}
+	
+	public boolean[] getBooleanArray() {
+		boolean[] booleans = new boolean[getInt()];
+		for(int i = 0; i < booleans.length; i++)
+			booleans[i] = getBoolean();
+		return booleans;
+	}
+	
 	public <T> Object getGeneric(Class<T> type) {
 		if (Encodable.class.isAssignableFrom(type)) {
 			T instance = null;
 			try {
 				instance = type.newInstance();
-				((Encodable) instance).decode(data);
+				((Encodable) instance).decode(this);
 			} catch (InstantiationException | IllegalAccessException e) {
 				Log.e(e);
 			}
@@ -256,11 +314,69 @@ public class NetBuffer {
 		return null;
 	}
 	
+	public <T extends Encodable> List<T> getList(Class<T> type) {
+		int size = getInt();
+		
+		if (size < 0) {
+			Log.e("Read list with size less than zero!");
+			return null;
+		} else if (size == 0) {
+			return new ArrayList<>();
+		}
+		
+		List<T> list = new ArrayList<>();
+		
+		try {
+			for (int i = 0; i < size; i++) {
+				T instance = type.newInstance();
+				instance.decode(this);
+				list.add(instance);
+			}
+		} catch (InstantiationException | IllegalAccessException e) {
+			Log.e(e);
+		}
+		
+		if (size != list.size())
+			Log.e("Expected list size %d but only have %d elements in the list", size, list.size());
+		return list;
+	}
+	
+	public List<String> getList(StringType type) {
+		int size = getInt();
+		
+		if (size < 0) {
+			Log.e("Read list with size less than zero!");
+			return null;
+		} else if (size == 0) {
+			return new ArrayList<>();
+		}
+		
+		List<String> list = new ArrayList<>();
+		
+		switch (type) {
+			case ASCII:
+				for (int i = 0; i < size; i++) {
+					list.add(getAscii());
+				}
+				break;
+			case UNICODE:
+				for (int i = 0; i < size; i++) {
+					list.add(getUnicode());
+				}
+				break;
+			default:
+				Log.e("Do not know how to read list of StringType " + type);
+				break;
+		}
+		
+		return list;
+	}
+	
 	public <T extends Encodable> T getEncodable(Class<T> type) {
 		T instance = null;
 		try {
 			instance = type.newInstance();
-			instance.decode(data);
+			instance.decode(this);
 		} catch (InstantiationException | IllegalAccessException e) {
 			Log.e(e);
 		}

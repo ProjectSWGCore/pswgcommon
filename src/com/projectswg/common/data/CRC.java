@@ -27,8 +27,6 @@
 ***********************************************************************************/
 package com.projectswg.common.data;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import com.projectswg.common.encoding.Encodable;
@@ -110,9 +108,14 @@ public class CRC implements Encodable, Persistable {
 	}
 	
 	@Override
-	public void decode(ByteBuffer data) {
-		this.crc = data.order(ByteOrder.LITTLE_ENDIAN).getInt();
+	public void decode(NetBuffer data) {
+		this.crc = data.getInt();
 		this.str = getString(crc);
+	}
+	
+	@Override
+	public int getLength() {
+		return 4;
 	}
 	
 	@Override

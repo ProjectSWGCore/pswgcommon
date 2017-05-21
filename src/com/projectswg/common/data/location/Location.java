@@ -27,8 +27,6 @@
 ***********************************************************************************/
 package com.projectswg.common.data.location;
 
-import java.nio.ByteBuffer;
-
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
@@ -44,7 +42,7 @@ public class Location implements Encodable, Persistable {
 		this(Double.NaN, Double.NaN, Double.NaN, null);
 	}
 	
-	public Location(Location l) { 
+	public Location(Location l) {
 		this(l.getX(), l.getY(), l.getZ(), l.terrain);
 		orientation.set(l.orientation);
 	}
@@ -55,19 +53,44 @@ public class Location implements Encodable, Persistable {
 		this.terrain = terrain;
 	}
 	
-	public void setTerrain(Terrain terrain) { this.terrain = terrain; }
-	public void setX(double x) { point.setX(x); }
-	public void setY(double y) { point.setY(y); }
-	public void setZ(double z) { point.setZ(z); }
-	public void setOrientationX(double oX) { orientation.setX(oX); }
-	public void setOrientationY(double oY) { orientation.setY(oY); }
-	public void setOrientationZ(double oZ) { orientation.setZ(oZ); }
-	public void setOrientationW(double oW) { orientation.setW(oW); }
+	public void setTerrain(Terrain terrain) {
+		this.terrain = terrain;
+	}
+	
+	public void setX(double x) {
+		point.setX(x);
+	}
+	
+	public void setY(double y) {
+		point.setY(y);
+	}
+	
+	public void setZ(double z) {
+		point.setZ(z);
+	}
+	
+	public void setOrientationX(double oX) {
+		orientation.setX(oX);
+	}
+	
+	public void setOrientationY(double oY) {
+		orientation.setY(oY);
+	}
+	
+	public void setOrientationZ(double oZ) {
+		orientation.setZ(oZ);
+	}
+	
+	public void setOrientationW(double oW) {
+		orientation.setW(oW);
+	}
+	
 	public void setPosition(double x, double y, double z) {
 		setX(x);
 		setY(y);
 		setZ(z);
 	}
+	
 	public void setOrientation(double oX, double oY, double oZ, double oW) {
 		setOrientationX(oX);
 		setOrientationY(oY);
@@ -75,24 +98,56 @@ public class Location implements Encodable, Persistable {
 		setOrientationW(oW);
 	}
 	
-	public Terrain getTerrain() { return terrain; }
-	public double getX() { return point.getX(); }
-	public double getY() { return point.getY(); }
-	public double getZ() { return point.getZ(); }
-	public Point3D getPosition() { return new Point3D(point); }
-	public double getOrientationX() { return orientation.getX(); }
-	public double getOrientationY() { return orientation.getY(); }
-	public double getOrientationZ() { return orientation.getZ(); }
-	public double getOrientationW() { return orientation.getW(); }
-	public Quaternion getOrientation() { return new Quaternion(orientation); }
+	public Terrain getTerrain() {
+		return terrain;
+	}
+	
+	public double getX() {
+		return point.getX();
+	}
+	
+	public double getY() {
+		return point.getY();
+	}
+	
+	public double getZ() {
+		return point.getZ();
+	}
+	
+	public Point3D getPosition() {
+		return new Point3D(point);
+	}
+	
+	public double getOrientationX() {
+		return orientation.getX();
+	}
+	
+	public double getOrientationY() {
+		return orientation.getY();
+	}
+	
+	public double getOrientationZ() {
+		return orientation.getZ();
+	}
+	
+	public double getOrientationW() {
+		return orientation.getW();
+	}
+	
+	public Quaternion getOrientation() {
+		return new Quaternion(orientation);
+	}
 	
 	public boolean isWithinDistance(Location l, double x, double y, double z) {
 		if (getTerrain() != l.getTerrain())
 			return false;
-		double xD = Math.abs(getX() - l.getX());
-		double yD = Math.abs(getY() - l.getY());
-		double zD = Math.abs(getZ() - l.getZ());
-		return xD <= x && yD <= y && zD <= z;
+		if (Math.abs(getX() - l.getX()) > x)
+			return false;
+		if (Math.abs(getY() - l.getY()) > y)
+			return false;
+		if (Math.abs(getZ() - l.getZ()) > z)
+			return false;
+		return true;
 	}
 	
 	public boolean isWithinDistance(Location l, double radius) {
@@ -102,14 +157,14 @@ public class Location implements Encodable, Persistable {
 	public boolean isWithinDistance(Terrain t, double x, double y, double z, double radius) {
 		if (getTerrain() != t)
 			return false;
-		return square(getX()-x) + square(getY()-y) + square(getZ()-z) <= square(radius);
+		return square(getX() - x) + square(getY() - y) + square(getZ() - z) <= square(radius);
 	}
 	
 	public boolean isWithinFlatDistance(Location l, double radius) {
 		return isWithinFlatDistance(l.point, radius);
 	}
 	
-	public boolean isWithinFlatDistance(Point3D target, double radius){
+	public boolean isWithinFlatDistance(Point3D target, double radius) {
 		return square(getX() - target.getX()) + square(getZ() - target.getZ()) <= square(radius);
 	}
 	
@@ -120,7 +175,7 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public void translateLocation(Location l) {
-        point.rotateAround(l.getX(), l.getY(), l.getZ(), l.orientation);
+		point.rotateAround(l.getX(), l.getY(), l.getZ(), l.orientation);
 		orientation.rotateByQuaternion(l.orientation);
 	}
 	
@@ -132,6 +187,7 @@ public class Location implements Encodable, Persistable {
 	
 	/**
 	 * Sets the orientation to be facing the specified heading
+	 * 
 	 * @param heading the heading to face, in degrees
 	 */
 	public void setHeading(double heading) {
@@ -140,6 +196,7 @@ public class Location implements Encodable, Persistable {
 	
 	/**
 	 * Rotates the orientation by the specified angle along the Y-axis
+	 * 
 	 * @param angle the angle to rotate by in degrees
 	 */
 	public void rotateHeading(double angle) {
@@ -148,6 +205,7 @@ public class Location implements Encodable, Persistable {
 	
 	/**
 	 * Rotates the orientation by the specified angle along the specified axises
+	 * 
 	 * @param angle the angle to rotate by in degrees
 	 * @param axisX the amount of rotation about the x-axis
 	 * @param axisY the amount of rotation about the x-axis
@@ -158,34 +216,13 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public void mergeWith(Location l) {
-		if (terrain == null || terrain != l.getTerrain())
-			terrain = l.getTerrain();
-		mergeLocation(l.getX(), l.getY(), l.getZ());
-		mergeOrientation(l);
-	}
-	
-	public void mergeLocation(double lX, double lY, double lZ) {
-		if (!isEqual(getX(), lX))
-			point.setX(lX);
-		if (!isEqual(getY(), lY))
-			point.setY(lY);
-		if (!isEqual(getZ(), lZ))
-			point.setZ(lZ);
-	}
-	
-	private void mergeOrientation(Location l) {
-		if (!isEqual(getOrientationX(), l.getOrientationX()))
-			orientation.setX(l.getOrientationX());
-		if (!isEqual(getOrientationY(), l.getOrientationY()))
-			orientation.setY(l.getOrientationY());
-		if (!isEqual(getOrientationZ(), l.getOrientationZ()))
-			orientation.setZ(l.getOrientationZ());
-		if (!isEqual(getOrientationW(),  l.getOrientationW()))
-			orientation.setW(l.getOrientationW());
+		this.terrain = l.getTerrain();
+		this.point.set(l.getX(), l.getY(), l.getZ());
+		this.orientation.set(l.getOrientationX(), l.getOrientationY(), l.getOrientationZ(), l.getOrientationW());
 	}
 	
 	public double getSpeed(Location l, double deltaTime) {
-		double dist = Math.sqrt(square(getX()-l.getX()) + square(getY()-l.getY()) + square(getZ()-l.getZ()));
+		double dist = Math.sqrt(square(getX() - l.getX()) + square(getY() - l.getY()) + square(getZ() - l.getZ()));
 		return dist / deltaTime;
 	}
 	
@@ -194,9 +231,10 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	private double square(double x) {
-		return x*x;
+		return x * x;
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Location))
 			return false;
@@ -223,13 +261,14 @@ public class Location implements Encodable, Persistable {
 		return true;
 	}
 	
+	@Override
 	public int hashCode() {
-		return hash(getX())*13 + hash(getY())*17 + hash(getZ())*19 + hash(getOrientationX())*23 + hash(getOrientationY())*29 + hash(getOrientationZ())*31 + hash(getOrientationW())*37;
+		return hash(getX()) * 13 + hash(getY()) * 17 + hash(getZ()) * 19 + hash(getOrientationX()) * 23 + hash(getOrientationY()) * 29 + hash(getOrientationZ()) * 31 + hash(getOrientationW()) * 37;
 	}
 	
 	private int hash(double x) {
 		long v = Double.doubleToLongBits(x);
-		return (int)(v^(v>>>32));
+		return (int) (v ^ (v >>> 32));
 	}
 	
 	private boolean isEqual(double x, double y) {
@@ -239,24 +278,29 @@ public class Location implements Encodable, Persistable {
 			return false;
 		return Math.abs(x - y) <= 1E-7;
 	}
-
+	
 	@Override
 	public byte[] encode() {
 		NetBuffer buf = NetBuffer.allocate(28);
-		buf.addFloat(safeEncodeDouble(orientation.getX()));
-		buf.addFloat(safeEncodeDouble(orientation.getY()));
-		buf.addFloat(safeEncodeDouble(orientation.getZ()));
-		buf.addFloat(safeEncodeDouble(orientation.getW()));
-		buf.addFloat(safeEncodeDouble(point.getX()));
-		buf.addFloat(safeEncodeDouble(point.getY()));
-		buf.addFloat(safeEncodeDouble(point.getZ()));
+		buf.addFloat((float) orientation.getX());
+		buf.addFloat((float) orientation.getY());
+		buf.addFloat((float) orientation.getZ());
+		buf.addFloat((float) orientation.getW());
+		buf.addFloat((float) point.getX());
+		buf.addFloat((float) point.getY());
+		buf.addFloat((float) point.getZ());
 		return buf.array();
 	}
-
+	
 	@Override
-	public void decode(ByteBuffer data) {
+	public void decode(NetBuffer data) {
 		orientation.decode(data);
 		point.decode(data);
+	}
+	
+	@Override
+	public int getLength() {
+		return 28;
 	}
 	
 	@Override
@@ -277,7 +321,7 @@ public class Location implements Encodable, Persistable {
 		if (stream.getBoolean())
 			terrain = Terrain.valueOf(stream.getAscii());
 	}
-
+	
 	@Override
 	public String toString() {
 		return String.format("Location[TRN=%s, %s %s]", terrain, point, orientation);
@@ -295,8 +339,12 @@ public class Location implements Encodable, Persistable {
 		return Math.sqrt(square(dstX - getX()) + square(dstY - getY()) + square(dstZ - getZ()));
 	}
 	
-	private float safeEncodeDouble(double d) {
-		return (float) (Double.isNaN(d) ? 0 : d);
+	public double flatDistanceTo(Location destination) {
+		return flatDistanceTo(destination.getX(), destination.getZ());
+	}
+	
+	public double flatDistanceTo(double dstX, double dstZ) {
+		return Math.sqrt(square(dstX - getX()) + square(dstZ - getZ()));
 	}
 	
 }

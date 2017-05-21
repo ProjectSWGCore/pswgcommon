@@ -27,6 +27,8 @@
  ***********************************************************************************/
 package com.projectswg.common.control;
 
+import com.projectswg.common.debug.Assert;
+
 public class IntentChain {
 	
 	private final IntentManager intentManager;
@@ -62,6 +64,14 @@ public class IntentChain {
 			i.broadcastAfterIntent(this.i, intentManager);
 			this.i = i;
 		}
+	}
+	
+	public static void broadcastChain(Intent ... intents) {
+		Assert.test(intents.length > 0, "Intent length must be greater than 0!");
+		for (int i = 1; i < intents.length; i++) {
+			intents[i].broadcastAfterIntent(intents[i-1]);
+		}
+		intents[0].broadcast();
 	}
 	
 }

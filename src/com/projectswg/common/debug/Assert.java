@@ -92,7 +92,7 @@ public class Assert {
 		Log.e(e);
 	}
 	
-	private static class AssertionException extends RuntimeException {
+	public static class AssertionException extends RuntimeException {
 		
 		private static final long serialVersionUID = 1L;
 		

@@ -27,8 +27,6 @@
 ***********************************************************************************/
 package com.projectswg.common.data.location;
 
-import java.nio.ByteBuffer;
-
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
@@ -162,13 +160,17 @@ public class Quaternion implements Encodable, Persistable {
 	}
 
 	@Override
-	public void decode(ByteBuffer data) {
-		NetBuffer buf = NetBuffer.wrap(data);
-		x = buf.getFloat();
-		y = buf.getFloat();
-		z = buf.getFloat();
-		w = buf.getFloat();
+	public void decode(NetBuffer data) {
+		x = data.getFloat();
+		y = data.getFloat();
+		z = data.getFloat();
+		w = data.getFloat();
 		updateRotationMatrix();
+	}
+	
+	@Override
+	public int getLength() {
+		return 16;
 	}
 	
 	@Override
@@ -188,6 +190,7 @@ public class Quaternion implements Encodable, Persistable {
 		updateRotationMatrix();
 	}
 
+	@Override
 	public String toString() {
 		return String.format("Quaternion[%.3f, %.3f, %.3f, %.3f]", x, y, z, w);
 	}

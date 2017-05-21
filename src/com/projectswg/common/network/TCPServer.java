@@ -30,7 +30,6 @@ package com.projectswg.common.network;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
@@ -95,12 +94,12 @@ public class TCPServer {
 		Assert.notNull(sock);
 		synchronized (sockets) {
 			SocketChannel sc = sockets.get(sock);
-			Assert.notNull(sc);
+			if (sc == null)
+				return true;
 			sockets.remove(sock);
 			try {
-				Socket s = sc.socket();
 				sc.close();
-				callbackManager.callOnEach((callback) -> callback.onConnectionDisconnect(s, sock));
+				callbackManager.callOnEach((callback) -> callback.onConnectionDisconnect(sc, sock));
 				return true;
 			} catch (IOException e) {
 				Log.e(e);
@@ -133,22 +132,10 @@ public class TCPServer {
 		return false;
 	}
 	
-	public boolean send(InetSocketAddress sock, ByteBuffer data) {
+	public SocketChannel getChannel(SocketAddress sock) {
 		synchronized (sockets) {
-			SocketChannel sc = sockets.get(sock);
-			Assert.notNull(sc);
-			Assert.test(sc.isConnected());
-			Assert.test(data.hasRemaining());
-			try {
-				while (data.hasRemaining())
-					sc.write(data);
-				return true;
-			} catch (IOException e) {
-				Log.e("TCPServer", "Terminated connection with %s. Error: %s", sock.toString(), e.getMessage());
-				disconnect(sc);
-			}
+			return sockets.get(sock);
 		}
-		return false;
 	}
 	
 	public void setCallback(TCPCallback callback) {
@@ -156,9 +143,9 @@ public class TCPServer {
 	}
 	
 	public interface TCPCallback {
-		void onIncomingConnection(Socket s);
-		void onConnectionDisconnect(Socket s, SocketAddress addr);
-		void onIncomingData(Socket s, byte [] data);
+		void onIncomingConnection(SocketChannel s, SocketAddress addr);
+		void onConnectionDisconnect(SocketChannel s, SocketAddress addr);
+		void onIncomingData(SocketChannel s, SocketAddress addr, byte [] data);
 	}
 	
 	private class TCPServerListener implements Runnable {
@@ -186,6 +173,7 @@ public class TCPServer {
 			thread = null;
 		}
 		
+		@Override
 		public void run() {
 			try (Selector selector = setupSelector()) {
 				while (running) {
@@ -241,7 +229,8 @@ public class TCPServer {
 					sockets.put(sc.getRemoteAddress(), sc);
 					sc.configureBlocking(false);
 					sc.register(selector, SelectionKey.OP_READ);
-					callbackManager.callOnEach((callback) -> callback.onIncomingConnection(sc.socket()));
+					SocketAddress addr = sc.getRemoteAddress();
+					callbackManager.callOnEach((callback) -> callback.onIncomingConnection(sc, addr));
 				}
 			} catch (IOException e) {
 				Log.e(e);
@@ -260,7 +249,8 @@ public class TCPServer {
 				} else if (n > 0) {
 					ByteBuffer smaller = ByteBuffer.allocate(n);
 					smaller.put(buffer);
-					callbackManager.callOnEach((callback) -> callback.onIncomingData(s.socket(), smaller.array()));
+					SocketAddress addr = s.getRemoteAddress();
+					callbackManager.callOnEach((callback) -> callback.onIncomingData(s, addr, smaller.array()));
 					return true;
 				}
 			} catch (IOException e) {

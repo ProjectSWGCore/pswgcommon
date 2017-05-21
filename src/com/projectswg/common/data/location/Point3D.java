@@ -27,8 +27,6 @@
 ***********************************************************************************/
 package com.projectswg.common.data.location;
 
-import java.nio.ByteBuffer;
-
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
@@ -107,11 +105,15 @@ public class Point3D implements Encodable, Persistable {
 	}
 
 	@Override
-	public void decode(ByteBuffer data) {
-		NetBuffer buf = NetBuffer.wrap(data);
-		x = buf.getFloat();
-		y = buf.getFloat();
-		z = buf.getFloat();
+	public void decode(NetBuffer data) {
+		x = data.getFloat();
+		y = data.getFloat();
+		z = data.getFloat();
+	}
+	
+	@Override
+	public int getLength() {
+		return 12;
 	}
 	
 	@Override
@@ -128,6 +130,7 @@ public class Point3D implements Encodable, Persistable {
 		z = stream.getFloat();
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Point3D))
 			return false;
@@ -140,10 +143,12 @@ public class Point3D implements Encodable, Persistable {
 		return true;
 	}
 	
+	@Override
 	public int hashCode() {
 		return Double.hashCode(getX()) ^ Double.hashCode(getY()) ^ Double.hashCode(getZ());
 	}
 
+	@Override
 	public String toString() {
 		return String.format("Point3D[%.2f, %.2f, %.2f]", x, y, z);
 	}

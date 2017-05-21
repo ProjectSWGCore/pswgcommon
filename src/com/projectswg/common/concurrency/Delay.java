@@ -32,31 +32,65 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Delay {
 	
+	/**
+	 * Sleeps for the specified number of nanoseconds
+	 * @param nanos the number of nanoseconds to sleep
+	 * @return TRUE if this operation has been interrupted
+	 */
 	public static boolean sleepNano(long nanos) {
 		LockSupport.parkNanos(nanos);
 		return isInterrupted();
 	}
 	
+	/**
+	 * Sleeps for the specified number of microseconds
+	 * @param micro the number of microseconds to sleep
+	 * @return TRUE if this operation has been interrupted
+	 */
 	public static boolean sleepMicro(long micro) {
 		return sleepNano(micro * 1000);
 	}
 	
+	/**
+	 * Sleeps for the specified number of milliseconds
+	 * @param milli the number of milliseconds to sleep
+	 * @return TRUE if this operation has been interrupted
+	 */
 	public static boolean sleepMilli(long milli) {
 		return sleepNano(milli * 1000000);
 	}
 	
+	/**
+	 * Sleeps for the specified number of seconds
+	 * @param sec the number of seconds to sleep
+	 * @return TRUE if this operation has been interrupted
+	 */
 	public static boolean sleepSeconds(long sec) {
 		return sleepNano(sec * 1000000000);
 	}
 	
+	/**
+	 * Sleeps for the specified amount of time
+	 * @param time the amount of time to sleep
+	 * @param unit the unit of time
+	 * @return TRUE if this operation has been interrupted
+	 */
 	public static boolean sleep(long time, TimeUnit unit) {
 		return sleepNano(unit.toNanos(time));
 	}
 	
+	/**
+	 * Returns whether or not this thread has been interrupted
+	 * @return TRUE if interrupted, FALSE otherwise
+	 */
 	public static boolean isInterrupted() {
 		return Thread.currentThread().isInterrupted();
 	}
 	
+	/**
+	 * Clears the interrupted flag so future calls to isInterrupted will return
+	 * FALSE
+	 */
 	public static void clearInterrupted() {
 		Thread.interrupted();
 	}

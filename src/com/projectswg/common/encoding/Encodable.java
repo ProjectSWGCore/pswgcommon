@@ -26,9 +26,10 @@
  ******************************************************************************/
 package com.projectswg.common.encoding;
 
-import java.nio.ByteBuffer;
+import com.projectswg.common.network.NetBuffer;
 
 public interface Encodable {
+	void decode(NetBuffer data);
 	byte [] encode();
-	void decode(ByteBuffer data);
+	int getLength();
 }

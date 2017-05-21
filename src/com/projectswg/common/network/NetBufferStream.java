@@ -110,10 +110,12 @@ public class NetBufferStream extends OutputStream {
 		}
 	}
 	
+	@Override
 	public void write(byte [] data) {
 		write(data, 0, data.length);
 	}
 	
+	@Override
 	public void write(byte [] data, int offset, int length) {
 		ensureCapacity(size + length);
 		synchronized (bufferMutex) {
@@ -278,14 +280,6 @@ public class NetBufferStream extends OutputStream {
 		synchronized (bufferMutex) {
 			buffer.addAscii(s);
 			size += 2 + s.length();
-		}
-	}
-	
-	public void addAscii(char[] s) {
-		ensureCapacity(size+2+s.length);
-		synchronized (bufferMutex) {
-			buffer.addAscii(s);
-			size += 2 + s.length;
 		}
 	}
 	

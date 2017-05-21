@@ -28,11 +28,10 @@
 package com.projectswg.common.data.location;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.projectswg.common.data.CRC;
+import com.projectswg.common.data.EnumLookup;
 
 public enum Terrain {
 	ADVENTURE1				("terrain/adventure1.trn"),
@@ -103,24 +102,12 @@ public enum Terrain {
 	WATERTABLETEST			("terrain/watertabletest.trn"),
 	YAVIN4					("terrain/yavin4.trn");
 	
-	private static final Map <Integer, String> CRC_TO_NAME = new ConcurrentHashMap<>();
-	private static final Map <String, Integer> NAME_TO_CRC = new ConcurrentHashMap<>();
-	private static final Map <String, Terrain> NAME_TO_TERRAIN = new ConcurrentHashMap<>();
-	private static final Map <Integer, Terrain> CRC_TO_TERRAIN = new ConcurrentHashMap<>();
+	private static final EnumLookup<Integer, Terrain> CRC_LOOKUP = new EnumLookup<>(Terrain.class, t -> t.getCrc());
+	private static final EnumLookup<String, Terrain> NAME_LOOKUP = new EnumLookup<>(Terrain.class, t -> t.getName());
 	
 	private String file;
 	private String name;
 	private int crc;
-	
-	static {
-		for (Terrain p : values()) {
-			CRC_TO_TERRAIN.put(p.getCrc(), p);
-			CRC_TO_NAME.put(p.getCrc(), p.name());
-			NAME_TO_CRC.put(p.name().toLowerCase(Locale.US), p.getCrc());
-			NAME_TO_CRC.put(p.name().toLowerCase(Locale.US), p.getCrc());
-			NAME_TO_TERRAIN.put(p.name().toLowerCase(Locale.US), p);
-		}
-	}
 	
 	Terrain(String file) {
 		this.file = file;
@@ -128,10 +115,21 @@ public enum Terrain {
 		this.crc = CRC.getCrc(name);
 	}
 	
-	public String getFile() { return file; }
-	public String getName() { return name; }
-	public String getNameCapitalized() { return Character.toUpperCase(name.charAt(0)) + name.substring(1); }
-	public int getCrc() { return crc; }
+	public String getFile() {
+		return file;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getNameCapitalized() {
+		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+	}
+	
+	public int getCrc() {
+		return crc;
+	}
 	
 	public Location getStartLocation() {
 		Location l = new Location();
@@ -149,45 +147,35 @@ public enum Terrain {
 	}
 	
 	public static int getTerrainCount() {
-		return CRC_TO_TERRAIN.size();
+		return CRC_LOOKUP.size();
 	}
 	
 	public static String getNameFromCrc(int crc) {
-		String name = CRC_TO_NAME.get(crc);
-		if (name == null)
-			return "";
-		return name;
+		Terrain t = CRC_LOOKUP.getEnum(crc, null);
+		return (t == null) ? "" : t.getName();
 	}
 	
 	public static int getCrcFromName(String name) {
-		Integer crc = NAME_TO_CRC.get(name.toLowerCase(Locale.ENGLISH));
-		if (crc == null)
-			return 0;
-		return crc;
+		Terrain t = NAME_LOOKUP.getEnum(name.toLowerCase(Locale.ENGLISH), null);
+		return (t == null) ? 0 : t.getCrc();
 	}
 	
 	/**
 	 * Note: Defaults to TATOOINE
 	 */
 	public static Terrain getTerrainFromCrc(int crc) {
-		Terrain p = CRC_TO_TERRAIN.get(crc);
-		if (p == null)
-			return TATOOINE;
-		return p;
+		return CRC_LOOKUP.getEnum(crc, null);
 	}
 	
 	/**
 	 * Note: Defaults to TATOOINE
 	 */
 	public static Terrain getTerrainFromName(String name) {
-		Terrain p = NAME_TO_TERRAIN.get(name.toLowerCase(Locale.ENGLISH));
-		if (p == null)
-			return TATOOINE;
-		return p;
+		return NAME_LOOKUP.getEnum(name.toLowerCase(Locale.ENGLISH), null);
 	}
 	
 	public static boolean doesTerrainExistForName(String name) {
-		return NAME_TO_TERRAIN.containsKey(name.toLowerCase(Locale.ENGLISH));
+		return NAME_LOOKUP.containsEnum(name.toLowerCase(Locale.ENGLISH));
 	}
 	
 }

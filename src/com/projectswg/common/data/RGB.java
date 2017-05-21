@@ -28,7 +28,6 @@
 package com.projectswg.common.data;
 
 import java.awt.Color;
-import java.nio.ByteBuffer;
 
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
@@ -63,10 +62,15 @@ public class RGB implements Encodable {
 	}
 	
 	@Override
-	public void decode(ByteBuffer data) {
-		r = data.get();
-		g = data.get();
-		b = data.get();
+	public void decode(NetBuffer data) {
+		r = data.getByte();
+		g = data.getByte();
+		b = data.getByte();
+	}
+	
+	@Override
+	public int getLength() {
+		return 3;
 	}
 	
 	public byte getR() {
