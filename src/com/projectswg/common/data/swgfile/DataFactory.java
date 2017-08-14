@@ -37,7 +37,7 @@ import com.projectswg.common.debug.Log;
  * Created by Waverunner on 6/9/2015
  */
 public abstract class DataFactory {
-
+	
 	protected ClientData readFile(String filename) {
 		if (filename == null || filename.isEmpty()) {
 			Log.e("File cannot be null or empty!");
@@ -83,11 +83,11 @@ public abstract class DataFactory {
 
 		return save;
 	}
-
+	
+	protected abstract String getFolder();
 	protected abstract ClientData createDataObject(String type);
 	protected ClientData createDataObject(SWGFile swgFile) {
 		return createDataObject(swgFile.getType());
 	}
-
-	protected abstract String getFolder();
+	
 }

@@ -27,49 +27,60 @@
 ***********************************************************************************/
 package com.projectswg.common.control;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import com.projectswg.common.concurrency.PswgTaskThreadPool;
+import com.projectswg.common.concurrency.PswgThreadPool;
 import com.projectswg.common.debug.Log;
 
 public class IntentManager {
 	
-	private static final IntentManager INSTANCE = new IntentManager();
+	private static final AtomicReference<IntentManager> INSTANCE = new AtomicReference<>(null);
 	
 	private final Map <Class<Intent>, List<Consumer<Intent>>> intentRegistrations;
-	private final PswgTaskThreadPool<Intent> broadcastThreads;
+	private final IntentSpeedRecorder speedRecorder;
+	private final PswgThreadPool processThreads;
 	private final AtomicBoolean initialized;
 	
-	public IntentManager() {
+	public IntentManager(int threadCount) {
 		this.intentRegistrations = new HashMap<>();
-		int threadCount = Runtime.getRuntime().availableProcessors() * 10;
-		this.broadcastThreads = new PswgTaskThreadPool<>(threadCount, "intent-processor-%d", i -> broadcast(i));
-		this.broadcastThreads.setInterruptOnStop(true);
+		this.speedRecorder = new IntentSpeedRecorder();
+		this.processThreads = new PswgThreadPool(threadCount, "intent-processor-%d");
 		this.initialized = new AtomicBoolean(false);
-		initialize();
 	}
 	
 	public void initialize() {
 		if (initialized.getAndSet(true))
 			return;
-		broadcastThreads.start();
+		processThreads.start();
 	}
 	
 	public void terminate() {
 		if (!initialized.getAndSet(false))
 			return;
-		broadcastThreads.stop();
+		processThreads.stop(true);
+	}
+	
+	public int getIntentCount() {
+		return processThreads.getQueuedTasks();
+	}
+	
+	public IntentSpeedRecorder getSpeedRecorder() {
+		return speedRecorder;
 	}
 	
 	public void broadcastIntent(Intent i) {
 		if (i == null)
 			throw new NullPointerException("Intent cannot be null!");
-		broadcastThreads.addTask(i);
+		broadcast(i);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -106,29 +117,108 @@ public class IntentManager {
 		synchronized (intentRegistrations) {
 			receivers = intentRegistrations.get(i.getClass());
 		}
-		try {
-			if (receivers == null)
-				return;
-			
-			for (Consumer<Intent> r : receivers) {
-				broadcast(r, i);
-			}
-		} finally {
-			i.markAsComplete(this);
+		if (receivers == null)
+			return;
+		
+		AtomicInteger remaining = new AtomicInteger(receivers.size());
+		for (Consumer<Intent> r : receivers) {
+			broadcast(r, i, remaining);
 		}
 	}
 	
-	private void broadcast(Consumer<Intent> r, Intent i) {
-		try {
-			r.accept(i);
-		} catch (Throwable t) {
-			Log.e("Fatal Exception while processing intent: " + i);
-			Log.e(t);
-		}
+	private void broadcast(Consumer<Intent> r, Intent i, AtomicInteger remaining) {
+		processThreads.execute(() -> {
+			try {
+				long start = System.nanoTime();
+				r.accept(i);
+				long time = System.nanoTime() - start;
+				speedRecorder.addRecord(i.getClass(), r, time);
+			} catch (Throwable t) {
+				Log.e("Fatal Exception while processing intent: " + i);
+				Log.e(t);
+			} finally {
+				if (remaining.decrementAndGet() <= 0)
+					i.markAsComplete(this);
+			}
+		});
 	}
 	
 	public static IntentManager getInstance() {
-		return INSTANCE;
+		return INSTANCE.get();
+	}
+	
+	public static void setInstance(IntentManager intentManager) {
+		IntentManager prev = INSTANCE.getAndSet(intentManager);
+		if (prev != null)
+			prev.terminate();
+	}
+	
+	public static class IntentSpeedRecorder {
+		
+		private final Map<Consumer<Intent>, IntentSpeedRecord> times;
+		
+		public IntentSpeedRecorder() {
+			this.times = new HashMap<>();
+		}
+		
+		private void addRecord(Class<? extends Intent> intent, Consumer<Intent> consumer, long timeNanos) {
+			IntentSpeedRecord record;
+			synchronized (times) {
+				record = times.get(consumer);
+				if (record == null)
+					times.put(consumer, record = new IntentSpeedRecord(intent, consumer));
+			}
+			record.addTime(timeNanos);
+		}
+		
+		public List<IntentSpeedRecord> getAllTimes() {
+			synchronized (times) {
+				return new ArrayList<>(times.values());
+			}
+		}
+		
+	}
+	
+	public static class IntentSpeedRecord implements Comparable<IntentSpeedRecord> {
+		
+		private final Class<? extends Intent> intent;
+		private final Consumer<Intent> consumer;
+		private final AtomicLong time;
+		private final AtomicLong count;
+		
+		public IntentSpeedRecord(Class<? extends Intent> intent, Consumer<Intent> consumer) {
+			this.intent = intent;
+			this.consumer = consumer;
+			this.time = new AtomicLong(0);
+			this.count = new AtomicLong(0);
+		}
+		
+		public Class<? extends Intent> getIntent() {
+			return intent;
+		}
+		
+		public Consumer<Intent> getConsumer() {
+			return consumer;
+		}
+		
+		public long getTime() {
+			return time.get();
+		}
+		
+		public long getCount() {
+			return count.get();
+		}
+		
+		public void addTime(long timeNanos) {
+			time.addAndGet(timeNanos);
+			count.incrementAndGet();
+		}
+		
+		@Override
+		public int compareTo(IntentSpeedRecord record) {
+			return Long.compare(record.getTime(), getTime());
+		}
+		
 	}
 	
 }

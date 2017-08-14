@@ -89,6 +89,7 @@ public class Assert {
 	}
 	
 	private static void warn(Exception e) {
+		Log.e("Assert Warning:");
 		Log.e(e);
 	}
 	

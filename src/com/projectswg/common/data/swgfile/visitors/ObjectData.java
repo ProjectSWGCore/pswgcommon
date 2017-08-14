@@ -29,15 +29,15 @@ package com.projectswg.common.data.swgfile.visitors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import com.projectswg.common.debug.Log;
+import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
+import com.projectswg.common.debug.Log;
 
 public class ObjectData extends ClientData {
 
@@ -50,6 +50,7 @@ public class ObjectData extends ClientData {
 		APPEARANCE_FILENAME						("appearanceFilename"),
 		ARRANGEMENT_DESCRIPTOR_FILENAME			("arrangementDescriptorFilename"),
 		ATTACK_TYPE								("attackType"),
+		ATTRIBUTES								("attributes"),
 		CAMERA_HEIGHT							("cameraHeight"),
 		CERTIFICATIONS_REQUIRED					("certificationsRequired"),
 		CLEAR_FLORA_RADIUS						("clearFloraRadius"),
@@ -70,6 +71,7 @@ public class ObjectData extends ClientData {
 		CONST_STRING_CUSTOMIZATION_VARIABLES	("constStringCustomizationVariables"),
 		CONTAINER_TYPE							("containerType"),
 		CONTAINER_VOLUME_LIMIT					("containerVolumeLimit"),
+		CRAFTED_SHARED_TEMPLATE					("craftedSharedTemplate"),
 		CUSTOMIZATION_VARIABLE_MAPPING			("customizationVariableMapping"),
 		DETAILED_DESCRIPTION					("detailedDescription"),
 		FORCE_NO_COLLISION						("forceNoCollision"),
@@ -95,6 +97,7 @@ public class ObjectData extends ClientData {
 		SEND_TO_CLIENT							("sendToClient"),
 		SLOPE_MOD_ANGLE							("slopeModAngle"),
 		SLOPE_MOD_PERCENT						("slopeModPercent"),
+		SLOTS									("slots"),
 		SLOT_DESCRIPTOR_FILENAME				("slotDescriptorFilename"),
 		SNAP_TO_TERRAIN							("snapToTerrain"),
 		SOCKET_DESTINATIONS						("socketDestinations"),
@@ -112,14 +115,11 @@ public class ObjectData extends ClientData {
 		WARP_TOLERANCE							("warpTolerance"),
 		WATER_MOD_PERCENT						("waterModPercent"),
 		WEAPON_EFFECT							("weaponEffect"),
-		WEAPON_EFFECT_INDEX						("weaponEffectIndex");
+		WEAPON_EFFECT_INDEX						("weaponEffectIndex"),
 		
-		private static final Map<String, ObjectDataAttribute> ATTRIBUTES = new Hashtable<>(values().length);
+		UNKNOWN									("");
 		
-		static {
-			for (ObjectDataAttribute attr : values())
-				ATTRIBUTES.put(attr.getName(), attr);
-		}
+		private static final EnumLookup<String, ObjectDataAttribute> LOOKUP = new EnumLookup<>(ObjectDataAttribute.class, ObjectDataAttribute::getName);
 		
 		private final String name;
 		
@@ -132,7 +132,7 @@ public class ObjectData extends ClientData {
 		}
 		
 		public static ObjectDataAttribute getForName(String name) {
-			return ATTRIBUTES.get(name);
+			return LOOKUP.getEnum(name, UNKNOWN);
 		}
 	}
 	
@@ -189,8 +189,8 @@ public class ObjectData extends ClientData {
 		if (str.isEmpty())
 			return;
 		ObjectDataAttribute attr = ObjectDataAttribute.getForName(str);
-		if (attr == null) {
-			System.err.println("Unknown attribute: " + str);
+		if (attr == ObjectDataAttribute.UNKNOWN) {
+			Log.e("Unknown ObjectData attribute: %s", str);
 			return;
 		}
 		parseObjectAttribute(chunk, attr);
@@ -202,59 +202,59 @@ public class ObjectData extends ClientData {
 	
 	private void parseObjectAttribute(IffNode chunk, ObjectDataAttribute attr) {
 		switch (attr) {
-			case APPEARANCE_FILENAME: putString(chunk, attr); break;
-			case ARRANGEMENT_DESCRIPTOR_FILENAME: putString(chunk,attr); break;
-			case CLEAR_FLORA_RADIUS: putFloat(chunk, attr); break;
-			case CLIENT_DATA_FILE: putString(chunk, attr); break;
-			case CLIENT_VISIBILITY_FLAG: putBoolean(chunk, attr); break;
-			case CONTAINER_TYPE: putInt(chunk, attr); break;
-			case CONTAINER_VOLUME_LIMIT: putInt(chunk, attr);break;
-			case DETAILED_DESCRIPTION: putStfString(chunk, attr); break;
-			case FORCE_NO_COLLISION: putBoolean(chunk, attr); break;
-			case GAME_OBJECT_TYPE: putInt(chunk, attr); break;
-			case GENDER: putInt(chunk, attr); break;
-			case LOCATION_RESERVATION_RADIUS: putFloat(chunk, attr); break;
-			case LOOK_AT_TEXT: putString(chunk, attr); break;
-			case NO_BUILD_RADIUS: putFloat(chunk, attr); break;
-			case OBJECT_NAME: putStfString(chunk, attr); break;
-			case ONLY_VISIBLE_IN_TOOLS: putBoolean(chunk, attr); break;
-			case PORTAL_LAYOUT_FILENAME: putString(chunk, attr); break;
-			case SCALE: putFloat(chunk, attr); break;
-			case SCALE_THRESHOLD_BEFORE_EXTENT_TEST: putFloat(chunk, attr); break;
-			case SEND_TO_CLIENT: putBoolean(chunk, attr); break;
-			case SLOT_DESCRIPTOR_FILENAME: putString(chunk, attr); break;
-			case SNAP_TO_TERRAIN: putBoolean(chunk, attr); break;
-			case STRUCTURE_FOOTPRINT_FILENAME: putString(chunk, attr); break;
-			case SURFACE_TYPE: putInt(chunk, attr); break;
-			case TARGETABLE: putBoolean(chunk, attr); break;
-			case TINT_PALETTE: putString(chunk, attr); break;
-			case USE_STRUCTURE_FOOTPRINT_OUTLINE: putBoolean(chunk, attr); break;
+			case APPEARANCE_FILENAME:				putString(chunk, attr); break;
+			case ARRANGEMENT_DESCRIPTOR_FILENAME:	putString(chunk, attr); break;
+			case CLEAR_FLORA_RADIUS:				putFloat(chunk, attr); break;
+			case CLIENT_DATA_FILE:					putString(chunk, attr); break;
+			case CLIENT_VISIBILITY_FLAG:			putBoolean(chunk, attr); break;
+			case CONTAINER_TYPE:					putInt(chunk, attr); break;
+			case CONTAINER_VOLUME_LIMIT:			putInt(chunk, attr); break;
+			case DETAILED_DESCRIPTION:				putStfString(chunk, attr); break;
+			case FORCE_NO_COLLISION:				putBoolean(chunk, attr); break;
+			case GAME_OBJECT_TYPE:					putInt(chunk, attr); break;
+			case GENDER:							putInt(chunk, attr); break;
+			case LOCATION_RESERVATION_RADIUS:		putFloat(chunk, attr); break;
+			case LOOK_AT_TEXT:						putString(chunk, attr); break;
+			case NO_BUILD_RADIUS:					putFloat(chunk, attr); break;
+			case OBJECT_NAME:						putStfString(chunk, attr); break;
+			case ONLY_VISIBLE_IN_TOOLS:				putBoolean(chunk, attr); break;
+			case PORTAL_LAYOUT_FILENAME:			putString(chunk, attr); break;
+			case SCALE:								putFloat(chunk, attr); break;
+			case SCALE_THRESHOLD_BEFORE_EXTENT_TEST:putFloat(chunk, attr); break;
+			case SEND_TO_CLIENT:					putBoolean(chunk, attr); break;
+			case SLOT_DESCRIPTOR_FILENAME:			putString(chunk, attr); break;
+			case SNAP_TO_TERRAIN:					putBoolean(chunk, attr); break;
+			case STRUCTURE_FOOTPRINT_FILENAME:		putString(chunk, attr); break;
+			case SURFACE_TYPE:						putInt(chunk, attr); break;
+			case TARGETABLE:						putBoolean(chunk, attr); break;
+			case TINT_PALETTE:						putString(chunk, attr); break;
+			case USE_STRUCTURE_FOOTPRINT_OUTLINE:	putBoolean(chunk, attr); break;
 			default: break;
 		}
 	}
 	
 	private void parseBuildingAttribute(IffNode chunk, ObjectDataAttribute attr) {
 		switch (attr) {
-			case INTERIOR_LAYOUT_FILENAME: putString(chunk, attr); break;
-			case TERRAIN_MODIFICATION_FILENAME: putString(chunk, attr); break;
+			case INTERIOR_LAYOUT_FILENAME:			putString(chunk, attr); break;
+			case TERRAIN_MODIFICATION_FILENAME:		putString(chunk, attr); break;
 			default: break;
 		}
 	}
 	
 	private void parseWeaponAttribute(IffNode chunk, ObjectDataAttribute attr) {
 		switch (attr) {
-			case WEAPON_EFFECT: putString(chunk, attr); break;
-			case WEAPON_EFFECT_INDEX: putInt(chunk, attr); break;
-			case ATTACK_TYPE: putInt(chunk, attr); break;
+			case WEAPON_EFFECT:						putString(chunk, attr); break;
+			case WEAPON_EFFECT_INDEX:				putInt(chunk, attr); break;
+			case ATTACK_TYPE:						putInt(chunk, attr); break;
 			default: break;
 		}
 	}
 	
 	private void parseVehicleAttribute(IffNode chunk, ObjectDataAttribute attr) {
 		switch (attr) {
-			case SPEED: putFloat(chunk, attr); break;
-			case TURN_RADIUS: putFloat(chunk, attr); break;
-			case ACCELERATION: putFloat(chunk, attr); break;
+			case SPEED:								putFloat(chunk, attr); break;
+			case TURN_RADIUS:						putFloat(chunk, attr); break;
+			case ACCELERATION:						putFloat(chunk, attr); break;
 			default: break;
 		}
 	}

@@ -168,7 +168,7 @@ public enum Terrain {
 	}
 	
 	/**
-	 * Note: Defaults to TATOOINE
+	 * Note: Defaults to null
 	 */
 	public static Terrain getTerrainFromName(String name) {
 		return NAME_LOOKUP.getEnum(name.toLowerCase(Locale.ENGLISH), null);

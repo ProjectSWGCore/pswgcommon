@@ -31,7 +31,6 @@ import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.data.swgfile.visitors.CrcStringTableData;
 import com.projectswg.common.data.swgfile.visitors.DatatableData;
 import com.projectswg.common.data.swgfile.visitors.ObjectData;
@@ -52,6 +51,7 @@ import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalAppearance
 import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalMeshGeneratorTemplateData;
 import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
 import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
+import com.projectswg.common.debug.Log;
 
 public class ClientFactory extends DataFactory {
 	
@@ -227,12 +227,12 @@ public class ClientFactory extends DataFactory {
 		typeMap.put("SWOT", "ObjectData"); // object/weapon
 		//
 	}
-
+	
 	@Override
 	protected String getFolder() {
-		return "./clientdata/";
+		return "clientdata/";
 	}
-
+	
 	private static ClientFactory getInstance() {
 		return INSTANCE;
 	}

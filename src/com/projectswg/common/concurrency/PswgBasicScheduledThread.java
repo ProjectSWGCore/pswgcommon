@@ -27,6 +27,8 @@
 ***********************************************************************************/
 package com.projectswg.common.concurrency;
 
+import java.util.concurrent.ScheduledFuture;
+
 public class PswgBasicScheduledThread extends PswgScheduledThreadPool {
 	
 	private final Runnable runnable;
@@ -51,17 +53,18 @@ public class PswgBasicScheduledThread extends PswgScheduledThreadPool {
 		super.executeWithFixedDelay(initialDelay, periodicDelay, runnable);
 	}
 	
-	public void execute(long delay, Runnable runnable) {
+	@Override
+	public ScheduledFuture<?> execute(long delay, Runnable runnable) {
 		throw new UnsupportedOperationException("Runnable is defined in the constructor!");
 	}
 	
 	@Override
-	public void executeWithFixedRate(long initialDelay, long periodicDelay, Runnable runnable) {
+	public ScheduledFuture<?> executeWithFixedRate(long initialDelay, long periodicDelay, Runnable runnable) {
 		throw new UnsupportedOperationException("Runnable is defined in the constructor!");
 	}
 	
 	@Override
-	public void executeWithFixedDelay(long initialDelay, long periodicDelay, Runnable runnable) {
+	public ScheduledFuture<?> executeWithFixedDelay(long initialDelay, long periodicDelay, Runnable runnable) {
 		throw new UnsupportedOperationException("Runnable is defined in the constructor!");
 	}
 	

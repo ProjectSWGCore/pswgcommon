@@ -133,6 +133,10 @@ public class NetBuffer {
 		data.order(ByteOrder.LITTLE_ENDIAN).putFloat(f);
 	}
 	
+	public void addDouble(double d) {
+		data.order(ByteOrder.LITTLE_ENDIAN).putDouble(d);
+	}
+	
 	public void addShort(int i) {
 		data.order(ByteOrder.LITTLE_ENDIAN).putShort((short)i);
 	}
@@ -237,6 +241,10 @@ public class NetBuffer {
 	
 	public float getFloat() {
 		return data.getFloat();
+	}
+	
+	public double getDouble() {
+		return data.getDouble();
 	}
 	
 	public long getLong() {

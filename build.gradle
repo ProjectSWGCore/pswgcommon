@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+        }
+    }
+}
+
+jar {
+	from sourceSets.main.allSource
+	archiveName = "PSWGCommon.jar"
+}

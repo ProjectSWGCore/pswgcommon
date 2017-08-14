@@ -139,6 +139,8 @@ public abstract class Intent {
 	public synchronized void broadcast(IntentManager intentManager) {
 		if (broadcasted)
 			throw new IllegalStateException("Intent has already been broadcasted!");
+		if (intentManager == null)
+			return;
 		broadcasted = true;
 		intentManager.broadcastIntent(this);
 		if (parallel != null)

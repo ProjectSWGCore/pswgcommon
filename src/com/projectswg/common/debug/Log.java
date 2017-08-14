@@ -27,8 +27,9 @@
 ***********************************************************************************/
 package com.projectswg.common.debug;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -40,20 +41,24 @@ public class Log {
 	
 	private final List<LogWrapper> wrappers;
 	private final Lock logLock;
-	private final DateFormat timeFormat;
+	private final DateTimeFormatter timeFormat;
 	
 	private Log() {
 		this.wrappers = new ArrayList<>();
 		this.logLock = new ReentrantLock(true);
-		this.timeFormat = new SimpleDateFormat("dd-MM-yy HH:mm:ss.SSS");
+		this.timeFormat = DateTimeFormatter.ofPattern("dd-MM-yy HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 	}
 	
 	private void logAddWrapper(LogWrapper wrapper) {
 		wrappers.add(wrapper);
 	}
 	
+	private void logClearWrappers() {
+		wrappers.clear();
+	}
+	
 	private void logImplementation(LogLevel level, String str, Object ... args) {
-		String date = timeFormat.format(System.currentTimeMillis());
+		String date = timeFormat.format(Instant.now());
 		String logStr;
 		if (args.length == 0)
 			logStr = date + ' ' + level.getChar() + ": " + str;
@@ -80,6 +85,10 @@ public class Log {
 	
 	public static final void addWrapper(LogWrapper wrapper) {
 		getInstance().logAddWrapper(wrapper);
+	}
+	
+	public static final void clearWrappers() {
+		getInstance().logClearWrappers();
 	}
 	
 	/**
@@ -191,18 +200,33 @@ public class Log {
 	private static final void printException(LogLevel level, Throwable exception) {
 		Log instance = getInstance();
 		try {
-			String header1 = String.format("Exception in thread \"%s\" %s: %s", Thread.currentThread().getName(), exception.getClass().getName(), exception.getMessage());
-			String header2 = String.format("Caused by: %s: %s", exception.getClass().getCanonicalName(), exception.getMessage());
-			StackTraceElement [] elements = exception.getStackTrace();
 			instance.lock();
-			instance.logImplementation(level, header1);
-			instance.logImplementation(level, header2);
-			for (StackTraceElement e : elements) {
-				instance.logImplementation(level, "    " + e.toString());
-			}
+			printException(level, exception, 0);
 		} finally {
 			instance.unlock();
 		}
+	}
+	
+	private static final void printException(LogLevel level, Throwable exception, int depth) {
+		Log instance = getInstance();
+		String depthString = createExceptionDepthString(depth);
+		String header1 = String.format("Exception in thread \"%s\" %s: %s", Thread.currentThread().getName(), exception.getClass().getName(), exception.getMessage());
+		String header2 = String.format("Caused by: %s: %s", exception.getClass().getCanonicalName(), exception.getMessage());
+		StackTraceElement [] elements = exception.getStackTrace();
+		instance.logImplementation(level, depthString+header1);
+		instance.logImplementation(level, depthString+header2);
+		for (StackTraceElement e : elements) {
+			instance.logImplementation(level, depthString + "    " + e.toString());
+		}
+		if (exception.getCause() != null)
+			printException(level, exception.getCause(), depth+1);
+	}
+	
+	private static String createExceptionDepthString(int depth) {
+		StringBuilder str = new StringBuilder(depth*2);
+		for (int i = 0; i < depth; i++)
+			str.append("  ");
+		return str.toString();
 	}
 	
 	public static enum LogLevel {

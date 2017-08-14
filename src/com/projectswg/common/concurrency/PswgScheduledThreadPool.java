@@ -29,6 +29,7 @@ package com.projectswg.common.concurrency;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,9 +61,9 @@ public class PswgScheduledThreadPool {
 		executor.shutdownNow();
 	}
 	
-	public void executeWithFixedRate(long initialDelay, long time, Runnable runnable) {
+	public ScheduledFuture<?> executeWithFixedRate(long initialDelay, long time, Runnable runnable) {
 		Assert.test(running.get());
-		executor.scheduleAtFixedRate(() -> {
+		return executor.scheduleAtFixedRate(() -> {
 			try {
 				runnable.run();
 			} catch (Throwable t) {
@@ -71,9 +72,9 @@ public class PswgScheduledThreadPool {
 		}, initialDelay, time, TimeUnit.MILLISECONDS);
 	}
 	
-	public void executeWithFixedDelay(long initialDelay, long time, Runnable runnable) {
+	public ScheduledFuture<?> executeWithFixedDelay(long initialDelay, long time, Runnable runnable) {
 		Assert.test(running.get());
-		executor.scheduleWithFixedDelay(() -> {
+		return executor.scheduleWithFixedDelay(() -> {
 			try {
 				runnable.run();
 			} catch (Throwable t) {
@@ -82,9 +83,9 @@ public class PswgScheduledThreadPool {
 		}, initialDelay, time, TimeUnit.MILLISECONDS);
 	}
 	
-	public void execute(long delay, Runnable runnable) {
+	public ScheduledFuture<?> execute(long delay, Runnable runnable) {
 		Assert.test(running.get());
-		executor.schedule(() -> {
+		return executor.schedule(() -> {
 			try {
 				runnable.run();
 			} catch (Throwable t) {

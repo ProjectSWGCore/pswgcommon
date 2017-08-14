@@ -30,6 +30,7 @@ package com.projectswg.common.javafx;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ResourceUtilities {
@@ -75,6 +76,10 @@ public class ResourceUtilities {
 		} catch (URISyntaxException e) {
 			return null;
 		}
+	}
+	
+	public static URL getClassResource(String path) {
+		return SRC.get().getClassLoader().getResource(path);
 	}
 	
 	public static File getGeneralResource(String path) {

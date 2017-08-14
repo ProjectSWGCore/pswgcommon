@@ -82,7 +82,7 @@ public class CallbackManager<T> {
 	}
 	
 	public void stop() {
-		executor.stop();
+		executor.stop(false);
 	}
 	
 	public boolean awaitTermination(long timeout, TimeUnit unit) {

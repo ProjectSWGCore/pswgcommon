@@ -60,6 +60,10 @@ public class PswgTaskThreadPool<T> extends PswgThreadPool {
 		super.execute(runner);
 	}
 	
+	public int getTaskCount() {
+		return tasks.size();
+	}
+	
 	public interface TaskExecutor<T> {
 		void run(T t);
 	}

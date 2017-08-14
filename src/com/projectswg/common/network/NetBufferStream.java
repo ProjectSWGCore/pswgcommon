@@ -225,6 +225,12 @@ public class NetBufferStream extends OutputStream {
 		}
 	}
 	
+	public double getDouble() {
+		synchronized (bufferMutex) {
+			return buffer.getDouble();
+		}
+	}
+	
 	public long getLong() {
 		synchronized (bufferMutex) {
 			return buffer.getLong();
@@ -312,6 +318,14 @@ public class NetBufferStream extends OutputStream {
 		synchronized (bufferMutex) {
 			buffer.addFloat(f);
 			size += 4;
+		}
+	}
+	
+	public void addDouble(double d) {
+		ensureCapacity(size+8);
+		synchronized (bufferMutex) {
+			buffer.addDouble(d);
+			size += 8;
 		}
 	}
 	

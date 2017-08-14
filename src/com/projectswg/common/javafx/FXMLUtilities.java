@@ -29,6 +29,7 @@ package com.projectswg.common.javafx;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -71,17 +72,53 @@ public class FXMLUtilities {
 			}
 			Log.i("Loading fxml: %s", file);
 			FXMLLoader fxmlLoader = new FXMLLoader(file.toURI().toURL());
-			fxmlLoader.setResources(getResourceBundle(locale));
-			fxmlLoader.load();
-			onFxmlLoaded(fxmlLoader.getController());
-			synchronized (CONTROLLERS) {
-				CONTROLLERS.add(fxmlLoader.getController());
-			}
-			return fxmlLoader.getController();
+			return processFxml(fxmlLoader, locale);
 		} catch (IOException e) {
 			Log.e("Error loading fmxl: %s", fxml);
 			Log.e(e);
 			return null;
+		}
+	}
+	
+	/**
+	 * Loads the FXML through the Class getResource implementation - 
+	 * @param fxml
+	 * @param locale
+	 * @return
+	 */
+	public static FXMLController loadFxmlAsClassResource(String fxml, Locale locale) {
+		try {
+			Log.i("Loading fxml: %s", fxml);
+			URL url = ResourceUtilities.getClassResource(fxml);
+			if (url == null || !canOpen(url)) {
+				Log.e("Unable to load fxml - doesn't exist: %s", fxml);
+				return null;
+			}
+			FXMLLoader fxmlLoader = new FXMLLoader(url);
+			return processFxml(fxmlLoader, locale);
+		} catch (IOException e) {
+			Log.e("Error loading fmxl: %s", fxml);
+			Log.e(e);
+			return null;
+		}
+	}
+	
+	private static FXMLController processFxml(FXMLLoader fxmlLoader, Locale locale) throws IOException {
+		fxmlLoader.setResources(getResourceBundle(locale));
+		fxmlLoader.load();
+		onFxmlLoaded(fxmlLoader.getController());
+		synchronized (CONTROLLERS) {
+			CONTROLLERS.add(fxmlLoader.getController());
+		}
+		return fxmlLoader.getController();
+	}
+	
+	private static boolean canOpen(URL url) {
+		try {
+			url.openStream().close();
+			return true;
+		} catch (IOException e) {
+			return false;
 		}
 	}
 	

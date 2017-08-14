@@ -97,6 +97,7 @@ public class TCPSocket {
 		} catch (IOException e) {
 			Log.e(e);
 		}
+		socket = null;
 		callbackManager.stop();
 		return false;
 	}
@@ -182,6 +183,7 @@ public class TCPSocket {
 			return alive.get();
 		}
 		
+		@Override
 		public void run() {
 			try {
 				alive.set(true);

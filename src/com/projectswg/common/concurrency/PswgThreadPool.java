@@ -27,92 +27,144 @@
 ***********************************************************************************/
 package com.projectswg.common.concurrency;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.projectswg.common.debug.Assert;
 import com.projectswg.common.debug.Log;
+import com.projectswg.common.utilities.ThreadUtilities;
 
 public class PswgThreadPool {
 	
+	private static final Runnable END_OF_QUEUE = () -> {};
+	
 	private final AtomicBoolean running;
 	private final int nThreads;
-	private final ThreadFactory threadFactory;
-	private ExecutorService executor;
-	private volatile boolean interruptOnStop;
+	private final String nameFormat;
+	private PswgThreadExecutor executor;
 	
 	public PswgThreadPool(int nThreads, String nameFormat) {
 		this.running = new AtomicBoolean(false);
 		this.nThreads = nThreads;
-		this.threadFactory = new CustomThreadFactory(nameFormat);
+		this.nameFormat = nameFormat;
 		this.executor = null;
-		this.interruptOnStop = false;
-	}
-	
-	public void setInterruptOnStop(boolean interrupt) {
-		this.interruptOnStop = interrupt;
 	}
 	
 	public void start() {
-		Assert.test(!running.getAndSet(true));
-		executor = Executors.newFixedThreadPool(nThreads, threadFactory);
+		Assert.test(!running.getAndSet(true), "PswgThreadPool has already been started!");
+		executor = new PswgThreadExecutor(nThreads, ThreadUtilities.newThreadFactory(nameFormat));
+		executor.start();
 	}
 	
-	public void stop() {
-		Assert.test(running.getAndSet(false));
-		if (interruptOnStop)
-			executor.shutdownNow();
-		else
-			executor.shutdown();
+	public void stop(boolean interrupt) {
+		Assert.test(running.getAndSet(false), "PswgThreadPool has already been stopped!");
+		executor.stop(interrupt);
+	}
+	
+	public boolean awaitTermination(long timeout) {
+		Assert.notNull(executor, "Executor hasn't been started yet!");
+		return executor.awaitTermination(timeout);
+	}
+	
+	public int getQueuedTasks() {
+		return executor.getQueuedTasks();
 	}
 	
 	public boolean execute(Runnable runnable) {
-		if (!running.get())
-			return false;
-		executor.execute(() -> {
-			try {
-				runnable.run();
-			} catch (Throwable t) {
-				Log.e(t);
-			}
-		});
-		return true;
-	}
-	
-	public boolean awaitTermination(long time) {
-		Assert.notNull(executor);
-		try {
-			return executor.awaitTermination(time, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			return false;
-		}
+		Assert.notNull(executor, "Executor hasn't been started yet!");
+		return executor.execute(runnable);
 	}
 	
 	public boolean isRunning() {
 		return running.get();
 	}
 	
-	private static class CustomThreadFactory implements ThreadFactory {
+	private static class PswgThreadExecutor {
 		
-		private final String pattern;
-		private int counter;
+		private final AtomicInteger runningThreads;
+		private final BlockingQueue<Runnable> tasks;
+		private final List<Thread> threads;
+		private final int nThreads;
 		
-		public CustomThreadFactory(String pattern) {
-			this.pattern = pattern;
-			this.counter = 0;
+		public PswgThreadExecutor(int nThreads, ThreadFactory threadFactory) {
+			this.runningThreads = new AtomicInteger(0);
+			this.tasks = new LinkedBlockingQueue<>();
+			this.threads = new ArrayList<>(nThreads);
+			this.nThreads = nThreads;
+			for (int i = 0; i < nThreads; i++) {
+				threads.add(threadFactory.newThread(this::threadExecutor));
+			}
 		}
 		
-		@Override
-		public Thread newThread(Runnable r) {
-			String name;
-			if (pattern.contains("%d"))
-				name = String.format(pattern, counter++);
-			else
-				name = pattern;
-			return new Thread(r, name);
+		public void start() {
+			runningThreads.set(nThreads);
+			for (Thread t : threads) {
+				t.start();
+			}
+		}
+		
+		public void stop(boolean interrupt) {
+			for (int i = 0; i < nThreads; i++) {
+				tasks.add(END_OF_QUEUE);
+			}
+			if (interrupt) {
+				for (Thread t : threads) {
+					t.interrupt();
+				}
+			}
+		}
+		
+		public int getQueuedTasks() {
+			return tasks.size();
+		}
+		
+		public boolean execute(Runnable runnable) {
+			return tasks.offer(runnable);
+		}
+		
+		public boolean awaitTermination(long time) {
+			try {
+				synchronized (runningThreads) {
+					while (runningThreads.get() > 0 && time > 0) {
+						long startWait = System.nanoTime();
+						runningThreads.wait(time);
+						time -= (long) ((System.nanoTime() - startWait) / 1E6 + 0.5);
+					}
+				}
+			} catch (InterruptedException e) {
+				return false;
+			}
+			return runningThreads.get() == 0;
+		}
+		
+		private void threadExecutor() {
+			try {
+				Runnable task = null;
+				while (task != END_OF_QUEUE) {
+					task = tasks.take();
+					threadRun(task);
+				}
+			} catch (InterruptedException e) {
+				
+			} finally {
+				synchronized (runningThreads) {
+					runningThreads.decrementAndGet();
+					runningThreads.notifyAll();
+				}
+			}
+		}
+		
+		private void threadRun(Runnable r) {
+			try {
+				r.run();
+			} catch (Throwable t) {
+				Log.e(t);
+			}
 		}
 		
 	}
