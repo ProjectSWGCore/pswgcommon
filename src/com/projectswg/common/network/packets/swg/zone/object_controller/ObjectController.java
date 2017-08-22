@@ -106,6 +106,7 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x0134: return new CombatSpam(data);
 			case 0x0146: return new ObjectMenuRequest(data);
 			case 0x01BD: return new ShowFlyText(data);
+			case 0x01BF: return new DraftSlotsQueryResponse(data);
 			case 0x01DB: return new BiographyUpdate(data);
 			case 0x0448: return new CommandTimer(data);
 			case 0x044D: return new ChangeRoleIconChoice(data);
