@@ -32,12 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javafx.geometry.Point3D;
-
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
+
+import javafx.geometry.Point3D;
 
 public class SkeletalMeshGeneratorTemplateData extends ClientData {
 	

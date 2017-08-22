@@ -53,49 +53,10 @@ public class Location implements Encodable, Persistable {
 		this.terrain = terrain;
 	}
 	
-	public void setTerrain(Terrain terrain) {
+	private Location(Point3D point, Quaternion orientation, Terrain terrain) {
+		this.point = point;
+		this.orientation = orientation;
 		this.terrain = terrain;
-	}
-	
-	public void setX(double x) {
-		point.setX(x);
-	}
-	
-	public void setY(double y) {
-		point.setY(y);
-	}
-	
-	public void setZ(double z) {
-		point.setZ(z);
-	}
-	
-	public void setOrientationX(double oX) {
-		orientation.setX(oX);
-	}
-	
-	public void setOrientationY(double oY) {
-		orientation.setY(oY);
-	}
-	
-	public void setOrientationZ(double oZ) {
-		orientation.setZ(oZ);
-	}
-	
-	public void setOrientationW(double oW) {
-		orientation.setW(oW);
-	}
-	
-	public void setPosition(double x, double y, double z) {
-		setX(x);
-		setY(y);
-		setZ(z);
-	}
-	
-	public void setOrientation(double oX, double oY, double oZ, double oW) {
-		setOrientationX(oX);
-		setOrientationY(oY);
-		setOrientationZ(oZ);
-		setOrientationW(oW);
 	}
 	
 	public Terrain getTerrain() {
@@ -168,59 +129,6 @@ public class Location implements Encodable, Persistable {
 		return square(getX() - target.getX()) + square(getZ() - target.getZ()) <= square(radius);
 	}
 	
-	public void translatePosition(double x, double y, double z) {
-		setX(getX() + x);
-		setY(getY() + y);
-		setZ(getZ() + z);
-	}
-	
-	public void translateLocation(Location l) {
-		point.rotateAround(l.getX(), l.getY(), l.getZ(), l.orientation);
-		orientation.rotateByQuaternion(l.orientation);
-	}
-	
-	public Location translate(Location l) {
-		Location ret = new Location(this);
-		ret.translateLocation(l);
-		return ret;
-	}
-	
-	/**
-	 * Sets the orientation to be facing the specified heading
-	 * 
-	 * @param heading the heading to face, in degrees
-	 */
-	public void setHeading(double heading) {
-		orientation.setHeading(heading);
-	}
-	
-	/**
-	 * Rotates the orientation by the specified angle along the Y-axis
-	 * 
-	 * @param angle the angle to rotate by in degrees
-	 */
-	public void rotateHeading(double angle) {
-		orientation.rotateHeading(angle);
-	}
-	
-	/**
-	 * Rotates the orientation by the specified angle along the specified axises
-	 * 
-	 * @param angle the angle to rotate by in degrees
-	 * @param axisX the amount of rotation about the x-axis
-	 * @param axisY the amount of rotation about the x-axis
-	 * @param axisZ the amount of rotation about the x-axis
-	 */
-	public void rotate(double angle, double axisX, double axisY, double axisZ) {
-		orientation.rotateDegrees(angle, axisX, axisY, axisZ);
-	}
-	
-	public void mergeWith(Location l) {
-		this.terrain = l.getTerrain();
-		this.point.set(l.getX(), l.getY(), l.getZ());
-		this.orientation.set(l.getOrientationX(), l.getOrientationY(), l.getOrientationZ(), l.getOrientationW());
-	}
-	
 	public double getSpeed(Location l, double deltaTime) {
 		double dist = Math.sqrt(square(getX() - l.getX()) + square(getY() - l.getY()) + square(getZ() - l.getZ()));
 		return dist / deltaTime;
@@ -230,7 +138,7 @@ public class Location implements Encodable, Persistable {
 		return orientation.getYaw();
 	}
 	
-	private double square(double x) {
+	private static double square(double x) {
 		return x * x;
 	}
 	
@@ -345,6 +253,210 @@ public class Location implements Encodable, Persistable {
 	
 	public double flatDistanceTo(double dstX, double dstZ) {
 		return Math.sqrt(square(dstX - getX()) + square(dstZ - getZ()));
+	}
+	
+	public static LocationBuilder builder() {
+		return new LocationBuilder();
+	}
+	
+	public static LocationBuilder builder(Location location) {
+		return new LocationBuilder(location);
+	}
+	
+	public static class LocationBuilder {
+		
+		private final Point3D point;
+		private final Quaternion orientation;
+		private Terrain terrain;
+		
+		public LocationBuilder() {
+			this.point = new Point3D(Double.NaN, Double.NaN, Double.NaN);
+			this.orientation = new Quaternion(0, 0, 0, 1);
+			this.terrain = null;
+		}
+		
+		public LocationBuilder(Location location) {
+			this.point = location.getPosition();
+			this.orientation = location.getOrientation();
+			this.terrain = location.getTerrain();
+		}
+		
+		public Terrain getTerrain() {
+			return terrain;
+		}
+		
+		public double getX() {
+			return point.getX();
+		}
+		
+		public double getY() {
+			return point.getY();
+		}
+		
+		public double getZ() {
+			return point.getZ();
+		}
+		
+		public double getOrientationX() {
+			return orientation.getX();
+		}
+		
+		public double getOrientationY() {
+			return orientation.getY();
+		}
+		
+		public double getOrientationZ() {
+			return orientation.getZ();
+		}
+		
+		public double getOrientationW() {
+			return orientation.getW();
+		}
+		
+		public double getYaw() {
+			return orientation.getYaw();
+		}
+		
+		public boolean isWithinDistance(Location l, double x, double y, double z) {
+			if (getTerrain() != l.getTerrain())
+				return false;
+			if (Math.abs(getX() - l.getX()) > x)
+				return false;
+			if (Math.abs(getY() - l.getY()) > y)
+				return false;
+			if (Math.abs(getZ() - l.getZ()) > z)
+				return false;
+			return true;
+		}
+		
+		public boolean isWithinDistance(Location l, double radius) {
+			return isWithinDistance(l.getTerrain(), l.getX(), l.getY(), l.getZ(), radius);
+		}
+		
+		public boolean isWithinDistance(Terrain t, double x, double y, double z, double radius) {
+			if (getTerrain() != t)
+				return false;
+			return square(getX() - x) + square(getY() - y) + square(getZ() - z) <= square(radius);
+		}
+		
+		public boolean isWithinFlatDistance(Location l, double radius) {
+			return isWithinFlatDistance(l.point, radius);
+		}
+		
+		public boolean isWithinFlatDistance(Point3D target, double radius) {
+			return square(getX() - target.getX()) + square(getZ() - target.getZ()) <= square(radius);
+		}
+		
+		public double getSpeed(Location l, double deltaTime) {
+			double dist = Math.sqrt(square(getX() - l.getX()) + square(getY() - l.getY()) + square(getZ() - l.getZ()));
+			return dist / deltaTime;
+		}
+		
+		public LocationBuilder setTerrain(Terrain terrain) {
+			this.terrain = terrain;
+			return this;
+		}
+		
+		public LocationBuilder setX(double x) {
+			point.setX(x);
+			return this;
+		}
+		
+		public LocationBuilder setY(double y) {
+			point.setY(y);
+			return this;
+		}
+		
+		public LocationBuilder setZ(double z) {
+			point.setZ(z);
+			return this;
+		}
+		
+		public LocationBuilder setOrientationX(double oX) {
+			orientation.setX(oX);
+			return this;
+		}
+		
+		public LocationBuilder setOrientationY(double oY) {
+			orientation.setY(oY);
+			return this;
+		}
+		
+		public LocationBuilder setOrientationZ(double oZ) {
+			orientation.setZ(oZ);
+			return this;
+		}
+		
+		public LocationBuilder setOrientationW(double oW) {
+			orientation.setW(oW);
+			return this;
+		}
+		
+		public LocationBuilder setPosition(double x, double y, double z) {
+			setX(x);
+			setY(y);
+			setZ(z);
+			return this;
+		}
+		
+		public LocationBuilder setOrientation(double oX, double oY, double oZ, double oW) {
+			setOrientationX(oX);
+			setOrientationY(oY);
+			setOrientationZ(oZ);
+			setOrientationW(oW);
+			return this;
+		}
+		
+		public LocationBuilder translatePosition(double x, double y, double z) {
+			setX(point.getX() + x);
+			setY(point.getY() + y);
+			setZ(point.getZ() + z);
+			return this;
+		}
+		
+		public LocationBuilder translateLocation(Location l) {
+			point.rotateAround(l.getX(), l.getY(), l.getZ(), l.orientation);
+			orientation.rotateByQuaternion(l.orientation);
+			return this;
+		}
+		
+		/**
+		 * Sets the orientation to be facing the specified heading
+		 * 
+		 * @param heading the heading to face, in degrees
+		 */
+		public LocationBuilder setHeading(double heading) {
+			orientation.setHeading(heading);
+			return this;
+		}
+		
+		/**
+		 * Rotates the orientation by the specified angle along the Y-axis
+		 * 
+		 * @param angle the angle to rotate by in degrees
+		 */
+		public LocationBuilder rotateHeading(double angle) {
+			orientation.rotateHeading(angle);
+			return this;
+		}
+		
+		/**
+		 * Rotates the orientation by the specified angle along the specified axises
+		 * 
+		 * @param angle the angle to rotate by in degrees
+		 * @param axisX the amount of rotation about the x-axis
+		 * @param axisY the amount of rotation about the x-axis
+		 * @param axisZ the amount of rotation about the x-axis
+		 */
+		public LocationBuilder rotate(double angle, double axisX, double axisY, double axisZ) {
+			orientation.rotateDegrees(angle, axisX, axisY, axisZ);
+			return this;
+		}
+		
+		public Location build() {
+			return new Location(new Point3D(point), new Quaternion(orientation), terrain);
+		}
+		
 	}
 	
 }

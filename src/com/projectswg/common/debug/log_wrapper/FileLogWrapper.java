@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
-import com.projectswg.common.debug.LogWrapper;
 import com.projectswg.common.debug.Log.LogLevel;
+import com.projectswg.common.debug.LogWrapper;
 
 public class FileLogWrapper implements LogWrapper {
 	

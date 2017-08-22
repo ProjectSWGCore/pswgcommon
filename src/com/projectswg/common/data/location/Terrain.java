@@ -32,6 +32,7 @@ import java.util.Random;
 
 import com.projectswg.common.data.CRC;
 import com.projectswg.common.data.EnumLookup;
+import com.projectswg.common.data.location.Location.LocationBuilder;
 
 public enum Terrain {
 	ADVENTURE1				("terrain/adventure1.trn"),
@@ -132,18 +133,14 @@ public enum Terrain {
 	}
 	
 	public Location getStartLocation() {
-		Location l = new Location();
+		LocationBuilder l = Location.builder();
 		Random r = new Random();
 		if (this == TATOOINE) {
-			l.setOrientationX(0);
-			l.setOrientationY(0);
-			l.setOrientationZ(0);
-			l.setOrientationW(1);
 			l.setX(3828 + r.nextInt(100) / 10 - 5);
 			l.setY(4);
 			l.setZ(-4804 + r.nextInt(100) / 10 - 5);
 		}
-		return l;
+		return l.build();
 	}
 	
 	public static int getTerrainCount() {

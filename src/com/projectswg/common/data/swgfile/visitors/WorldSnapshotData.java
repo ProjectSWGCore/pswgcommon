@@ -121,14 +121,15 @@ public class WorldSnapshotData extends ClientData {
 			objectTemplateNameIndex = chunk.readInt();
 			cellIndex = chunk.readInt();
 
-			location = new Location();
-			location.setOrientationW(chunk.readFloat());
-			location.setOrientationX(chunk.readFloat());
-			location.setOrientationY(chunk.readFloat());
-			location.setOrientationZ(chunk.readFloat());
-			location.setX(chunk.readFloat());
-			location.setY(chunk.readFloat());
-			location.setZ(chunk.readFloat());
+			location = Location.builder()
+					.setOrientationW(chunk.readFloat())
+					.setOrientationX(chunk.readFloat())
+					.setOrientationY(chunk.readFloat())
+					.setOrientationZ(chunk.readFloat())
+					.setX(chunk.readFloat())
+					.setY(chunk.readFloat())
+					.setZ(chunk.readFloat())
+					.build();
 
 			radius = chunk.readFloat();
 			portalLayoutCrc = chunk.readUInt();

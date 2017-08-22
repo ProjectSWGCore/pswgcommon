@@ -27,8 +27,8 @@
 ***********************************************************************************/
 package com.projectswg.common.callback;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,33 +48,25 @@ public class CallbackManager<T> {
 	
 	public CallbackManager(String name, int threadCount) {
 		this.executor = new PswgThreadPool(threadCount, name);
-		this.callbacks = new ArrayList<>();
+		this.callbacks = new CopyOnWriteArrayList<>();
 		this.runningTasks = new AtomicInteger(0);
 	}
 	
 	public void addCallback(T callback) {
-		synchronized (callbacks) {
-			callbacks.add(callback);
-		}
+		callbacks.add(callback);
 	}
 	
 	public void removeCallback(T callback) {
-		synchronized (callbacks) {
-			callbacks.remove(callback);
-		}
+		callbacks.remove(callback);
 	}
 	
 	public void setCallback(T callback) {
-		synchronized (callbacks) {
-			callbacks.clear();
-			callbacks.add(callback);
-		}
+		callbacks.clear();
+		callbacks.add(callback);
 	}
 	
 	public void clearCallbacks() {
-		synchronized (callbacks) {
-			callbacks.clear();
-		}
+		callbacks.clear();
 	}
 	
 	public void start() {
@@ -100,13 +92,11 @@ public class CallbackManager<T> {
 	public boolean callOnEach(CallCallback<T> call) {
 		runningTasks.incrementAndGet();
 		return executor.execute(() -> {
-			synchronized (callbacks) {
-				for (T callback : callbacks) {
-					try {
-						call.run(callback);
-					} catch (Throwable t) {
-						Log.e(t);
-					}
+			for (T callback : callbacks) {
+				try {
+					call.run(callback);
+				} catch (Throwable t) {
+					Log.e(t);
 				}
 			}
 			runningTasks.decrementAndGet();

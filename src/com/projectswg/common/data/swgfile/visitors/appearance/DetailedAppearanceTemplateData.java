@@ -30,7 +30,6 @@ package com.projectswg.common.data.swgfile.visitors.appearance;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.IffNode;
@@ -38,6 +37,7 @@ import com.projectswg.common.data.swgfile.SWGFile;
 import com.projectswg.common.data.swgfile.visitors.appearance.render.RenderData;
 import com.projectswg.common.data.swgfile.visitors.appearance.render.RenderableData;
 import com.projectswg.common.data.swgfile.visitors.appearance.render.RenderableDataChild;
+import com.projectswg.common.debug.Log;
 
 public class DetailedAppearanceTemplateData extends ClientData implements RenderableData {
 	

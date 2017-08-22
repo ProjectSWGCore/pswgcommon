@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
-
 import com.projectswg.common.debug.Log;
 
 public class Encoder {

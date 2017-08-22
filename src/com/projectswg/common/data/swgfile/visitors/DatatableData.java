@@ -31,10 +31,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
+import com.projectswg.common.debug.Log;
 
 public class DatatableData extends ClientData {
 	
