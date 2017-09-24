@@ -32,12 +32,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
-
-import javafx.geometry.Point3D;
 
 public class SkeletalMeshGeneratorTemplateData extends ClientData {
 	
@@ -187,6 +186,7 @@ public class SkeletalMeshGeneratorTemplateData extends ClientData {
 		public int getIndex() { return index; }
 		public float getWeight() { return weight; }
 		
+		@Override
 		public String toString() { return String.format("TransformWeightData[index=%d  weight=%.2f]", index, weight); }
 		
 	}

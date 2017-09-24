@@ -32,16 +32,22 @@ import java.util.concurrent.ThreadFactory;
 public class ThreadUtilities {
 	
 	public static ThreadFactory newThreadFactory(String pattern) {
-		return new CustomThreadFactory(pattern);
+		return new CustomThreadFactory(pattern, Thread.NORM_PRIORITY);
+	}
+	
+	public static ThreadFactory newThreadFactory(String pattern, int priority) {
+		return new CustomThreadFactory(pattern, priority);
 	}
 	
 	private static class CustomThreadFactory implements ThreadFactory {
 		
 		private final String pattern;
+		private final int priority;
 		private int counter;
 		
-		public CustomThreadFactory(String pattern) {
+		public CustomThreadFactory(String pattern, int priority) {
 			this.pattern = pattern;
+			this.priority = priority;
 			this.counter = 0;
 		}
 		
@@ -52,7 +58,9 @@ public class ThreadUtilities {
 				name = String.format(pattern, counter++);
 			else
 				name = pattern;
-			return new Thread(r, name);
+			Thread t = new Thread(r, name);
+			t.setPriority(priority);
+			return t;
 		}
 		
 	}

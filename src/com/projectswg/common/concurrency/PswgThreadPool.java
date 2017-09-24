@@ -46,6 +46,7 @@ public class PswgThreadPool {
 	private final AtomicBoolean running;
 	private final int nThreads;
 	private final String nameFormat;
+	private final AtomicInteger priority;
 	private PswgThreadExecutor executor;
 	
 	public PswgThreadPool(int nThreads, String nameFormat) {
@@ -53,11 +54,16 @@ public class PswgThreadPool {
 		this.nThreads = nThreads;
 		this.nameFormat = nameFormat;
 		this.executor = null;
+		this.priority = new AtomicInteger(Thread.NORM_PRIORITY);
+	}
+	
+	public void setPriority(int priority) {
+		this.priority.set(priority);
 	}
 	
 	public void start() {
 		Assert.test(!running.getAndSet(true), "PswgThreadPool has already been started!");
-		executor = new PswgThreadExecutor(nThreads, ThreadUtilities.newThreadFactory(nameFormat));
+		executor = new PswgThreadExecutor(nThreads, ThreadUtilities.newThreadFactory(nameFormat, priority.get()));
 		executor.start();
 	}
 	

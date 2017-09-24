@@ -28,9 +28,10 @@
 package com.projectswg.common.control;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,10 +52,12 @@ public class IntentManager {
 	private final AtomicBoolean initialized;
 	
 	public IntentManager(int threadCount) {
-		this.intentRegistrations = new HashMap<>();
+		this.intentRegistrations = new ConcurrentHashMap<>();
 		this.speedRecorder = new IntentSpeedRecorder();
 		this.processThreads = new PswgThreadPool(threadCount, "intent-processor-%d");
 		this.initialized = new AtomicBoolean(false);
+		
+		this.processThreads.setPriority(8);
 	}
 	
 	public void initialize() {
@@ -78,69 +81,57 @@ public class IntentManager {
 	}
 	
 	public void broadcastIntent(Intent i) {
-		if (i == null)
-			throw new NullPointerException("Intent cannot be null!");
-		broadcast(i);
+		broadcast(Objects.requireNonNull(i, "Intent cannot be null!"));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <T extends Intent> void registerForIntent(Class<T> c, Consumer<T> r) {
 		if (r == null)
 			throw new NullPointerException("Cannot register a null consumer for an intent");
-		synchronized (intentRegistrations) {
-			List <Consumer<Intent>> intents = intentRegistrations.get(c);
-			if (intents == null) {
-				intents = new CopyOnWriteArrayList<>();
-				intentRegistrations.put((Class<Intent>) c, intents);
-			}
-			synchronized (intents) {
-				intents.add((Consumer<Intent>) r);
+		List <Consumer<Intent>> intents = intentRegistrations.get(c);
+		if (intents == null) {
+			intents = new CopyOnWriteArrayList<>();
+			List<Consumer<Intent>> replaced = intentRegistrations.putIfAbsent((Class<Intent>) c, intents);
+			if (replaced != null) {
+				intents = replaced;
 			}
 		}
+		intents.add((Consumer<Intent>) r);
 	}
 	
 	public <T extends Intent> void unregisterForIntent(Class<T> c, Consumer<T> r) {
 		if (r == null)
 			throw new NullPointerException("Cannot register a null consumer for an intent");
-		synchronized (intentRegistrations) {
-			List <Consumer<Intent>> intents = intentRegistrations.get(c);
-			if (intents == null)
-				return;
-			synchronized (intents) {
-				intents.remove(r);
-			}
-		}
+		List <Consumer<Intent>> intents = intentRegistrations.get(c);
+		if (intents == null)
+			return;
+		intents.remove(r);
 	}
 	
 	private void broadcast(Intent i) {
-		List <Consumer<Intent>> receivers;
-		synchronized (intentRegistrations) {
-			receivers = intentRegistrations.get(i.getClass());
-		}
+		List <Consumer<Intent>> receivers = intentRegistrations.get(i.getClass());
 		if (receivers == null)
 			return;
 		
 		AtomicInteger remaining = new AtomicInteger(receivers.size());
 		for (Consumer<Intent> r : receivers) {
-			broadcast(r, i, remaining);
+			processThreads.execute(() -> executeConsumer(r, i, remaining));
 		}
 	}
 	
-	private void broadcast(Consumer<Intent> r, Intent i, AtomicInteger remaining) {
-		processThreads.execute(() -> {
-			try {
-				long start = System.nanoTime();
-				r.accept(i);
-				long time = System.nanoTime() - start;
-				speedRecorder.addRecord(i.getClass(), r, time);
-			} catch (Throwable t) {
-				Log.e("Fatal Exception while processing intent: " + i);
-				Log.e(t);
-			} finally {
-				if (remaining.decrementAndGet() <= 0)
-					i.markAsComplete(this);
-			}
-		});
+	private void executeConsumer(Consumer<Intent> r, Intent i, AtomicInteger remaining) {
+		try {
+			long start = System.nanoTime();
+			r.accept(i);
+			long time = System.nanoTime() - start;
+			speedRecorder.addRecord(i.getClass(), r, time);
+		} catch (Throwable t) {
+			Log.e("Fatal Exception while processing intent: " + i);
+			Log.e(t);
+		} finally {
+			if (remaining.decrementAndGet() <= 0)
+				i.markAsComplete(this);
+		}
 	}
 	
 	public static IntentManager getInstance() {
@@ -158,15 +149,16 @@ public class IntentManager {
 		private final Map<Consumer<Intent>, IntentSpeedRecord> times;
 		
 		public IntentSpeedRecorder() {
-			this.times = new HashMap<>();
+			this.times = new ConcurrentHashMap<>();
 		}
 		
 		private void addRecord(Class<? extends Intent> intent, Consumer<Intent> consumer, long timeNanos) {
-			IntentSpeedRecord record;
-			synchronized (times) {
-				record = times.get(consumer);
-				if (record == null)
-					times.put(consumer, record = new IntentSpeedRecord(intent, consumer));
+			IntentSpeedRecord record = times.get(consumer);
+			if (record == null) {
+				record = new IntentSpeedRecord(intent, consumer);
+				IntentSpeedRecord replaced = times.putIfAbsent(consumer, record);
+				if (replaced != null)
+					record = replaced;
 			}
 			record.addTime(timeNanos);
 		}

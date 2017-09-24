@@ -186,6 +186,7 @@ public abstract class Manager extends Service {
 		}
 	}
 	
+	@Override
 	public void setIntentManager(IntentManager intentManager) {
 		super.setIntentManager(intentManager);
 		synchronized (children) {
