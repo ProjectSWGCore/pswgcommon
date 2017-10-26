@@ -54,7 +54,7 @@ public class IntentManager {
 	public IntentManager(int threadCount) {
 		this.intentRegistrations = new ConcurrentHashMap<>();
 		this.speedRecorder = new IntentSpeedRecorder();
-		this.processThreads = new PswgThreadPool(threadCount, "intent-processor-%d");
+		this.processThreads = new PswgThreadPool(true, threadCount, "intent-processor-%d");
 		this.initialized = new AtomicBoolean(false);
 		
 		this.processThreads.setPriority(8);
@@ -81,7 +81,16 @@ public class IntentManager {
 	}
 	
 	public void broadcastIntent(Intent i) {
-		broadcast(Objects.requireNonNull(i, "Intent cannot be null!"));
+		Objects.requireNonNull(i, "Intent cannot be null!");
+		List <Consumer<Intent>> receivers = intentRegistrations.get(i.getClass());
+		if (receivers == null)
+			return;
+		
+		AtomicInteger remaining = new AtomicInteger(receivers.size());
+		for (Consumer<Intent> r : receivers) {
+//			processThreads.execute(() -> executeConsumer(r, i, remaining));
+			processThreads.execute(new IntentRunner(r, i, remaining));
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -106,32 +115,6 @@ public class IntentManager {
 		if (intents == null)
 			return;
 		intents.remove(r);
-	}
-	
-	private void broadcast(Intent i) {
-		List <Consumer<Intent>> receivers = intentRegistrations.get(i.getClass());
-		if (receivers == null)
-			return;
-		
-		AtomicInteger remaining = new AtomicInteger(receivers.size());
-		for (Consumer<Intent> r : receivers) {
-			processThreads.execute(() -> executeConsumer(r, i, remaining));
-		}
-	}
-	
-	private void executeConsumer(Consumer<Intent> r, Intent i, AtomicInteger remaining) {
-		try {
-			long start = System.nanoTime();
-			r.accept(i);
-			long time = System.nanoTime() - start;
-			speedRecorder.addRecord(i.getClass(), r, time);
-		} catch (Throwable t) {
-			Log.e("Fatal Exception while processing intent: " + i);
-			Log.e(t);
-		} finally {
-			if (remaining.decrementAndGet() <= 0)
-				i.markAsComplete(this);
-		}
 	}
 	
 	public static IntentManager getInstance() {
@@ -163,10 +146,12 @@ public class IntentManager {
 			record.addTime(timeNanos);
 		}
 		
+		public IntentSpeedRecord getTime(Consumer<Intent> consumer) {
+			return times.get(consumer);
+		}
+		
 		public List<IntentSpeedRecord> getAllTimes() {
-			synchronized (times) {
-				return new ArrayList<>(times.values());
-			}
+			return new ArrayList<>(times.values());
 		}
 		
 	}
@@ -201,6 +186,14 @@ public class IntentManager {
 			return count.get();
 		}
 		
+		public int getPriority() {
+			long time = getTime();
+			long count = getCount();
+			if (count == 0)
+				return 0;
+			return (int) (time / count / 1000);
+		}
+		
 		public void addTime(long timeNanos) {
 			time.addAndGet(timeNanos);
 			count.incrementAndGet();
@@ -209,6 +202,51 @@ public class IntentManager {
 		@Override
 		public int compareTo(IntentSpeedRecord record) {
 			return Long.compare(record.getTime(), getTime());
+		}
+		
+	}
+	
+	private class IntentRunner implements Comparable<IntentRunner>, Runnable {
+		
+		private final Consumer<Intent> r;
+		private final Intent i;
+		private final AtomicInteger remaining;
+		private final int priority;
+		
+		public IntentRunner(Consumer<Intent> r, Intent i, AtomicInteger remaining) {
+			this.r = r;
+			this.i = i;
+			this.remaining = remaining;
+			IntentSpeedRecord record = speedRecorder.getTime(r);
+			if (record == null)
+				this.priority = 0;
+			else
+				this.priority = record.getPriority();
+		}
+		
+		@Override
+		public void run() {
+			try {
+				long start = System.nanoTime();
+				r.accept(i);
+				long time = System.nanoTime() - start;
+				speedRecorder.addRecord(i.getClass(), r, time);
+			} catch (Throwable t) {
+				Log.e("Fatal Exception while processing intent: " + i);
+				Log.e(t);
+			} finally {
+				if (remaining.decrementAndGet() <= 0) {
+					i.markAsComplete(IntentManager.this);
+					Consumer<Intent> completedCallback = i.getCompletedCallback();
+					if (completedCallback != null)
+						completedCallback.accept(i);
+				}
+			}
+		}
+		
+		@Override
+		public int compareTo(IntentRunner r) {
+			return Integer.compare(priority, r.priority);
 		}
 		
 	}

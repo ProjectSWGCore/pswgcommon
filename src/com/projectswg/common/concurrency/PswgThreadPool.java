@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,16 +42,22 @@ import com.projectswg.common.utilities.ThreadUtilities;
 
 public class PswgThreadPool {
 	
-	private static final Runnable END_OF_QUEUE = () -> {};
+	private static final Runnable END_OF_QUEUE = new EndOfQueueTask();
 	
 	private final AtomicBoolean running;
+	private final boolean priorityScheduling;
 	private final int nThreads;
 	private final String nameFormat;
 	private final AtomicInteger priority;
 	private PswgThreadExecutor executor;
 	
 	public PswgThreadPool(int nThreads, String nameFormat) {
+		this(false, nThreads, nameFormat);
+	}
+	
+	public PswgThreadPool(boolean priorityScheduling, int nThreads, String nameFormat) {
 		this.running = new AtomicBoolean(false);
+		this.priorityScheduling = priorityScheduling;
 		this.nThreads = nThreads;
 		this.nameFormat = nameFormat;
 		this.executor = null;
@@ -63,7 +70,7 @@ public class PswgThreadPool {
 	
 	public void start() {
 		Assert.test(!running.getAndSet(true), "PswgThreadPool has already been started!");
-		executor = new PswgThreadExecutor(nThreads, ThreadUtilities.newThreadFactory(nameFormat, priority.get()));
+		executor = new PswgThreadExecutor(priorityScheduling, nThreads, ThreadUtilities.newThreadFactory(nameFormat, priority.get()));
 		executor.start();
 	}
 	
@@ -97,9 +104,12 @@ public class PswgThreadPool {
 		private final List<Thread> threads;
 		private final int nThreads;
 		
-		public PswgThreadExecutor(int nThreads, ThreadFactory threadFactory) {
+		public PswgThreadExecutor(boolean priorityScheduling, int nThreads, ThreadFactory threadFactory) {
 			this.runningThreads = new AtomicInteger(0);
-			this.tasks = new LinkedBlockingQueue<>();
+			if (priorityScheduling)
+				this.tasks = new PriorityBlockingQueue<>();
+			else
+				this.tasks = new LinkedBlockingQueue<>();
 			this.threads = new ArrayList<>(nThreads);
 			this.nThreads = nThreads;
 			for (int i = 0; i < nThreads; i++) {
@@ -171,6 +181,20 @@ public class PswgThreadPool {
 			} catch (Throwable t) {
 				Log.e(t);
 			}
+		}
+		
+	}
+	
+	private static class EndOfQueueTask implements Runnable, Comparable<EndOfQueueTask> {
+		
+		@Override
+		public void run() {
+			
+		}
+		
+		@Override
+		public int compareTo(EndOfQueueTask o) {
+			return 0;
 		}
 		
 	}

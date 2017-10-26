@@ -30,6 +30,7 @@ package com.projectswg.common.data.swgfile;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.projectswg.common.data.swgfile.visitors.CrcStringTableData;
 import com.projectswg.common.data.swgfile.visitors.DatatableData;
@@ -51,14 +52,16 @@ import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalAppearance
 import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalMeshGeneratorTemplateData;
 import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
 import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
-import com.projectswg.common.debug.Log;
 
 public class ClientFactory extends DataFactory {
 	
 	private static final ClientFactory INSTANCE = new ClientFactory();
-
-	private Map <String, SoftReference<ClientData>> dataMap = new HashMap<>();
-	private Map <String, String> typeMap = new HashMap<>();
+	private static final Map <String, SoftReference<ClientData>> DATA_MAP = new HashMap<>();
+	private static final Map <String, ClientFactoryType> TYPE_MAP = new HashMap<>();
+	
+	static {
+		populateTypeMap();
+	}
 	
 	/**
 	 * Creates a new instance of ClientFactory.
@@ -75,7 +78,7 @@ public class ClientFactory extends DataFactory {
 	 * </OL>
 	 */
 	public ClientFactory() {
-		populateTypeMap();
+		
 	}
 
 	/**
@@ -91,24 +94,21 @@ public class ClientFactory extends DataFactory {
 	 * file system.
 	 * @param save Future calls for this file will try and obtain this reference if it's not null to prevent the file from being parsed multiple times
 	 */
-	public synchronized static ClientData getInfoFromFile(String file, boolean save) {
+	public static ClientData getInfoFromFile(String file, boolean save) {
 		file = file.intern();
-		ClientFactory factory = ClientFactory.getInstance();
-		SoftReference<ClientData> reference = factory.dataMap.get(file);
+		SoftReference<ClientData> reference = DATA_MAP.get(file);
 		ClientData data = null;
 		if (reference != null)
 			data = reference.get();
 		
 		if (data == null) {
-			data = factory.readFile(file);
-			if (data == null) {
+			data = getInstance().readFile(file);
+			if (data == null)
 				return null;
-			}
-			reference = new SoftReference<ClientData>(data);
 			
 			// Soft used over Weak because Weak cleared as soon as the reference was not longer needed, Soft will be cleared when memory is needed by the JVM.
 			if (save) {
-				factory.dataMap.put(file, reference);
+				DATA_MAP.put(file, new SoftReference<ClientData>(data));
 			}
 		}
 		
@@ -125,15 +125,15 @@ public class ClientFactory extends DataFactory {
 	 * A null instance of {@link ClientData} means that parsing for the type of file is not done, or a file was entered that doesn't exist on the
 	 * file system.
 	 */
-	public synchronized static ClientData getInfoFromFile(String file) {
+	public static ClientData getInfoFromFile(String file) {
 		return getInfoFromFile(file, false);
 	}
 
-	public synchronized static String formatToSharedFile(String original) {
-		if (original.contains("shared_"))
+	public static String formatToSharedFile(String original) {
+		int index = original.lastIndexOf('/');
+		if (original.indexOf("shared_", index+1) != -1)
 			return original.intern();
 		
-		int index = original.lastIndexOf('/');
 		return (original.substring(0, index) + "/shared_" + original.substring(index+1)).intern();
 	}
 
@@ -143,88 +143,65 @@ public class ClientFactory extends DataFactory {
 	// and getFileType method will print out what the type is along with a "not implemented!" message.
 	@Override
 	protected ClientData createDataObject(String type) {
-		String c = typeMap.get(type);
+		ClientFactoryType c = TYPE_MAP.get(type);
 		if (c == null) {
-			Log.e("Don't know what class to use for " + type);
+			// A logging statement that can be re-enabled if you don't know why something's broken
+//			Log.e("Don't know what class to use for " + type);
 			return null;
 		}
-		
-		switch (c) {
-			case "": return null; // Disabled clientdata
-			case "AppearanceTemplateData": return new AppearanceTemplateData();
-			case "AppearanceTemplateList": return new AppearanceTemplateList();
-			case "BasicSkeletonTemplate": return new BasicSkeletonTemplate();
-			case "CrcStringTableData": return new CrcStringTableData();
-			case "CustomizableShaderData": return new CustomizableShaderData();
-			case "DatatableData": return new DatatableData();
-			case "DetailedAppearanceTemplateData": return new DetailedAppearanceTemplateData();
-			case "LodMeshGeneratorTemplateData": return new LodMeshGeneratorTemplateData();
-			case "LodSkeletonTemplateData": return new LodSkeletonTemplateData();
-			case "MeshAppearanceTemplate": return new MeshAppearanceTemplate();
-			case "ObjectData": return new ObjectData();
-			case "PortalLayoutData": return new PortalLayoutData();
-			case "ProfTemplateData": return new ProfTemplateData();
-			case "SlotDescriptorData": return new SlotDescriptorData();
-			case "SlotDefinitionData": return new SlotDefinitionData();
-			case "SlotArrangementData": return new SlotArrangementData();
-			case "SkeletalAppearanceData": return new SkeletalAppearanceData();
-			case "SkeletalMeshGeneratorTemplateData": return new SkeletalMeshGeneratorTemplateData();
-			case "StaticShaderData": return new StaticShaderData();
-			case "WorldSnapshotData": return new WorldSnapshotData();
-			default: Log.e("Unimplemented typeMap value: " + c); return null;
-		}
+		return c.create();
 	}
 
 	// The typeMap is used for determining what DataObject class
-	private void populateTypeMap() {
-		typeMap.put("CSTB", "CrcStringTableData");
-		typeMap.put("DTII", "DatatableData");
-		typeMap.put("PRTO", "PortalLayoutData");
-		typeMap.put("PRFI", "ProfTemplateData");
-		typeMap.put("ARGD", "SlotArrangementData");
-		typeMap.put("0006", "SlotDefinitionData");
-		typeMap.put("SLTD", "SlotDescriptorData");
-		typeMap.put("WSNP", "WorldSnapshotData");
+	private static void populateTypeMap() {
+		TYPE_MAP.put("CSTB", ClientFactoryType.CRC_STRING_TABLE_DATA);
+		TYPE_MAP.put("DTII", ClientFactoryType.DATATABLE_DATA);
+		TYPE_MAP.put("PRTO", ClientFactoryType.PORTAL_LAYOUT_DATA);
+		TYPE_MAP.put("PRFI", ClientFactoryType.PROFILE_TEMPLATE_DATA);
+		TYPE_MAP.put("ARGD", ClientFactoryType.SLOT_ARRANGEMENT_DATA);
+		TYPE_MAP.put("0006", ClientFactoryType.SLOT_DEFINITION_DATA);
+		TYPE_MAP.put("SLTD", ClientFactoryType.SLOT_DESCRIPTOR_DATA);
+		TYPE_MAP.put("WSNP", ClientFactoryType.WORLD_SNAPSHOT_DATA);
 		// Appearance Related Data
 		boolean loadAppearanceData = false;
-		typeMap.put("APPR", !loadAppearanceData?"":"AppearanceTemplateData");
-		typeMap.put("APT ", !loadAppearanceData?"":"AppearanceTemplateList");
-		typeMap.put("CSHD", !loadAppearanceData?"":"CustomizableShaderData");
-		typeMap.put("DTLA", !loadAppearanceData?"":"DetailedAppearanceTemplateData");
-		typeMap.put("SKTM", !loadAppearanceData?"":"BasicSkeletonTemplate");
-		typeMap.put("MESH", !loadAppearanceData?"":"MeshAppearanceTemplate");
-		typeMap.put("MLOD", !loadAppearanceData?"":"LodMeshGeneratorTemplateData");
-		typeMap.put("SLOD", !loadAppearanceData?"":"LodSkeletonTemplateData");
-		typeMap.put("SMAT", !loadAppearanceData?"":"SkeletalAppearanceData");
-		typeMap.put("SKMG", !loadAppearanceData?"":"SkeletalMeshGeneratorTemplateData");
-		typeMap.put("SSHT", !loadAppearanceData?"":"StaticShaderData");
+		TYPE_MAP.put("APPR", !loadAppearanceData ? null : ClientFactoryType.APPEARANCE_TEMPLATE_DATA);
+		TYPE_MAP.put("APT ", !loadAppearanceData ? null : ClientFactoryType.APPEARANCE_TEMPLATE_LIST);
+		TYPE_MAP.put("CSHD", !loadAppearanceData ? null : ClientFactoryType.CUSTOMIZABLE_SHADER_DATA);
+		TYPE_MAP.put("DTLA", !loadAppearanceData ? null : ClientFactoryType.DETAILED_APPEARANCE_TEMPLATE_DATA);
+		TYPE_MAP.put("SKTM", !loadAppearanceData ? null : ClientFactoryType.BASIC_SKELETON_TEMPLATE);
+		TYPE_MAP.put("MESH", !loadAppearanceData ? null : ClientFactoryType.MESH_APPEARANCE_TEMPLATE);
+		TYPE_MAP.put("MLOD", !loadAppearanceData ? null : ClientFactoryType.LOD_MESH_GENERATOR_TEMPLATE_DATA);
+		TYPE_MAP.put("SLOD", !loadAppearanceData ? null : ClientFactoryType.LOD_SKELETON_TEMPLATE_DATA);
+		TYPE_MAP.put("SMAT", !loadAppearanceData ? null : ClientFactoryType.SKELETAL_APPEARANCE_DATA);
+		TYPE_MAP.put("SKMG", !loadAppearanceData ? null : ClientFactoryType.SKELETAL_MESH_GENERATOR_TEMPLATE_DATA);
+		TYPE_MAP.put("SSHT", !loadAppearanceData ? null : ClientFactoryType.STATIC_SHADER_DATA);
 		// Objects
-		typeMap.put("SBMK", "ObjectData"); // object/battlefield_marker
-		typeMap.put("SBOT", "ObjectData"); // object/building
-		typeMap.put("CCLT", "ObjectData"); // object/cell
-		typeMap.put("SCNC", "ObjectData"); // object/construction_contract
-		typeMap.put("SCOU", "ObjectData"); // object/counting
-		typeMap.put("SCOT", "ObjectData"); // object/creature && object/mobile
-		typeMap.put("SDSC", "ObjectData"); // object/draft_schematic
-		typeMap.put("SFOT", "ObjectData"); // object/factory
-		typeMap.put("SGRP", "ObjectData"); // object/group
-		typeMap.put("SGLD", "ObjectData"); // object/guild
-		typeMap.put("SIOT", "ObjectData"); // object/installation
-		typeMap.put("SITN", "ObjectData"); // object/intangible
-		typeMap.put("SJED", "ObjectData"); // object/jedi_manager
-		typeMap.put("SMSC", "ObjectData"); // object/manufacture_schematic
-		typeMap.put("SMSO", "ObjectData"); // object/mission
-		typeMap.put("SHOT", "ObjectData"); // object/object
-		typeMap.put("STOT", "ObjectData"); // object/path_waypoint && object/tangible
-		typeMap.put("SPLY", "ObjectData"); // object/player
-		typeMap.put("SPQO", "ObjectData"); // object/player_quest
-		typeMap.put("RCCT", "ObjectData"); // object/resource_container
-		typeMap.put("SSHP", "ObjectData"); // object/ship
-		typeMap.put("STAT", "ObjectData"); // object/soundobject && object/static
-		typeMap.put("STOK", "ObjectData"); // object/token
-		typeMap.put("SUNI", "ObjectData"); // object/universe
-		typeMap.put("SWAY", "ObjectData"); // object/waypoint
-		typeMap.put("SWOT", "ObjectData"); // object/weapon
+		TYPE_MAP.put("SBMK", ClientFactoryType.OBJECT_DATA); // object/battlefield_marker
+		TYPE_MAP.put("SBOT", ClientFactoryType.OBJECT_DATA); // object/building
+		TYPE_MAP.put("CCLT", ClientFactoryType.OBJECT_DATA); // object/cell
+		TYPE_MAP.put("SCNC", ClientFactoryType.OBJECT_DATA); // object/construction_contract
+		TYPE_MAP.put("SCOU", ClientFactoryType.OBJECT_DATA); // object/counting
+		TYPE_MAP.put("SCOT", ClientFactoryType.OBJECT_DATA); // object/creature && object/mobile
+		TYPE_MAP.put("SDSC", ClientFactoryType.OBJECT_DATA); // object/draft_schematic
+		TYPE_MAP.put("SFOT", ClientFactoryType.OBJECT_DATA); // object/factory
+		TYPE_MAP.put("SGRP", ClientFactoryType.OBJECT_DATA); // object/group
+		TYPE_MAP.put("SGLD", ClientFactoryType.OBJECT_DATA); // object/guild
+		TYPE_MAP.put("SIOT", ClientFactoryType.OBJECT_DATA); // object/installation
+		TYPE_MAP.put("SITN", ClientFactoryType.OBJECT_DATA); // object/intangible
+		TYPE_MAP.put("SJED", ClientFactoryType.OBJECT_DATA); // object/jedi_manager
+		TYPE_MAP.put("SMSC", ClientFactoryType.OBJECT_DATA); // object/manufacture_schematic
+		TYPE_MAP.put("SMSO", ClientFactoryType.OBJECT_DATA); // object/mission
+		TYPE_MAP.put("SHOT", ClientFactoryType.OBJECT_DATA); // object/object
+		TYPE_MAP.put("STOT", ClientFactoryType.OBJECT_DATA); // object/path_waypoint && object/tangible
+		TYPE_MAP.put("SPLY", ClientFactoryType.OBJECT_DATA); // object/player
+		TYPE_MAP.put("SPQO", ClientFactoryType.OBJECT_DATA); // object/player_quest
+		TYPE_MAP.put("RCCT", ClientFactoryType.OBJECT_DATA); // object/resource_container
+		TYPE_MAP.put("SSHP", ClientFactoryType.OBJECT_DATA); // object/ship
+		TYPE_MAP.put("STAT", ClientFactoryType.OBJECT_DATA); // object/soundobject && object/static
+		TYPE_MAP.put("STOK", ClientFactoryType.OBJECT_DATA); // object/token
+		TYPE_MAP.put("SUNI", ClientFactoryType.OBJECT_DATA); // object/universe
+		TYPE_MAP.put("SWAY", ClientFactoryType.OBJECT_DATA); // object/waypoint
+		TYPE_MAP.put("SWOT", ClientFactoryType.OBJECT_DATA); // object/weapon
 		//
 	}
 	
@@ -235,5 +212,38 @@ public class ClientFactory extends DataFactory {
 	
 	private static ClientFactory getInstance() {
 		return INSTANCE;
+	}
+	
+	private enum ClientFactoryType {
+		APPEARANCE_TEMPLATE_DATA				(() -> new AppearanceTemplateData()),
+		APPEARANCE_TEMPLATE_LIST				(() -> new AppearanceTemplateList()),
+		BASIC_SKELETON_TEMPLATE					(() -> new BasicSkeletonTemplate()),
+		CRC_STRING_TABLE_DATA					(() -> new CrcStringTableData()),
+		CUSTOMIZABLE_SHADER_DATA				(() -> new CustomizableShaderData()),
+		DATATABLE_DATA							(() -> new DatatableData()),
+		DETAILED_APPEARANCE_TEMPLATE_DATA		(() -> new DetailedAppearanceTemplateData()),
+		LOD_MESH_GENERATOR_TEMPLATE_DATA		(() -> new LodMeshGeneratorTemplateData()),
+		LOD_SKELETON_TEMPLATE_DATA				(() -> new LodSkeletonTemplateData()),
+		MESH_APPEARANCE_TEMPLATE				(() -> new MeshAppearanceTemplate()),
+		OBJECT_DATA								(() -> new ObjectData()),
+		PORTAL_LAYOUT_DATA						(() -> new PortalLayoutData()),
+		PROFILE_TEMPLATE_DATA					(() -> new ProfTemplateData()),
+		SLOT_DESCRIPTOR_DATA					(() -> new SlotDescriptorData()),
+		SLOT_DEFINITION_DATA					(() -> new SlotDefinitionData()),
+		SLOT_ARRANGEMENT_DATA					(() -> new SlotArrangementData()),
+		SKELETAL_APPEARANCE_DATA				(() -> new SkeletalAppearanceData()),
+		SKELETAL_MESH_GENERATOR_TEMPLATE_DATA	(() -> new SkeletalMeshGeneratorTemplateData()),
+		STATIC_SHADER_DATA						(() -> new StaticShaderData()),
+		WORLD_SNAPSHOT_DATA						(() -> new WorldSnapshotData());
+		
+		private final Supplier<ClientData> supplier;
+		
+		ClientFactoryType(Supplier<ClientData> supplier) {
+			this.supplier = supplier;
+		}
+		
+		public ClientData create() {
+			return supplier.get();
+		}
 	}
 }

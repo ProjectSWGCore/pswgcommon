@@ -54,9 +54,9 @@ public abstract class DataFactory {
 		try {
 			swgFile.read(file);
 		} catch (IOException e) {
-			if (e instanceof ClosedChannelException)
-				return null;
-			Log.e(e);
+			if (!(e instanceof ClosedChannelException))
+				Log.e(e);
+			return null;
 		}
 
 		ClientData clientData = createDataObject(swgFile.getType());

@@ -255,9 +255,9 @@ public class TCPServer {
 				}
 			} catch (IOException e) {
 				if (e.getMessage() != null && e.getMessage().toLowerCase(Locale.US).contains("connection reset"))
-					Log.e("TCPServer", "Connection Reset with %s", s.socket().getRemoteSocketAddress());
+					Log.e("Connection Reset with %s", s.socket().getRemoteSocketAddress());
 				else if (!(e instanceof ClosedByInterruptException))
-					Log.e("TCPServer", e);
+					Log.e(e);
 				key.cancel();
 				disconnect(s);
 			}

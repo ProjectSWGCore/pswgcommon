@@ -27,18 +27,22 @@
 ***********************************************************************************/
 package com.projectswg.common.control;
 
+import java.util.function.Consumer;
+
 public abstract class Intent {
 	
 	private boolean broadcasted;
 	private boolean complete;
 	private Intent parallel;
 	private Intent sequential;
+	private Consumer<Intent> completedCallback;
 	
 	protected Intent() {
 		this.broadcasted = false;
 		this.complete = false;
 		this.parallel = null;
 		this.sequential = null;
+		this.completedCallback = null;
 	}
 	
 	/**
@@ -50,6 +54,14 @@ public abstract class Intent {
 			sequential.broadcast(intentManager);
 		sequential = null;
 		parallel = null;
+	}
+	
+	public Consumer<Intent> getCompletedCallback() {
+		return completedCallback;
+	}
+	
+	public void setCompletedCallback(Consumer<Intent> completedCallback) {
+		this.completedCallback = completedCallback;
 	}
 	
 	/**
