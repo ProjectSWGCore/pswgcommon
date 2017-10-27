@@ -27,8 +27,10 @@
  ***********************************************************************************/
 package com.projectswg.common.data;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -67,69 +69,26 @@ public class CrcDatabase {
 	}
 	
 	private void loadStrings() {
-		StringBuilder str = new StringBuilder(256);
 		try (InputStream is = getClass().getResourceAsStream("crc_database.csv")) {
-			BufferedByteReader reader = new BufferedByteReader(is);
-			while (reader.canRead()) {
-				str.setLength(0);
-				processLine(str, reader);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				processLine(line);
 			}
 		} catch (IOException e) {
 			Log.e(e);
 		}
 	}
 	
-	private void processLine(StringBuilder str, BufferedByteReader reader) throws IOException {
-		int crc = 0;
-		int b;
-		while ((b = reader.getNextByte()) != -1) {
-			if (b == ',' && crc == 0) {
-				crc = Integer.parseInt(str.toString(), 16);
-				str.setLength(0);
-			} else if (b == '\n') {
-				if (crc == 0)
-					break;
-				crcTable.put(crc, str.toString().intern());
-				break;
-			} else {
-				str.append((char) b);
-			}
-		}
+	private void processLine(String line) {
+		int index = line.indexOf(',');
+		int crc = Integer.parseInt(line.substring(0, index), 16);
+		String str = line.substring(index+1).intern();
+		crcTable.put(crc, str);
 	}
 	
 	public static CrcDatabase getInstance() {
 		return INSTANCE;
-	}
-	
-	private static class BufferedByteReader {
-		
-		private final InputStream is;
-		private final byte [] buffer;
-		private int remaining;
-		private int position;
-		
-		public BufferedByteReader(InputStream is) {
-			this.is = is;
-			this.buffer = new byte[4096];
-			this.remaining = 0;
-			this.position = 0;
-		}
-		
-		public int getNextByte() throws IOException {
-			if (remaining <= 0) {
-				remaining = is.read(buffer);
-				position = 0;
-				if (remaining <= 0)
-					return -1;
-			}
-			remaining--;
-			return buffer[position++];
-		}
-		
-		public boolean canRead() {
-			return remaining >= 0;
-		}
-		
 	}
 	
 }
