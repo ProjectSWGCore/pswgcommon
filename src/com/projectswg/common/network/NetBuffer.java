@@ -298,9 +298,9 @@ public class NetBuffer {
 		return booleans;
 	}
 	
-	public <T> Object getGeneric(Class<T> type) {
+	public Object getGeneric(Class<?> type) {
 		if (Encodable.class.isAssignableFrom(type)) {
-			T instance = null;
+			Object instance = null;
 			try {
 				instance = type.newInstance();
 				((Encodable) instance).decode(this);

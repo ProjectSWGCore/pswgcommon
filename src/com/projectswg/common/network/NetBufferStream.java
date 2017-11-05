@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.projectswg.common.encoding.StringType;
+
 public class NetBufferStream extends OutputStream {
 	
 	private final Object expansionMutex;
@@ -189,6 +191,23 @@ public class NetBufferStream extends OutputStream {
 		}
 	}
 	
+	public Object getGeneric(Class<?> type) {
+		synchronized (bufferMutex) {
+			return buffer.getGeneric(type);
+		}
+	}
+	
+	public String getString(StringType type) {
+		switch (type) {
+			case ASCII:
+				return getAscii();
+			case UNICODE:
+				return getUnicode();
+			default:
+				throw new IllegalArgumentException("Unknown string type: " + type);
+		}
+	}
+	
 	public String getAscii() {
 		synchronized (bufferMutex) {
 			return buffer.getAscii();
@@ -261,6 +280,12 @@ public class NetBufferStream extends OutputStream {
 		}
 	}
 	
+	public byte[] getArrayLarge() {
+		synchronized (bufferMutex) {
+			return buffer.getArrayLarge();
+		}
+	}
+	
 	public byte[] getArray(int size) {
 		synchronized (bufferMutex) {
 			return buffer.getArray(size);
@@ -278,6 +303,19 @@ public class NetBufferStream extends OutputStream {
 		synchronized (bufferMutex) {
 			buffer.addBoolean(b);
 			size++;
+		}
+	}
+	
+	public void addString(String s, StringType type) {
+		switch (type) {
+			case ASCII:
+				addAscii(s);
+				break;
+			case UNICODE:
+				addUnicode(s);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown string type: " + type);
 		}
 	}
 	
