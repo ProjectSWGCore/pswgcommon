@@ -74,7 +74,9 @@ public abstract class Service {
 	 * @return TRUE if termination was successful, FALSE otherwise
 	 */
 	public boolean terminate() {
-		IntentManager.getInstance().terminate();
+		IntentManager im = IntentManager.getInstance();
+		if (im != null)
+			im.terminate();
 		return true;
 	}
 	
