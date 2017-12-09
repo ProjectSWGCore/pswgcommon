@@ -349,7 +349,8 @@ public enum RadialItem {
 	BIO_LINK													(""),
 	LANDMINE_DISARM												(""),
 	LANDMINE_REVERSE_TRIGGER									(""),
-	REWARD_TRADE_IN												("");
+	REWARD_TRADE_IN												(""),
+	TRANSFER_CREDITS_TO_BANK_ACCOUNT							("@space/space_loot:use_credit_chip");
 	
 	private static final EnumLookup<Integer, RadialItem> LOOKUP = new EnumLookup<>(RadialItem.class, RadialItem::getId);
 	
