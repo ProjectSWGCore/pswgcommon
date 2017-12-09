@@ -160,7 +160,9 @@ public abstract class Manager extends Service {
 					return;
 			}
 			children.add(s);
-			s.setIntentManager(getIntentManager());
+			IntentManager manager = getIntentManager();
+			if (manager != null)
+				s.setIntentManager(manager);
 		}
 	}
 	
