@@ -1,4 +1,11 @@
 .settings
+
+# IDE-based
+PSWGCommon.iml
+out
+.idea
+
+# Gradle
 .gradle
-bin
-build
+gradle
+gradlew*
