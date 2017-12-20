@@ -19,11 +19,6 @@ public class FileLogWrapper implements LogWrapper {
 	}
 	
 	@Override
-	protected void finalize() throws IOException {
-		writer.close();
-	}
-	
-	@Override
 	public void onLog(LogLevel level, String str) {
 		try {
 			writer.write(str);

@@ -117,7 +117,7 @@ public class Pair<T, S> implements Encodable, Persistable {
 		// Try making our own persistable
 		if (obj == null && Persistable.class.isAssignableFrom(klass)) {
 			try {
-				obj = klass.newInstance();
+				obj = klass.getConstructor().newInstance();
 			} catch (Exception e) {
 				Log.e(e);
 			}

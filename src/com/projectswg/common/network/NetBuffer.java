@@ -27,6 +27,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -208,7 +209,7 @@ public class NetBuffer {
 	}
 	
 	public boolean getBoolean() {
-		return getByte() == 1 ? true : false;
+		return getByte() == 1;
 	}
 	
 	public String getAscii() {
@@ -302,12 +303,12 @@ public class NetBuffer {
 		if (Encodable.class.isAssignableFrom(type)) {
 			Object instance = null;
 			try {
-				instance = type.newInstance();
+				instance = type.getConstructor().newInstance();
 				((Encodable) instance).decode(this);
-			} catch (InstantiationException | IllegalAccessException e) {
+			} catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 				Log.e(e);
 			}
-			
+
 			return instance;
 		} else if (Integer.class.isAssignableFrom(type) || Integer.TYPE.isAssignableFrom(type))
 			return getInt();
@@ -336,11 +337,11 @@ public class NetBuffer {
 		
 		try {
 			for (int i = 0; i < size; i++) {
-				T instance = type.newInstance();
+				T instance = type.getConstructor().newInstance();
 				instance.decode(this);
 				list.add(instance);
 			}
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			Log.e(e);
 		}
 		
@@ -383,9 +384,9 @@ public class NetBuffer {
 	public <T extends Encodable> T getEncodable(Class<T> type) {
 		T instance = null;
 		try {
-			instance = type.newInstance();
+			instance = type.getConstructor().newInstance();
 			instance.decode(this);
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			Log.e(e);
 		}
 		
