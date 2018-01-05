@@ -1,52 +1,46 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2017 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of Holocore.                                                  *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * Holocore is free software: you can redistribute it and/or modify                *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * Holocore is distributed in the hope that it will be useful,                     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
+ *                                                                                 *
+ ***********************************************************************************/
 package com.projectswg.common.network;
+
+import com.projectswg.common.callback.CallbackManager;
+import com.projectswg.common.debug.Assert;
+import com.projectswg.common.debug.Log;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.projectswg.common.callback.CallbackManager;
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.debug.Log;
 
 public class TCPServer {
 	
@@ -64,7 +58,7 @@ public class TCPServer {
 	}
 	
 	public TCPServer(InetAddress addr, int port, int bufferSize) {
-		this.callbackManager = new CallbackManager<>("tcpserver-"+port, 1);
+		this.callbackManager = new CallbackManager<>("tcpserver-" + port, 1);
 		this.sockets = new HashMap<>();
 		this.running = new AtomicBoolean(false);
 		this.addr = addr;
@@ -108,14 +102,6 @@ public class TCPServer {
 		}
 	}
 	
-	private boolean disconnect(SocketChannel sc) {
-		try {
-			return disconnect(sc.getRemoteAddress());
-		} catch (IOException e) {
-			return false;
-		}
-	}
-	
 	public boolean close() {
 		if (!running.getAndSet(false)) {
 			Assert.fail();
@@ -142,10 +128,21 @@ public class TCPServer {
 		callbackManager.setCallback(callback);
 	}
 	
+	private boolean disconnect(SocketChannel sc) {
+		try {
+			return disconnect(sc.getRemoteAddress());
+		} catch (IOException e) {
+			return false;
+		}
+	}
+	
 	public interface TCPCallback {
+		
 		void onIncomingConnection(SocketChannel s, SocketAddress addr);
+		
 		void onConnectionDisconnect(SocketChannel s, SocketAddress addr);
-		void onIncomingData(SocketChannel s, SocketAddress addr, byte [] data);
+		
+		void onIncomingData(SocketChannel s, SocketAddress addr, byte[] data);
 	}
 	
 	private class TCPServerListener implements Runnable {
