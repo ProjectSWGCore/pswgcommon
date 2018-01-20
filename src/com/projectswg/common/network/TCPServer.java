@@ -27,45 +27,56 @@
  ***********************************************************************************/
 package com.projectswg.common.network;
 
-import com.projectswg.common.callback.CallbackManager;
-import com.projectswg.common.debug.Assert;
+import com.projectswg.common.concurrency.PswgBasicThread;
+import com.projectswg.common.concurrency.PswgThreadPool;
 import com.projectswg.common.debug.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
-public class TCPServer {
+public class TCPServer<T extends TCPServer.TCPSession> {
 	
-	private final CallbackManager<TCPCallback> callbackManager;
-	private final Map<SocketAddress, SocketChannel> sockets;
+	private final PswgThreadPool callbackThread;
+	private final Map<SocketChannel, T> channels;
+	private final Map<Long, T> sessionIdToChannel;
+	
+	private final PswgBasicThread listener;
 	private final AtomicBoolean running;
-	private final InetAddress addr;
-	private final int port;
-	private final int bufferSize;
-	private final TCPServerListener listener;
+	private final InetSocketAddress addr;
+	private final Function<SocketChannel, T> sessionCreator;
 	private ServerSocketChannel channel;
 	
-	public TCPServer(int port, int bufferSize) {
-		this(null, port, bufferSize);
+	private final ByteBuffer buffer;
+	private final ByteArrayOutputStream bufferStream;
+	private final WritableByteChannel byteBufferChannel;
+	
+	public TCPServer(int port, int bufferSize, Function<SocketChannel, T> sessionCreator) {
+		this(new InetSocketAddress((InetAddress) null, port), bufferSize, sessionCreator);
 	}
 	
-	public TCPServer(InetAddress addr, int port, int bufferSize) {
-		this.callbackManager = new CallbackManager<>("tcpserver-" + port, 1);
-		this.sockets = new HashMap<>();
+	public TCPServer(InetSocketAddress addr, int bufferSize, Function<SocketChannel, T> sessionCreator) {
+		this.callbackThread = new PswgThreadPool(false, 1, "tcpserver-" + addr.getPort());
+		this.channels = new ConcurrentHashMap<>();
+		this.sessionIdToChannel = new ConcurrentHashMap<>();
+		this.listener = new PswgBasicThread("tcpserver-listener-" + addr.getPort(), this::runListener);
 		this.running = new AtomicBoolean(false);
 		this.addr = addr;
-		this.port = port;
-		this.bufferSize = bufferSize;
 		this.channel = null;
-		listener = new TCPServerListener();
+		this.sessionCreator = sessionCreator;
+		this.buffer = ByteBuffer.allocateDirect(bufferSize);
+		this.bufferStream = new ByteArrayOutputStream(bufferSize);
+		this.byteBufferChannel = Channels.newChannel(bufferStream);
 	}
 	
 	public int getPort() {
@@ -73,193 +84,222 @@ public class TCPServer {
 	}
 	
 	public void bind() throws IOException {
-		if (running.getAndSet(true)) {
-			Assert.fail();
+		assert !running.get() : "TCPServer is already running";
+		if (running.getAndSet(true))
 			return;
-		}
-		callbackManager.start();
+		callbackThread.start();
 		channel = ServerSocketChannel.open();
-		channel.socket().bind(new InetSocketAddress(addr, port));
+		channel.bind(addr, 50);
 		channel.configureBlocking(false);
 		listener.start();
 	}
 	
-	public boolean disconnect(SocketAddress sock) {
-		Assert.notNull(sock);
-		synchronized (sockets) {
-			SocketChannel sc = sockets.get(sock);
-			if (sc == null)
-				return true;
-			sockets.remove(sock);
-			try {
-				sc.close();
-				callbackManager.callOnEach((callback) -> callback.onConnectionDisconnect(sc, sock));
-				return true;
-			} catch (IOException e) {
-				Log.e(e);
-				return false;
-			}
+	public void disconnect(long sessionId) {
+		T session = sessionIdToChannel.remove(sessionId);
+		if (session == null) {
+			Log.w("TCPServer - unknown session id in disconnect: %d", sessionId);
+			return;
 		}
+		
+		disconnect(session.getChannel());
 	}
 	
-	public boolean close() {
-		if (!running.getAndSet(false)) {
-			Assert.fail();
-			return false;
+	public void disconnect(T session) {
+		disconnect(Objects.requireNonNull(session, "session").getChannel());
+	}
+	
+	public void disconnect(SocketChannel sc) {
+		T session = channels.remove(sc);
+		if (session == null) {
+			Log.w("TCPServer - unknown channel in disconnect: %d", sc);
+			return;
 		}
-		callbackManager.stop();
-		listener.stop();
-		try {
-			channel.close();
-			return true;
+		sessionIdToChannel.remove(session.getSessionId());
+		
+		session.close();
+		callbackThread.execute(session::onDisconnected);
+	}
+	
+	public T getSession(long sessionId) {
+		return sessionIdToChannel.get(sessionId);
+	}
+	
+	public T getSession(SocketChannel sc) {
+		return channels.get(sc);
+	}
+	
+	public void close() {
+		assert running.get() : "TCPServer isn't running";
+		if (!running.getAndSet(false))
+			return;
+		callbackThread.stop(false);
+		listener.stop(true);
+		safeClose(channel);
+	}
+	
+	private void runListener() {
+		try (Selector selector = Selector.open()) {
+			channel.register(selector, SelectionKey.OP_ACCEPT);
+			while (running.get()) {
+				selector.select();
+				accept(selector);
+				selector.selectedKeys().forEach(this::read);
+			}
 		} catch (IOException e) {
 			Log.e(e);
 		}
-		return false;
 	}
 	
-	public SocketChannel getChannel(SocketAddress sock) {
-		synchronized (sockets) {
-			return sockets.get(sock);
-		}
-	}
-	
-	public void setCallback(TCPCallback callback) {
-		callbackManager.setCallback(callback);
-	}
-	
-	private boolean disconnect(SocketChannel sc) {
+	private void accept(Selector selector) {
 		try {
-			return disconnect(sc.getRemoteAddress());
-		} catch (IOException e) {
-			return false;
+			while (channel.isOpen()) {
+				SocketChannel sc = channel.accept();
+				if (sc == null)
+					return;
+				sc.configureBlocking(false);
+				sc.register(selector, SelectionKey.OP_READ);
+				acceptConnection(sc);
+			}
+		} catch (ClosedChannelException e) {
+			// Ignored
+		} catch (Throwable t) {
+			Log.w("TCPServer - IOException in accept(): %s", t.getMessage());
 		}
 	}
 	
-	public interface TCPCallback {
-		
-		void onIncomingConnection(SocketChannel s, SocketAddress addr);
-		
-		void onConnectionDisconnect(SocketChannel s, SocketAddress addr);
-		
-		void onIncomingData(SocketChannel s, SocketAddress addr, byte[] data);
+	private void acceptConnection(SocketChannel sc) {
+		T session = sessionCreator.apply(sc);
+		if (session == null) {
+			Log.w("Session creator for TCPServer-%d created a null session!", addr.getPort());
+			safeClose(sc);
+			return;
+		}
+		if (session.getChannel() != sc) {
+			Log.w("Session creator for TCPServer-%d created a session with an invalid channel!", addr.getPort());
+			safeClose(sc);
+			return;
+		}
+		channels.put(sc, session);
+		sessionIdToChannel.put(session.getSessionId(), session);
+		callbackThread.execute(session::onConnected);
 	}
 	
-	private class TCPServerListener implements Runnable {
-		
-		private final ByteBuffer buffer;
-		private Thread thread;
-		private boolean running;
-		
-		public TCPServerListener() {
-			buffer = ByteBuffer.allocateDirect(bufferSize);
-			running = false;
-			thread = null;
+	private void read(SelectionKey key) {
+		SelectableChannel selectableChannel = key.channel();
+		if (selectableChannel == channel)
+			return;
+		SocketChannel sc = (SocketChannel) selectableChannel;
+		T session = getSession(sc);
+		if (session == null || !sc.isConnected()) {
+			invalidate(sc, key);
+			return;
 		}
-		
-		public void start() {
-			running = true;
-			thread = new Thread(this, "TCPServerListener-" + channel.socket().getLocalPort());
-			thread.start();
-		}
-		
-		public void stop() {
-			running = false;
-			if (thread != null)
-				thread.interrupt();
-			thread = null;
-		}
-		
-		@Override
-		public void run() {
-			try (Selector selector = setupSelector()) {
-				while (running) {
-					try {
-						selector.select();
-						processSelectionKeys(selector);
-					} catch (Exception e) {
-						Log.e(e);
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e1) {
-							break;
-						}
-					}
-				}
-			} catch (IOException e) {
-				Log.e(e);
-			}
-		}
-		
-		private Selector setupSelector() throws IOException {
-			Selector selector = Selector.open();
-			channel.register(selector, SelectionKey.OP_ACCEPT);
-			return selector;
-		}
-		
-		private void processSelectionKeys(Selector selector) throws ClosedChannelException {
-			for (SelectionKey key : selector.selectedKeys()) {
-				if (!key.isValid())
-					continue;
-				if (key.isAcceptable()) {
-					accept(selector);
-				} else if (key.isReadable()) {
-					SelectableChannel selectable = key.channel();
-					if (selectable instanceof SocketChannel) {
-						boolean canRead = true;
-						while (canRead)
-							canRead = read(key, (SocketChannel) selectable);
-					}
-				}
-			}
-		}
-		
-		private void accept(Selector selector) {
-			try {
-				while (channel.isOpen()) {
-					SocketChannel sc = channel.accept();
-					if (sc == null)
-						break;
-					SocketChannel old = sockets.get(sc.getRemoteAddress());
-					if (old != null)
-						disconnect(old);
-					sockets.put(sc.getRemoteAddress(), sc);
-					sc.configureBlocking(false);
-					sc.register(selector, SelectionKey.OP_READ);
-					SocketAddress addr = sc.getRemoteAddress();
-					callbackManager.callOnEach((callback) -> callback.onIncomingConnection(sc, addr));
-				}
-			} catch (IOException e) {
-				Log.e(e);
-			}
-		}
-		
-		private boolean read(SelectionKey key, SocketChannel s) {
-			try {
-				buffer.position(0);
-				buffer.limit(bufferSize);
-				int n = s.read(buffer);
+		try {
+			bufferStream.reset();
+			int n = 1;
+			while (n > 0) {
+				buffer.clear();
+				n = sc.read(buffer);
 				buffer.flip();
-				if (n < 0) {
-					key.cancel();
-					disconnect(s);
-				} else if (n > 0) {
-					ByteBuffer smaller = ByteBuffer.allocate(n);
-					smaller.put(buffer);
-					SocketAddress addr = s.getRemoteAddress();
-					callbackManager.callOnEach((callback) -> callback.onIncomingData(s, addr, smaller.array()));
-					return true;
-				}
-			} catch (IOException e) {
-				if (e.getMessage() != null && e.getMessage().toLowerCase(Locale.US).contains("connection reset"))
-					Log.e("Connection Reset with %s", s.socket().getRemoteSocketAddress());
-				else if (!(e instanceof ClosedByInterruptException))
-					Log.e(e);
-				key.cancel();
-				disconnect(s);
+				byteBufferChannel.write(buffer);
 			}
-			return false;
+			if (bufferStream.size() > 0) {
+				byte[] data = bufferStream.toByteArray();
+				callbackThread.execute(() -> session.onIncomingData(data));
+			}
+			if (n < 0) {
+				invalidate(sc, key);
+			}
+		} catch (ClosedChannelException e) {
+			// Ignored
+		} catch (Throwable t) {
+			Log.w("TCPServer - IOException in read(): %s", t.getMessage());
+			invalidate(sc, key);
 		}
+	}
+	
+	private void invalidate(SocketChannel sc, SelectionKey key) {
+		key.cancel();
+		disconnect(sc);
+	}
+	
+	private static void safeClose(Channel c) {
+		try {
+			c.close();
+		} catch (IOException e) {
+			// Ignored - as long as it's closed
+		}
+	}
+	
+	public abstract static class TCPSession {
+		
+		private static final AtomicLong GLOBAL_SESSION_ID = new AtomicLong(0);
+		
+		private final SocketChannel sc;
+		private final SocketAddress addr;
+		private final long sessionId;
+		
+		protected TCPSession(SocketChannel sc) {
+			this.sc = Objects.requireNonNull(sc, "socket");
+			this.sessionId = GLOBAL_SESSION_ID.incrementAndGet();
+			
+			SocketAddress addr;
+			try {
+				addr = sc.getRemoteAddress();
+			} catch (IOException e) {
+				addr = null;
+			}
+			this.addr = addr;
+		}
+		
+		protected void onConnected() {
+			
+		}
+		
+		protected void onDisconnected() {
+			
+		}
+		
+		/**
+		 * Returns a globally unique session id for this particular connection
+		 * @return the unique session id
+		 */
+		protected final long getSessionId() {
+			return sessionId;
+		}
+		
+		/**
+		 * Returns the socket channel associated with this session
+		 * @return the socket channel
+		 */
+		protected final SocketChannel getChannel() {
+			return sc;
+		}
+		
+		/**
+		 * Returns the remote address that this socket is/was connected to
+		 * @return the remote socket address
+		 */
+		@SuppressWarnings("unused") // open for subclass to use
+		protected final SocketAddress getRemoteAddress() {
+			return addr;
+		}
+		
+		@SuppressWarnings("unused") // open for subclass to use
+		protected void writeToChannel(ByteBuffer data) throws IOException {
+			sc.write(data);
+		}
+		
+		@SuppressWarnings("unused") // open for subclass to use
+		protected void writeToChannel(byte [] data) throws IOException {
+			sc.write(ByteBuffer.wrap(data));
+		}
+		
+		protected void close() {
+			safeClose(sc);
+		}
+		
+		protected abstract void onIncomingData(byte[] data);
 	}
 	
 }
