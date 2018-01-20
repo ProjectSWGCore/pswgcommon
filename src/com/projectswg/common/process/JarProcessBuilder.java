@@ -1,5 +1,7 @@
 package com.projectswg.common.process;
 
+import com.projectswg.common.debug.Assert;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
@@ -8,8 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.projectswg.common.debug.Assert;
 
 public class JarProcessBuilder {
 	
@@ -204,12 +204,16 @@ public class JarProcessBuilder {
 		}
 	}
 	
+	public static File getJavaPath() {
+		return new File(System.getProperty("java.home"), "bin/java");
+	}
+	
 	public enum MemoryUnit {
 		BYTES		("B",  1),
 		KILOBYTES	("kB", 1024),
 		MEGABYTES	("MB", 1048576),
 		GIGABYTES	("GB", 1073741824),
-		TERABYTES	("TB", 1099511627776l);
+		TERABYTES	("TB", 1099511627776L);
 		
 		private final String suffix;
 		private final long factor;
