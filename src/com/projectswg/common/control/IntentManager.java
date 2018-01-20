@@ -27,6 +27,9 @@
 ***********************************************************************************/
 package com.projectswg.common.control;
 
+import com.projectswg.common.concurrency.PswgThreadPool;
+import com.projectswg.common.debug.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +41,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import com.projectswg.common.concurrency.PswgThreadPool;
-import com.projectswg.common.debug.Log;
 
 public class IntentManager {
 	
@@ -70,6 +70,7 @@ public class IntentManager {
 		if (!initialized.getAndSet(false))
 			return;
 		processThreads.stop(true);
+		processThreads.awaitTermination(1000);
 	}
 	
 	public int getIntentCount() {

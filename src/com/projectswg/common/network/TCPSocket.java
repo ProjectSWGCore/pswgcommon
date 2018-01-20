@@ -46,7 +46,7 @@ public class TCPSocket {
 	
 	private final CallbackManager<TCPSocketCallback> callbackManager;
 	private final TCPSocketListener listener;
-	private final InetSocketAddress address;
+	private final AtomicReference<InetSocketAddress> address;
 	private final AtomicReference<SocketState> state;
 	private final Object stateMutex;
 	private final int bufferSize;
@@ -57,7 +57,7 @@ public class TCPSocket {
 	public TCPSocket(InetSocketAddress address, int bufferSize) {
 		this.callbackManager = new CallbackManager<>("tcpsocket-"+address, 1);
 		this.listener = new TCPSocketListener();
-		this.address = address;
+		this.address = new AtomicReference<>(address);
 		this.state = new AtomicReference<>(SocketState.CLOSED);
 		this.stateMutex = new Object();
 		this.bufferSize = bufferSize;
@@ -67,12 +67,24 @@ public class TCPSocket {
 		this.socketOutputStream = null;
 	}
 	
+	public TCPSocket(int bufferSize) {
+		this(null, bufferSize);
+	}
+	
+	public TCPSocket() {
+		this(1024);
+	}
+	
 	public int getBufferSize() {
 		return bufferSize;
 	}
 	
 	public InetSocketAddress getRemoteAddress() {
-		return address;
+		return address.get();
+	}
+	
+	public void setRemoteAddress(InetSocketAddress address) {
+		this.address.set(address);
 	}
 	
 	public Socket getSocket() {
@@ -110,7 +122,7 @@ public class TCPSocket {
 		synchronized (stateLock()) {
 			try {
 				checkAndSetState(SocketState.CREATED, SocketState.CONNECTING);
-				socket.connect(address);
+				socket.connect(getRemoteAddress());
 				socketInputStream = socket.getInputStream();
 				socketOutputStream = socket.getOutputStream();
 			} catch (IOException e) {
@@ -238,7 +250,7 @@ public class TCPSocket {
 		public void start() {
 			Assert.test(!running.get(), "Cannot start listener! Already started!");
 			Assert.isNull(thread, "Cannot start listener! Already started!");
-			thread = new Thread(this, "TCPServer Port#" + address.getPort());
+			thread = new Thread(this, "TCPServer Port#" + getRemoteAddress().getPort());
 			running.set(true);
 			thread.start();
 		}
