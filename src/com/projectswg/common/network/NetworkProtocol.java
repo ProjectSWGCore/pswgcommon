@@ -37,6 +37,8 @@ import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectCo
 
 public class NetworkProtocol {
 	
+	public static final String VERSION = "2018-02-04";
+	
 	public static NetBuffer encode(SWGPacket p) {
 		NetBuffer encoded = p.encode();
 		encoded.flip();
