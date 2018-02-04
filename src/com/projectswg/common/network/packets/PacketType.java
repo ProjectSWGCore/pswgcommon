@@ -370,7 +370,7 @@ public enum PacketType {
 			return null;
 		Class <? extends SWGPacket> c = type.c;
 		try {
-			return c.newInstance();
+			return c.getConstructor().newInstance();
 		} catch (Exception e) {
 			Log.e("Packet: [%08X] %s", crc, c.getName());
 			Log.e(e);

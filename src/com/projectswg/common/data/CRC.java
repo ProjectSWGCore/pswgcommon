@@ -1,38 +1,38 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2017 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of Holocore.                                                  *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * Holocore is free software: you can redistribute it and/or modify                *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * Holocore is distributed in the hope that it will be useful,                     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
+ *                                                                                 *
+ ***********************************************************************************/
 package com.projectswg.common.data;
-
-import java.nio.charset.StandardCharsets;
 
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+
+import java.nio.charset.StandardCharsets;
 
 public class CRC implements Encodable, Persistable {
 	
@@ -101,7 +101,7 @@ public class CRC implements Encodable, Persistable {
 	}
 	
 	@Override
-	public byte [] encode() {
+	public byte[] encode() {
 		NetBuffer buffer = NetBuffer.allocate(4);
 		buffer.addInt(crc);
 		return buffer.array();
@@ -127,45 +127,35 @@ public class CRC implements Encodable, Persistable {
 	public void read(NetBufferStream stream) {
 		crc = stream.getInt();
 	}
-
+	
 	@Override
 	public String toString() {
 		return str;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return this.crc;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof CRC)) {
-			return false;
-		}
-		
-		return crc == ((CRC) obj).crc;
+		return this == obj || (obj instanceof CRC && crc == ((CRC) obj).crc);
+	}
+	
+	public static String getString(int crc) {
+		return CrcDatabase.getInstance().getString(crc);
 	}
 	
 	public static int getCrc(String input) {
 		return getCrc(input.getBytes(StandardCharsets.UTF_8));
 	}
 	
-	public static int getCrc(byte [] data) {
+	public static int getCrc(byte[] data) {
 		int crc = 0xFFFFFFFF;
-		for (int i = 0; i < data.length; i++)
-			crc = CRC_TABLE[((crc>>>24) ^ data[i]) & 0xFF] ^ (crc << 8);
+		for (byte b : data)
+			crc = CRC_TABLE[((crc >>> 24) ^ b) & 0xFF] ^ (crc << 8);
 		return ~crc;
-	}
-	
-	public static String getString(int crc) {
-		return CrcDatabase.getInstance().getString(crc);
 	}
 	
 }

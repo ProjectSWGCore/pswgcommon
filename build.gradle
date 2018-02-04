@@ -1,12 +1,12 @@
-apply plugin: 'java'
+plugins {
+    id 'java'
+    id 'idea'
+}
 
 sourceSets {
     main {
         java {
-            srcDirs = ['src']
-        }
-        resources {
-            srcDirs = ['src']
+            srcDir 'src'
         }
     }
 }
@@ -14,4 +14,8 @@ sourceSets {
 jar {
 	from sourceSets.main.allSource
 	archiveName = "PSWGCommon.jar"
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = "4.4"
 }
