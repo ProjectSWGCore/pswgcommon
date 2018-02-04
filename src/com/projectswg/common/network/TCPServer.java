@@ -213,7 +213,7 @@ public class TCPServer<T extends TCPServer.TCPSession> {
 		} catch (ClosedChannelException e) {
 			// Ignored
 		} catch (Throwable t) {
-			Log.w("TCPServer - IOException in read(): %s", t.getMessage());
+			Log.w("TCPServer - %s in read(): %s", t.getClass(), t.getMessage());
 			invalidate(sc, key);
 		}
 	}
