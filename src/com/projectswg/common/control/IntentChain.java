@@ -29,11 +29,12 @@ package com.projectswg.common.control;
 
 import com.projectswg.common.debug.Assert;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class IntentChain {
 	
 	private final IntentManager intentManager;
-	private final Object mutex;
-	private Intent i;
+	private final AtomicReference<Intent> previousIntent;
 	
 	public IntentChain() {
 		this(IntentManager.getInstance());
@@ -49,21 +50,15 @@ public class IntentChain {
 	
 	public IntentChain(IntentManager intentManager, Intent i) {
 		this.intentManager = intentManager;
-		this.mutex = new Object();
-		this.i = i;
+		this.previousIntent = new AtomicReference<>(i);
 	}
 	
 	public void reset() {
-		synchronized (mutex) {
-			i = null;
-		}
+		previousIntent.set(null);
 	}
 	
 	public void broadcastAfter(Intent i) {
-		synchronized (mutex) {
-			i.broadcastAfterIntent(this.i, intentManager);
-			this.i = i;
-		}
+		i.broadcastAfterIntent(previousIntent.getAndSet(i), intentManager);
 	}
 	
 	public static void broadcastChain(Intent ... intents) {
