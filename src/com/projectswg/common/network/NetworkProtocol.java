@@ -27,13 +27,12 @@
  ***********************************************************************************/
 package com.projectswg.common.network;
 
-import java.io.EOFException;
-import java.io.IOException;
-
 import com.projectswg.common.debug.Log;
 import com.projectswg.common.network.packets.PacketType;
 import com.projectswg.common.network.packets.SWGPacket;
 import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
+
+import java.io.IOException;
 
 public class NetworkProtocol {
 	
@@ -44,53 +43,45 @@ public class NetworkProtocol {
 		encoded.flip();
 		if (encoded.remaining() != encoded.capacity())
 			Log.w("SWGPacket %s has invalid array length. Expected: %d  Actual: %d", p, encoded.remaining(), encoded.capacity());
-		return preparePacket(encoded);
+		
+		int remaining = encoded.remaining();
+		NetBuffer data = NetBuffer.allocate(remaining + 4);
+		data.addInt(remaining);
+		data.add(encoded);
+		data.flip();
+		return data;
 	}
 	
 	public static boolean canDecode(NetBufferStream buffer) throws IOException {
 		if (buffer.remaining() < 4)
 			return false;
-		buffer.mark();
-		try {
-			int length = buffer.getInt();
-			if (length < 0) {
-				throw new IOException("Stream corrupted");
-			}
-			return buffer.remaining() >= length;
-		} finally {
-			buffer.rewind();
-		}
-	}
-	
-	public static SWGPacket decode(NetBufferStream buffer) throws EOFException {
-		if (buffer.remaining() < 4)
-			throw new EOFException("Not enough remaining data for header! Remaining: " + buffer.remaining());
+		
 		int length = buffer.getInt();
-		byte [] data = buffer.getArray(length);
-		return processSWG(NetBuffer.wrap(data));
+		buffer.seek(-4);
+		
+		if (length < 0)
+			throw new IOException("Stream corrupted");
+		return length <= buffer.remaining();
 	}
 	
-	private static NetBuffer preparePacket(NetBuffer packet) {
-		int remaining = packet.remaining();
-		NetBuffer data = NetBuffer.allocate(remaining + 4);
-		data.addInt(remaining);
-		data.add(packet);
-		data.flip();
-		return data;
-	}
-	
-	private static SWGPacket processSWG(NetBuffer buffer) throws EOFException {
-		if (buffer.remaining() < 6)
-			throw new EOFException("Length too small: " + buffer.remaining());
-		buffer.getShort();
-		int crc = buffer.getInt();
-		buffer.position(0);
+	public static SWGPacket decode(NetBufferStream buffer) throws IOException {
+		if (!canDecode(buffer))
+			return null;
+		
+		NetBuffer swg = NetBuffer.wrap(buffer.getArray(buffer.getInt()));
+		if (swg.remaining() < 6)
+			return null;
+		
+		swg.position(2);
+		int crc = swg.getInt();
+		swg.position(0);
+		
 		if (crc == ObjectController.CRC)
-			return ObjectController.decodeController(buffer);
+			return ObjectController.decodeController(swg);
 		
 		SWGPacket packet = PacketType.getForCrc(crc);
 		if (packet != null)
-			packet.decode(buffer);
+			packet.decode(swg);
 		return packet;
 	}
 	
