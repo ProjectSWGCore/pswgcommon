@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Map;
@@ -198,9 +199,9 @@ public class TCPServer<T extends TCPServer.TCPSession> {
 			bufferStream.reset();
 			int n = 1;
 			while (n > 0) {
-				buffer.clear();
+				((Buffer) buffer).clear();
 				n = sc.read(buffer);
-				buffer.flip();
+				((Buffer) buffer).flip();
 				byteBufferChannel.write(buffer);
 			}
 			if (bufferStream.size() > 0) {
