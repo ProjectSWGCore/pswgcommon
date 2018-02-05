@@ -54,7 +54,7 @@ public class ChatRoom implements Encodable, Persistable {
 	private transient List<ChatAvatar> members;
 	
 	public ChatRoom() {
-		this.cache = new CachedEncode(() -> encodeImpl());
+		this.cache = new CachedEncode(this::encodeImpl);
 		owner = new ChatAvatar();
 		creator = new ChatAvatar();
 		moderators = new ArrayList<>();
