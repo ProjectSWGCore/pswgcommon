@@ -14,8 +14,12 @@ public class FileLogWrapper implements LogWrapper {
 	
 	private final BufferedWriter writer;
 	
-	public FileLogWrapper(File file) throws IOException {
-		writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+	public FileLogWrapper(File file) {
+		try {
+			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
