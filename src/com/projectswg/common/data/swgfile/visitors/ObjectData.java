@@ -171,7 +171,7 @@ public class ObjectData extends ClientData {
 		if (parsedFiles.contains(file)) // some repeated and we do not want to replace any attributes unless they're overriden by a more specific obj
 			return;
 
-		ClientData attrData = ClientFactory.getInfoFromFile(file, true);
+		ClientData attrData = ClientFactory.getInfoFromFile(file);
 		if (attrData == null || !(attrData instanceof ObjectData)) {
 			Log.w("Could not load attribute data from file " + file + "!");
 			return; // break out of whole method as we should only continue if we have all the extended attributes

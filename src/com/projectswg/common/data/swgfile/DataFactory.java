@@ -39,13 +39,8 @@ import com.projectswg.common.debug.Log;
 public abstract class DataFactory {
 	
 	protected ClientData readFile(String filename) {
-		if (filename == null || filename.isEmpty()) {
-			Log.e("File cannot be null or empty!");
-			return null;
-		}
 		File file = new File(getFolder() + filename);
 		if (!file.isFile()) {
-			Log.e("Not a file: " + file);
 			return null;
 		}
 

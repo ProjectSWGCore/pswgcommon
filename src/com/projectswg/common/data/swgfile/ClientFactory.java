@@ -27,36 +27,19 @@
 ***********************************************************************************/
 package com.projectswg.common.data.swgfile;
 
-import java.lang.ref.SoftReference;
+import com.projectswg.common.data.swgfile.visitors.*;
+import com.projectswg.common.data.swgfile.visitors.appearance.*;
+import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
+import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import com.projectswg.common.data.swgfile.visitors.CrcStringTableData;
-import com.projectswg.common.data.swgfile.visitors.DatatableData;
-import com.projectswg.common.data.swgfile.visitors.ObjectData;
-import com.projectswg.common.data.swgfile.visitors.PortalLayoutData;
-import com.projectswg.common.data.swgfile.visitors.ProfTemplateData;
-import com.projectswg.common.data.swgfile.visitors.SlotArrangementData;
-import com.projectswg.common.data.swgfile.visitors.SlotDefinitionData;
-import com.projectswg.common.data.swgfile.visitors.SlotDescriptorData;
-import com.projectswg.common.data.swgfile.visitors.WorldSnapshotData;
-import com.projectswg.common.data.swgfile.visitors.appearance.AppearanceTemplateData;
-import com.projectswg.common.data.swgfile.visitors.appearance.AppearanceTemplateList;
-import com.projectswg.common.data.swgfile.visitors.appearance.BasicSkeletonTemplate;
-import com.projectswg.common.data.swgfile.visitors.appearance.DetailedAppearanceTemplateData;
-import com.projectswg.common.data.swgfile.visitors.appearance.LodMeshGeneratorTemplateData;
-import com.projectswg.common.data.swgfile.visitors.appearance.LodSkeletonTemplateData;
-import com.projectswg.common.data.swgfile.visitors.appearance.MeshAppearanceTemplate;
-import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalAppearanceData;
-import com.projectswg.common.data.swgfile.visitors.appearance.SkeletalMeshGeneratorTemplateData;
-import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
-import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
-
 public class ClientFactory extends DataFactory {
 	
 	private static final ClientFactory INSTANCE = new ClientFactory();
-	private static final Map <String, SoftReference<ClientData>> DATA_MAP = new HashMap<>();
+	private static final Map <String, ClientData> DATA_MAP = new HashMap<>();
 	private static final Map <String, ClientFactoryType> TYPE_MAP = new HashMap<>();
 	
 	static {
@@ -77,8 +60,12 @@ public class ClientFactory extends DataFactory {
 	 * that was entered in Step 3.
 	 * </OL>
 	 */
-	public ClientFactory() {
+	private ClientFactory() {
 		
+	}
+	
+	public static void freeMemory() {
+		DATA_MAP.clear();
 	}
 
 	/**
@@ -92,41 +79,10 @@ public class ClientFactory extends DataFactory {
 	 * creation/profession_defaults_combat_brawler.iff would return an instance of {@link ProfTemplateData} extended from {@link ClientData}.
 	 * A null instance of {@link ClientData} means that parsing for the type of file is not done, or a file was entered that doesn't exist on the
 	 * file system.
-	 * @param save Future calls for this file will try and obtain this reference if it's not null to prevent the file from being parsed multiple times
-	 */
-	public static ClientData getInfoFromFile(String file, boolean save) {
-		file = file.intern();
-		SoftReference<ClientData> reference = DATA_MAP.get(file);
-		ClientData data = null;
-		if (reference != null)
-			data = reference.get();
-		
-		if (data == null) {
-			data = getInstance().readFile(file);
-			if (data == null)
-				return null;
-			
-			// Soft used over Weak because Weak cleared as soon as the reference was not longer needed, Soft will be cleared when memory is needed by the JVM.
-			if (save) {
-				DATA_MAP.put(file, new SoftReference<ClientData>(data));
-			}
-		}
-		
-		return data;
-	}
-
-	/**
-	 * Retrieves information from a client file used by SWG. Parsing of the file is done internally using {@link ClientData} which also
-	 * stores the variables and is the returned type.
-	 * @param file The SWG file you wish to get information from which resides in the ./clientdata/ folder.
-	 * Example: creation/profession_defaults_combat_brawler.iff
-	 * @return Specific visitor type of {@link ClientData} relating to the chosen file. For example, loading the file
-	 * creation/profession_defaults_combat_brawler.iff would return an instance of {@link ProfTemplateData} extended from {@link ClientData}.
-	 * A null instance of {@link ClientData} means that parsing for the type of file is not done, or a file was entered that doesn't exist on the
-	 * file system.
 	 */
 	public static ClientData getInfoFromFile(String file) {
-		return getInfoFromFile(file, false);
+		String fileInterned = file.intern();
+		return DATA_MAP.computeIfAbsent(fileInterned, s -> getInstance().readFile(fileInterned));
 	}
 
 	public static String formatToSharedFile(String original) {
@@ -144,12 +100,9 @@ public class ClientFactory extends DataFactory {
 	@Override
 	protected ClientData createDataObject(String type) {
 		ClientFactoryType c = TYPE_MAP.get(type);
-		if (c == null) {
-			// A logging statement that can be re-enabled if you don't know why something's broken
-//			Log.e("Don't know what class to use for " + type);
-			return null;
-		}
-		return c.create();
+		if (c != null)
+			return c.create();
+		return null;
 	}
 
 	// The typeMap is used for determining what DataObject class
@@ -215,26 +168,26 @@ public class ClientFactory extends DataFactory {
 	}
 	
 	private enum ClientFactoryType {
-		APPEARANCE_TEMPLATE_DATA				(() -> new AppearanceTemplateData()),
-		APPEARANCE_TEMPLATE_LIST				(() -> new AppearanceTemplateList()),
-		BASIC_SKELETON_TEMPLATE					(() -> new BasicSkeletonTemplate()),
-		CRC_STRING_TABLE_DATA					(() -> new CrcStringTableData()),
-		CUSTOMIZABLE_SHADER_DATA				(() -> new CustomizableShaderData()),
-		DATATABLE_DATA							(() -> new DatatableData()),
-		DETAILED_APPEARANCE_TEMPLATE_DATA		(() -> new DetailedAppearanceTemplateData()),
-		LOD_MESH_GENERATOR_TEMPLATE_DATA		(() -> new LodMeshGeneratorTemplateData()),
-		LOD_SKELETON_TEMPLATE_DATA				(() -> new LodSkeletonTemplateData()),
-		MESH_APPEARANCE_TEMPLATE				(() -> new MeshAppearanceTemplate()),
-		OBJECT_DATA								(() -> new ObjectData()),
-		PORTAL_LAYOUT_DATA						(() -> new PortalLayoutData()),
-		PROFILE_TEMPLATE_DATA					(() -> new ProfTemplateData()),
-		SLOT_DESCRIPTOR_DATA					(() -> new SlotDescriptorData()),
-		SLOT_DEFINITION_DATA					(() -> new SlotDefinitionData()),
-		SLOT_ARRANGEMENT_DATA					(() -> new SlotArrangementData()),
-		SKELETAL_APPEARANCE_DATA				(() -> new SkeletalAppearanceData()),
-		SKELETAL_MESH_GENERATOR_TEMPLATE_DATA	(() -> new SkeletalMeshGeneratorTemplateData()),
-		STATIC_SHADER_DATA						(() -> new StaticShaderData()),
-		WORLD_SNAPSHOT_DATA						(() -> new WorldSnapshotData());
+		APPEARANCE_TEMPLATE_DATA				(AppearanceTemplateData::new),
+		APPEARANCE_TEMPLATE_LIST				(AppearanceTemplateList::new),
+		BASIC_SKELETON_TEMPLATE					(BasicSkeletonTemplate::new),
+		CRC_STRING_TABLE_DATA					(CrcStringTableData::new),
+		CUSTOMIZABLE_SHADER_DATA				(CustomizableShaderData::new),
+		DATATABLE_DATA							(DatatableData::new),
+		DETAILED_APPEARANCE_TEMPLATE_DATA		(DetailedAppearanceTemplateData::new),
+		LOD_MESH_GENERATOR_TEMPLATE_DATA		(LodMeshGeneratorTemplateData::new),
+		LOD_SKELETON_TEMPLATE_DATA				(LodSkeletonTemplateData::new),
+		MESH_APPEARANCE_TEMPLATE				(MeshAppearanceTemplate::new),
+		OBJECT_DATA								(ObjectData::new),
+		PORTAL_LAYOUT_DATA						(PortalLayoutData::new),
+		PROFILE_TEMPLATE_DATA					(ProfTemplateData::new),
+		SLOT_DESCRIPTOR_DATA					(SlotDescriptorData::new),
+		SLOT_DEFINITION_DATA					(SlotDefinitionData::new),
+		SLOT_ARRANGEMENT_DATA					(SlotArrangementData::new),
+		SKELETAL_APPEARANCE_DATA				(SkeletalAppearanceData::new),
+		SKELETAL_MESH_GENERATOR_TEMPLATE_DATA	(SkeletalMeshGeneratorTemplateData::new),
+		STATIC_SHADER_DATA						(StaticShaderData::new),
+		WORLD_SNAPSHOT_DATA						(WorldSnapshotData::new);
 		
 		private final Supplier<ClientData> supplier;
 		

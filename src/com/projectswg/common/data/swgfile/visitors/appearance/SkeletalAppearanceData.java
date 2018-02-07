@@ -108,7 +108,7 @@ public class SkeletalAppearanceData extends ClientData {
 	private void readMeshGenerator(IffNode node) {
 		for (int i = 0; i < meshGeneratorCount; i++) {
 			String name = node.readString();
-			meshGenerators.put(name, (LodMeshGeneratorTemplateData) ClientFactory.getInfoFromFile(name, false));
+			meshGenerators.put(name, (LodMeshGeneratorTemplateData) ClientFactory.getInfoFromFile(name));
 		}
 	}
 	

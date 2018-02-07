@@ -78,7 +78,7 @@ public class LodMeshGeneratorTemplateData extends ClientData {
 		for (int i = 0; i < lodCount; i++) {
 			IffNode node = iff.enterChunk("NAME");
 			String name = node.readString();
-			generators.put(name, (SkeletalMeshGeneratorTemplateData) ClientFactory.getInfoFromFile(name, false));
+			generators.put(name, (SkeletalMeshGeneratorTemplateData) ClientFactory.getInfoFromFile(name));
 		}
 	}
 	

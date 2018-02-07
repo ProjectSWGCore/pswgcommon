@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.projectswg.common.data.location.Point3D;
+import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.utilities.ByteUtilities;
 
 /**
@@ -297,7 +298,7 @@ public class IffNode {
 
 	private byte[] createChunk() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(8 + chunkData.length).order(ByteOrder.LITTLE_ENDIAN);
-		byteBuffer.put(tag.getBytes(Charset.forName("US-ASCII")));
+		byteBuffer.put(tag.getBytes(StandardCharsets.US_ASCII));
 		byteBuffer.order(ByteOrder.BIG_ENDIAN).putInt(chunkData.length);
 		byteBuffer.put(chunkData);
 		return byteBuffer.array();
@@ -311,9 +312,10 @@ public class IffNode {
 	}
 
 	private String getTag(ByteBuffer bb) {
-		byte[] tagBytes = new byte[4];
-		bb.get(tagBytes);
-		return new String(tagBytes, StandardCharsets.UTF_8);
+		char [] str = new char[4];
+		for (int i = 0; i < 4; ++i)
+			str[i] = (char) bb.get();
+		return new String(str);
 	}
 
 	@Override

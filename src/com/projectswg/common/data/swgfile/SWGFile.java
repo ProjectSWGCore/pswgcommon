@@ -103,11 +103,8 @@ public class SWGFile {
 
 	private boolean isValidIff(ByteBuffer buffer, int size) {
 		buffer.mark();
-
-		byte[] tag = new byte[4];
-		buffer.get(tag);
-		String root = new String(tag, StandardCharsets.UTF_8);
-		if (!root.equals("FORM"))
+		
+		if (buffer.get() != 'F' || buffer.get() != 'O' || buffer.get() != 'R' || buffer.get() != 'M')
 			return false;
 
 		int formSize = buffer.getInt();
