@@ -69,9 +69,9 @@ public class CrcDatabase {
 	}
 	
 	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("crc_database.csv")) {
+		try (InputStream is = getClass().getResourceAsStream("/crc_database.csv")) {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-			String line = null;
+			String line;
 			while ((line = reader.readLine()) != null) {
 				processLine(line);
 			}

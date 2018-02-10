@@ -6,17 +6,6 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-		resources {
-			srcDir 'src'
-		}
-    }
-}
-
 jar {
 	from sourceSets.main.allSource
 	archiveName = "PSWGCommon.jar"
