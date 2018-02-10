@@ -34,12 +34,13 @@ import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 public class ClientFactory extends DataFactory {
 	
 	private static final ClientFactory INSTANCE = new ClientFactory();
-	private static final Map <String, ClientData> DATA_MAP = new HashMap<>();
+	private static final Map <String, ClientData> DATA_MAP = new ConcurrentHashMap<>();
 	private static final Map <String, ClientFactoryType> TYPE_MAP = new HashMap<>();
 	
 	static {
@@ -82,7 +83,13 @@ public class ClientFactory extends DataFactory {
 	 */
 	public static ClientData getInfoFromFile(String file) {
 		String fileInterned = file.intern();
-		return DATA_MAP.computeIfAbsent(fileInterned, s -> getInstance().readFile(fileInterned));
+		ClientData data = DATA_MAP.get(fileInterned);
+		if (data != null)
+			return data;
+		data = getInstance().readFile(fileInterned);
+		if (data != null)
+			DATA_MAP.putIfAbsent(fileInterned, data);
+		return data;
 	}
 
 	public static String formatToSharedFile(String original) {
