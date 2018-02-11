@@ -27,15 +27,15 @@
 ***********************************************************************************/
 package com.projectswg.common.data.sui;
 
+import com.projectswg.common.debug.Log;
+import com.projectswg.common.encoding.Encodable;
+import com.projectswg.common.network.NetBuffer;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.projectswg.common.debug.Log;
-import com.projectswg.common.encoding.Encodable;
-import com.projectswg.common.network.NetBuffer;
 
 public class SuiBaseWindow implements Encodable {
 
@@ -45,7 +45,6 @@ public class SuiBaseWindow implements Encodable {
 	private float maxDistance = 0;
 	private List<SuiComponent> components = new ArrayList<>();
 	private Map<String, ISuiCallback> callbacks;
-	private Map<String, String> scriptCallbacks;
 	private boolean hasSubscriptionComponent = false;
 
 	public SuiBaseWindow() {
@@ -167,25 +166,6 @@ public class SuiBaseWindow implements Encodable {
 		addCallback(event, "", name, callback);
 	}
 
-	public final void addCallback(SuiEvent event, String source, String script, String function) {
-		subscribeToEvent(event.getValue(), source, function);
-		addScriptCallback(function, script);
-	}
-
-	public final void addCallback(SuiEvent event, String script, String function) {
-		addCallback(event, "", script, function);
-	}
-
-	public final void addCallback(String source, String script, String function) {
-		subscribeToEvent(SuiEvent.OK_PRESSED.getValue(), source, function);
-		subscribeToEvent(SuiEvent.CANCEL_PRESSED.getValue(), source, function);
-		addScriptCallback(function, script);
-	}
-
-	public final void addCallback(String script, String function) {
-		addCallback("", script, function);
-	}
-
 	public final void addCallback(String source, String name, ISuiCallback callback) {
 		subscribeToEvent(SuiEvent.OK_PRESSED.getValue(), source, name);
 		subscribeToEvent(SuiEvent.CANCEL_PRESSED.getValue(), source, name);
@@ -256,14 +236,6 @@ public class SuiBaseWindow implements Encodable {
 		return callbacks != null ? callbacks.get(name) : null;
 	}
 
-	public final String getCallbackScript(String function) {
-		return scriptCallbacks != null ? scriptCallbacks.get(function) : null;
-	}
-
-	public final boolean hasCallbackFunction(String function) {
-		return scriptCallbacks != null && scriptCallbacks.containsKey(function);
-	}
-
 	public final boolean hasJavaCallback(String name) {
 		return callbacks != null && callbacks.containsKey(name);
 	}
@@ -276,12 +248,6 @@ public class SuiBaseWindow implements Encodable {
 		if (callbacks == null) callbacks = new HashMap<>();
 
 		callbacks.put(name, callback);
-	}
-
-	private void addScriptCallback(String function, String script) {
-		if (scriptCallbacks == null) scriptCallbacks = new HashMap<>();
-
-		scriptCallbacks.put(function, script);
 	}
 
 	private String getWrappedEventString(int event) {
