@@ -30,7 +30,6 @@ package com.projectswg.common.data.combat;
 import com.projectswg.common.data.EnumLookup;
 
 public enum CombatSpamFilterType {
-	
 	ALL(0),
 	SELF(1),
 	GROUP(2),
