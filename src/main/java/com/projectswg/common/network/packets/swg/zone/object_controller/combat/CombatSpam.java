@@ -28,6 +28,7 @@
 package com.projectswg.common.network.packets.swg.zone.object_controller.combat;
 
 import com.projectswg.common.data.combat.AttackInfo;
+import com.projectswg.common.data.combat.CombatSpamFilterType;
 import com.projectswg.common.data.combat.DamageType;
 import com.projectswg.common.data.combat.HitLocation;
 import com.projectswg.common.data.encodables.oob.StringId;
@@ -49,7 +50,7 @@ public class CombatSpam extends ObjectController {
 	private StringId attackName;
 	private AttackInfo info;
 	private String spamMessage;
-	private int spamType;
+	private CombatSpamFilterType spamType;
 	
 	public CombatSpam(long objectId) {
 		super(objectId, CRC);
@@ -98,17 +99,13 @@ public class CombatSpam extends ObjectController {
 				info.setDodge(data.getBoolean());
 				info.setParry(data.getBoolean());
 			}
-		} else {
-			// spamMessage = data.getUnicode();
-			data.getInt();
+		} else if (isMessageData(dataType)) {
+			spamMessage = data.getUnicode();
 		}
 		info.setCritical(data.getBoolean());
 		info.setGlancing(data.getBoolean());
 		info.setProc(data.getBoolean());
-		spamType = data.getInt();
-		if (isMessageData(dataType)) {
-			// Extra stuff?
-		}
+		spamType = CombatSpamFilterType.getCombatSpamFilterType(data.getInt());
 	}
 	
 	@Override
@@ -149,13 +146,13 @@ public class CombatSpam extends ObjectController {
 				data.addBoolean(info.isDodge());
 				data.addBoolean(info.isParry());
 			}
-		} else {
-			data.addInt(0); // ihnfk
+		} else if (isMessageData(dataType)) {
+			data.addUnicode(spamMessage);
 		}
 		data.addBoolean(info.isCritical());
 		data.addBoolean(info.isGlancing());
 		data.addBoolean(info.isProc());
-		data.addInt(spamType);
+		data.addInt(spamType.getNum());
 		return data;
 	}
 	
@@ -165,8 +162,8 @@ public class CombatSpam extends ObjectController {
 			size += 9 + attackName.getLength() + (info.isSuccess() ? 60 : 2);
 		else if (isAttackWeaponName(dataType))
 			size += 1 + attackName.getLength() + weaponName.getLength() + (info.isSuccess() ? 60 : 2);
-		else
-			size += 4; // I have no idea what's in this struct
+		else if (isMessageData(dataType))
+			size += 4 + spamMessage.length() * 2; // I have no idea what's in this struct
 		return size;
 	}
 	
@@ -210,7 +207,7 @@ public class CombatSpam extends ObjectController {
 		return spamMessage;
 	}
 	
-	public int getSpamType() {
+	public CombatSpamFilterType getSpamType() {
 		return spamType;
 	}
 	
@@ -254,7 +251,7 @@ public class CombatSpam extends ObjectController {
 		this.spamMessage = spamMessage;
 	}
 	
-	public void setSpamType(int spamType) {
+	public void setSpamType(CombatSpamFilterType spamType) {
 		this.spamType = spamType;
 	}
 	
