@@ -27,6 +27,7 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization;
 
+import com.projectswg.common.concurrency.SynchronizedMap;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.visitors.CustomizationIDManagerData;
 import com.projectswg.common.debug.Log;
@@ -49,10 +50,10 @@ import java.util.Map;
 public class CustomizationString implements Encodable, Persistable {
 	
 	private CustomizationIDManagerData table = (CustomizationIDManagerData) ClientFactory.getInfoFromFile("customization/customization_id_manager.iff");
-    private Map<String, CustomizationVariable> variables;	// TODO synchronize access
-
+	private Map<String, CustomizationVariable> variables;
+	
 	public CustomizationString() {
-		variables = new LinkedHashMap<>();	// TODO concurrent implementation?
+		variables = new SynchronizedMap<>(new LinkedHashMap<>());	// Ordered and synchronized
 	}
 	
 	boolean isEmpty() {
@@ -91,8 +92,12 @@ public class CustomizationString implements Encodable, Persistable {
 		return variables.remove(name);
 	}
 	
-    @Override
-    public void decode(NetBuffer data) {
+	public void clear() {
+		variables.clear();
+	}
+	
+	@Override
+	public void decode(NetBuffer data) {
 		byte[] stringData = data.getArray();
 		
 		if (stringData.length == 0) {
@@ -100,12 +105,12 @@ public class CustomizationString implements Encodable, Persistable {
 		}
 		
 		String string = new String(stringData, StandardCharsets.UTF_8);
-		int[] codePoints = string.codePoints().toArray();	// Replaces 0xC3BF with 0xFF
+		int[] codePoints = string.codePoints().toArray();	// Replaces 0xC3BF with 0xFF, because 0xFF is reserved as an escape flag
 		int position = 0;
 		byte startOfText = (byte) codePoints[position++];
 		
 		if (startOfText != 0x02) {
-			// TODO malformed customization string
+			Log.w("Expected UTF8 start-of-text in CustomizationString, assuming corruption!");
 			return;
 		}
 		
@@ -136,8 +141,9 @@ public class CustomizationString implements Encodable, Persistable {
 						variable.setValue(0xFF);
 						break;
 					case 0x03:	// We shouldn't be meeting an end here. Malformed input.
-						// TODO unexpected end of data
-						break;
+						Log.w("Unexpected end of text in CustomizationString, assuming corruption!");
+						clear();	// In this case, we'll want to clear whatever we've loaded as it might be corrupted
+						return;
 				}
 			} else {
 				variable.setValue(current);
@@ -145,28 +151,29 @@ public class CustomizationString implements Encodable, Persistable {
 			
 			variables.put(variableName, variable);
 		}
-	
+		
 		if ((position + 2) < codePoints.length) {
-			// TODO too much data remains. Must be corrupt.
+			Log.w("Too much data remaining in CustomizationString, assuming corruption!");
+			clear();	// In this case, we'll want to clear whatever we've loaded as it might be corrupted
 			return;
 		}
 		
-		position++;	// Escape should be here
+		int escapeFlag = codePoints[position++];
+		int endOfText = codePoints[position++];
 		
-		byte endOfText = (byte) codePoints[position++];
-	
-		if (endOfText != 0x03) {
-			// TODO malformed customization string
+		if (escapeFlag == 0xFF && endOfText != 0x03) {
+			Log.w("Invalid UTF-8 ending for CustomizationString, assuming corruption!");
+			clear();	// In this case, we'll want to clear whatever we've loaded as it might be corrupted
 		}
 	}
 
-    @Override
-    public byte[] encode() {
+	@Override
+	public byte[] encode() {
 		if (isEmpty()) {
 			// No need to send more than an empty array in this case
 			return ByteBuffer.allocate(Short.BYTES).array();
 		}
-	
+		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
 		
@@ -194,7 +201,7 @@ public class CustomizationString implements Encodable, Persistable {
 							writer.write(value);
 							break;
 					}
-				} catch (/*IO*/Exception e) {
+				} catch (Exception e) {
 					Log.e(e);
 				}
 			});
@@ -202,32 +209,36 @@ public class CustomizationString implements Encodable, Persistable {
 			writer.write(0x0FF);	// Escape
 			writer.write(3);	// Marks end of text
 			writer.flush();
+			
+			byte[] result = out.toByteArray();
+			NetBuffer data = NetBuffer.allocate(Short.BYTES + result.length);
+			
+			data.addArray(result);	// This will add the array length in little endian order
+			
+			return data.array();
 		} catch (IOException e) {
 			Log.e(e);
+			return NetBuffer.allocate(Short.SIZE).array();	// Returns an array of 0x00, 0x00 indicating it's empty
 		}
-		
-		byte[] result = out.toByteArray();
-		NetBuffer data = NetBuffer.allocate(Short.BYTES + result.length);
-		
-		data.addArray(result);	// This will add the array length in little endian order
-		
-		return data.array();
 	}
-
-    @Override
-    public int getLength() {
-		if (isEmpty()) {
-			// No need to send more than an empty array in this case
+	
+	@Override
+	public int getLength() {
+		if (isEmpty()) {	// No need to send more than an empty array in this case
 			return Short.BYTES;
 		}
 		
-		// TODO below doesn't give a correct calculation
+		int length = 0;
 		
-		int length = Short.BYTES + 4 + variables.size() * 2;	// Size, version, variable count, an escaped end-marker and variable ID times amount
+		length += Short.BYTES;	// Array size declaration field
+		length += 1;	// UTF-8 start of text
+		length += 1;	// Variable count
+		length += variables.size() * 2;	// Amount of variable IDs and their value
+		length += valuesToEscape() * 2;	// If there are escaped values in there, there will be 0xC3 0xBF in front of them to indicate escape
+		length += 1;	//	Escape flag
+		length += 1;	//	UTF-8 end of text
 		
-		length += valuesToEscape() * 2;	// Escape characters add +1 to length each
-		
-        return length;
-    }
+		return length;
+	}
 	
 }
