@@ -174,7 +174,7 @@ public class CustomizationString implements Encodable, Persistable {
 			return ByteBuffer.allocate(Short.BYTES).array();
 		}
 		
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ByteArrayOutputStream out = new ByteArrayOutputStream(getLength());
 		Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
 		
 		try {
@@ -218,24 +218,23 @@ public class CustomizationString implements Encodable, Persistable {
 			return data.array();
 		} catch (IOException e) {
 			Log.e(e);
-			return NetBuffer.allocate(Short.SIZE).array();	// Returns an array of 0x00, 0x00 indicating it's empty
+			return NetBuffer.allocate(Short.SIZE).array();	// Returns an array of 0x00, 0x00 indicating that it's empty
 		}
 	}
 	
 	@Override
 	public int getLength() {
+		int length = Short.BYTES;	// Array size declaration field
+		
 		if (isEmpty()) {	// No need to send more than an empty array in this case
-			return Short.BYTES;
+			return length;
 		}
 		
-		int length = 0;
-		
-		length += Short.BYTES;	// Array size declaration field
 		length += 1;	// UTF-8 start of text
 		length += 1;	// Variable count
 		length += variables.size() * 2;	// Amount of variable IDs and their value
-		length += valuesToEscape() * 2;	// If there are escaped values in there, there will be 0xC3 0xBF in front of them to indicate escape
-		length += 1;	//	Escape flag
+		length += valuesToEscape() * 2;	// If there are escaped values in there, there will be 0xC3 0xBF to indicate escape
+		length += 2;	//	Escape flag
 		length += 1;	//	UTF-8 end of text
 		
 		return length;
