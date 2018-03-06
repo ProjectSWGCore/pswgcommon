@@ -41,6 +41,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * The Customization string is used to set special properties
@@ -90,6 +91,14 @@ public class CustomizationString implements Encodable, Persistable {
 	
 	public CustomizationVariable remove(String name) {
 		return variables.remove(name);
+	}
+	
+	public CustomizationVariable get(String name) {
+		return variables.get(name);
+	}
+	
+	public void forEach(BiConsumer<? super String, ? super CustomizationVariable> consumer) {
+		variables.forEach(consumer);
 	}
 	
 	public void clear() {
