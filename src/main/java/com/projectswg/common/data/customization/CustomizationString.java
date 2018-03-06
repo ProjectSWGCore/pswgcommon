@@ -71,11 +71,13 @@ public class CustomizationString implements Encodable, Persistable {
 	
 	@Override
 	public void save(NetBufferStream stream) {
+		stream.addByte(0);
 		stream.addRawArray(encode());	// No length is prepended when adding a raw array
 	}
 	
 	@Override
 	public void read(NetBufferStream stream) {
+		stream.getByte();
 		decode(NetBuffer.wrap(stream.array()));
 	}
 	
