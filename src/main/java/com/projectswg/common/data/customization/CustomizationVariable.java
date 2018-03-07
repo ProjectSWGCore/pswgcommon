@@ -30,6 +30,13 @@ public class CustomizationVariable {
 	
 	private int value;
 	
+	public CustomizationVariable() {
+	}
+	
+	public CustomizationVariable(int value) {
+		this.value = value;
+	}
+	
 	/**
 	 *
 	 * @return {@code true} if the value is reserved by UTF-8 and escaping it
