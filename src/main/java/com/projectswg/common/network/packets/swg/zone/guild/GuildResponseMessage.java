@@ -78,4 +78,8 @@ public class GuildResponseMessage extends SWGPacket {
 	public String getGuildName() {
 		return guildName;
 	}
+	
+	public String getMemberTitle() {
+		return memberTitle;
+	}
 }
