@@ -71,6 +71,8 @@ public class CRC implements Encodable, Persistable {
 		0xAFB010B1, 0xAB710D06, 0xA6322BDF, 0xA2F33668, 0xBCB4666D, 0xB8757BDA, 0xB5365D03, 0xB1F740B4
 	};
 	
+	private static final CrcDatabase DATABASE = CrcDatabase.getInstance();
+	
 	private String str;
 	private int crc;
 	
@@ -144,7 +146,7 @@ public class CRC implements Encodable, Persistable {
 	}
 	
 	public static String getString(int crc) {
-		return CrcDatabase.getInstance().getString(crc);
+		return DATABASE.getString(crc);
 	}
 	
 	public static int getCrc(String input) {
