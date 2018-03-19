@@ -27,6 +27,7 @@
 ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.login.creation;
 
+import com.projectswg.common.data.customization.CustomizationString;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
@@ -34,12 +35,12 @@ import com.projectswg.common.network.packets.SWGPacket;
 public class ClientCreateCharacter extends SWGPacket {
 	public static final int CRC = getCrc("ClientCreateCharacter");
 
-	private byte [] charCustomization	= new byte[0];
+	private CustomizationString charCustomization	= new CustomizationString();
 	private String name					= "";
 	private String race					= "";
 	private String start				= "";
 	private String hair					= "";
-	private byte [] hairCustomization	= new byte[0];
+	private CustomizationString hairCustomization	= new CustomizationString();
 	private String clothes				= "";
 	private boolean jedi				= false;
 	private float height				= 0;
@@ -55,12 +56,12 @@ public class ClientCreateCharacter extends SWGPacket {
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
-		charCustomization	= data.getArray();
+		charCustomization	= data.getEncodable(CustomizationString.class);
 		name				= data.getUnicode();
 		race				= data.getAscii();
 		start				= data.getAscii();
 		hair				= data.getAscii();
-		hairCustomization	= data.getArray();
+		hairCustomization	= data.getEncodable(CustomizationString.class);
 		clothes				= data.getAscii();
 		jedi				= data.getBoolean();
 		height				= data.getFloat();
@@ -71,21 +72,21 @@ public class ClientCreateCharacter extends SWGPacket {
 	}
 	
 	public NetBuffer encode() {
-		int extraSize = charCustomization.length;
+		int extraSize = charCustomization.getLength();
 		extraSize += name.length()*2;
 		extraSize += race.length() + start.length();
-		extraSize += hair.length() + hairCustomization.length;
+		extraSize += hair.length() + hairCustomization.getLength();
 		extraSize += clothes.length() + profession.length();
 		extraSize += startingPhase.length();
 		NetBuffer data = NetBuffer.allocate(36+extraSize);
 		data.addShort(2);
 		data.addInt(CRC);
-		data.addArray(charCustomization);
+		data.addEncodable(charCustomization);
 		data.addUnicode(name);
 		data.addAscii(race);
 		data.addAscii(start);
 		data.addAscii(hair);
-		data.addArray(hairCustomization);
+		data.addEncodable(hairCustomization);
 		data.addAscii(clothes);
 		data.addBoolean(jedi);
 		data.addFloat(height);
@@ -96,25 +97,25 @@ public class ClientCreateCharacter extends SWGPacket {
 		return data;
 	}
 	
-	public byte [] getCharCustomization() { return charCustomization; }
+	public CustomizationString getCharCustomization() { return charCustomization; }
 	public String getName() { return name; }
 	public String getRace() { return race; }
 	public String getStartLocation() { return start; }
 	public String getHair() { return hair; }
-	public byte [] getHairCustomization() { return hairCustomization; }
+	public CustomizationString getHairCustomization() { return hairCustomization; }
 	public String getClothes() { return clothes; }
 	public float getHeight() { return height; }
 	public boolean isTutorial() { return tutorial; }
 	public String getProfession() { return profession; }
 	public String getStartingPhase() { return startingPhase; }
 	
-	public void setCharCustomization(byte [] data) { this.charCustomization = data; }
+	public void setCharCustomization(CustomizationString data) { this.charCustomization = data; }
 	public void setName(String name) { this.name = name; }
 	public String getStart() { return start; }
 	public void setStart(String start) { this.start = start; }
 	public void setRace(String race) { this.race = race; }
 	public void setHair(String hair) { this.hair = hair; }
-	public void setHairCustomization(byte [] hairCustomization) { this.hairCustomization = hairCustomization; }
+	public void setHairCustomization(CustomizationString hairCustomization) { this.hairCustomization = hairCustomization; }
 	public void setClothes(String clothes) { this.clothes = clothes; }
 	public void setHeight(float height) { this.height = height; }
 	public void setTutorial(boolean tutorial) { this.tutorial = tutorial; }

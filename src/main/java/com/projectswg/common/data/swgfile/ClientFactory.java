@@ -122,6 +122,7 @@ public class ClientFactory extends DataFactory {
 		TYPE_MAP.put("0006", ClientFactoryType.SLOT_DEFINITION_DATA);
 		TYPE_MAP.put("SLTD", ClientFactoryType.SLOT_DESCRIPTOR_DATA);
 		TYPE_MAP.put("WSNP", ClientFactoryType.WORLD_SNAPSHOT_DATA);
+		TYPE_MAP.put("CIDM", ClientFactoryType.CUSTOMIZATION_ID_MANAGER_DATA);
 		// Appearance Related Data
 		boolean loadAppearanceData = false;
 		TYPE_MAP.put("APPR", !loadAppearanceData ? null : ClientFactoryType.APPEARANCE_TEMPLATE_DATA);
@@ -180,6 +181,7 @@ public class ClientFactory extends DataFactory {
 		BASIC_SKELETON_TEMPLATE					(BasicSkeletonTemplate::new),
 		CRC_STRING_TABLE_DATA					(CrcStringTableData::new),
 		CUSTOMIZABLE_SHADER_DATA				(CustomizableShaderData::new),
+		CUSTOMIZATION_ID_MANAGER_DATA			(CustomizationIDManagerData::new),
 		DATATABLE_DATA							(DatatableData::new),
 		DETAILED_APPEARANCE_TEMPLATE_DATA		(DetailedAppearanceTemplateData::new),
 		LOD_MESH_GENERATOR_TEMPLATE_DATA		(LodMeshGeneratorTemplateData::new),
