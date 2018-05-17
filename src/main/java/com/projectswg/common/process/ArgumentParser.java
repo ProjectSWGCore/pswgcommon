@@ -1,6 +1,6 @@
 package com.projectswg.common.process;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -28,7 +28,6 @@
 package com.projectswg.common.network.packets.swg.zone;
 
 import com.projectswg.common.data.location.Location;
-import com.projectswg.common.debug.Assert;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
@@ -60,12 +59,12 @@ public class SceneCreateObjectByCrc extends SWGPacket {
 		location = data.getEncodable(Location.class);
 		objCrc = data.getInt();
 		hyperspace = data.getBoolean();
+		verifyInternals();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		verifyObjectId();
-		verifyLocation();
+		verifyInternals();
 		NetBuffer data = NetBuffer.allocate(47);
 		data.addShort(5);
 		data.addInt(CRC);
@@ -77,13 +76,14 @@ public class SceneCreateObjectByCrc extends SWGPacket {
 	}
 	
 	public void setObjectId(long objId) {
+		if (objId == 0)
+			throw new IllegalArgumentException("Object ID cannot be 0!");
 		this.objId = objId;
-		verifyObjectId();
 	}
 	
 	public void setLocation(Location l) {
 		this.location = new Location(l);
-		verifyLocation();
+		verifyInternals();
 	}
 	
 	public void setObjectCrc(int objCrc) {
@@ -110,19 +110,16 @@ public class SceneCreateObjectByCrc extends SWGPacket {
 		return hyperspace;
 	}
 	
-	private void verifyObjectId() {
-		Assert.test(objId != 0, "Object ID cannot be 0!");
-	}
-	
-	private void verifyLocation() {
-		Assert.notNull(location);
-		Assert.test(!Double.isNaN(location.getX()), "X Coordinate is NaN!");
-		Assert.test(!Double.isNaN(location.getY()), "Y Coordinate is NaN!");
-		Assert.test(!Double.isNaN(location.getZ()), "Z Coordinate is NaN!");
-		Assert.test(!Double.isNaN(location.getOrientationX()), "X Orientation is NaN!");
-		Assert.test(!Double.isNaN(location.getOrientationY()), "Y Orientation is NaN!");
-		Assert.test(!Double.isNaN(location.getOrientationZ()), "Z Orientation is NaN!");
-		Assert.test(!Double.isNaN(location.getOrientationW()), "W Orientation is NaN!");
+	private void verifyInternals() {
+		packetAssert(objId != 0, "Object ID cannot be 0!");
+		packetAssert(location != null, "location cannot be null");
+		packetAssert(!Double.isNaN(location.getX()), "X Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getY()), "Y Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getZ()), "Z Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationX()), "X Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationY()), "Y Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationZ()), "Z Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationW()), "W Orientation is NaN!");
 	}
 	
 }

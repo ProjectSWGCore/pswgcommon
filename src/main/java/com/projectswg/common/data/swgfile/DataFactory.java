@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 
 /**

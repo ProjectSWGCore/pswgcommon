@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 public class Encoder {
 	

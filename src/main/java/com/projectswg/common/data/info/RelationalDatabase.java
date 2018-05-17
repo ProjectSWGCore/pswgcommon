@@ -37,7 +37,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 public abstract class RelationalDatabase implements Closeable {
 	

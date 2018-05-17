@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 public class CrcDatabase {
 	

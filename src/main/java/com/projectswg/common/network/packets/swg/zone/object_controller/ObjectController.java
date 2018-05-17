@@ -27,7 +27,7 @@
 ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 import com.projectswg.common.network.packets.swg.zone.object_controller.combat.CombatAction;

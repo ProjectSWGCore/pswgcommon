@@ -28,7 +28,7 @@
 package com.projectswg.common.network.packets;
 
 import com.projectswg.common.data.EnumLookup;
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
 import com.projectswg.common.network.packets.swg.ServerUnixEpochTime;
 import com.projectswg.common.network.packets.swg.admin.AdminShutdownServer;

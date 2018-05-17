@@ -30,7 +30,7 @@ package com.projectswg.common.data.swgfile.visitors;
 import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 import java.util.HashMap;
 import java.util.Map;

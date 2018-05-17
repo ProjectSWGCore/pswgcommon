@@ -27,15 +27,14 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.resource;
 
+import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
 
 public class ResourceWeight extends ObjectController {
 	
@@ -60,7 +59,7 @@ public class ResourceWeight extends ObjectController {
 		int count = data.getByte();
 		decodeWeights(data, attributes, count);
 		decodeWeights(data, resourceMaxWeights, count);
-		Assert.test(attributes.size() == resourceMaxWeights.size());
+		packetAssert(attributes.size() == resourceMaxWeights.size(), "attributes must equal resource weight size");
 	}
 	
 	@Override
@@ -70,7 +69,7 @@ public class ResourceWeight extends ObjectController {
 			len += 3 + weights.size();
 		for (List<Weight> weights : resourceMaxWeights.values())
 			len += 3 + weights.size();
-		Assert.test(attributes.size() == resourceMaxWeights.size());
+		packetAssert(attributes.size() == resourceMaxWeights.size(), "attributes must equal resource weight size");
 		NetBuffer data = NetBuffer.allocate(len);
 		encodeHeader(data);
 		encodeWeights(data, attributes);

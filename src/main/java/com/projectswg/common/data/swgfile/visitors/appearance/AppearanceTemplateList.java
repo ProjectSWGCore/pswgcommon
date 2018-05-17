@@ -35,7 +35,7 @@ import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
 import com.projectswg.common.data.swgfile.visitors.appearance.render.RenderData;
 import com.projectswg.common.data.swgfile.visitors.appearance.render.RenderableData;
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 public class AppearanceTemplateList extends ClientData implements RenderableData {
 	

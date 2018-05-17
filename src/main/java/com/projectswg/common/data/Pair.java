@@ -1,9 +1,5 @@
 package com.projectswg.common.data;
 
-import java.util.Objects;
-
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.encoding.CachedEncode;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.encoding.Encoder;
@@ -11,6 +7,9 @@ import com.projectswg.common.encoding.StringType;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.log.Log;
+
+import java.util.Objects;
 
 public class Pair<T, S> implements Encodable, Persistable {
 	
@@ -25,8 +24,10 @@ public class Pair<T, S> implements Encodable, Persistable {
 	
 	private Pair(T left, S right, Class<T> leftClass, Class<S> rightClass, StringType leftType, StringType rightType) {
 		// Final checks - has to be either one or the other. These ensure other assumptions in the class will succeed
-		Assert.test((leftType == null && !(left instanceof String) && !leftClass.equals(String.class)) ^ (leftType != null && (left instanceof String) && leftClass.equals(String.class)));
-		Assert.test((rightType == null && !(right instanceof String) && !rightClass.equals(String.class)) ^ (rightType != null && (right instanceof String) && rightClass.equals(String.class)));
+		if ((leftType == null && !(left instanceof String) && !leftClass.equals(String.class)) == (leftType != null && (left instanceof String) && leftClass.equals(String.class)))
+			throw new IllegalArgumentException("Invalid left arguments");
+		if ((rightType == null && !(right instanceof String) && !rightClass.equals(String.class)) == (rightType != null && (right instanceof String) && rightClass.equals(String.class)))
+			throw new IllegalArgumentException("Invalid right arguments");
 		this.leftClass = leftClass;
 		this.rightClass = rightClass;
 		this.leftType = leftType;
@@ -150,8 +151,10 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T, S> Pair<T, S> createPair(T left, S right, Class<T> leftClass, Class<S> rightClass) {
-		Assert.test(!(left instanceof String));
-		Assert.test(!(right instanceof String));
+		if (!(left instanceof String))
+			throw new IllegalArgumentException("Invalid left argument");
+		if (!(right instanceof String))
+			throw new IllegalArgumentException("Invalid right argument");
 		return new Pair<>(left, right, leftClass, rightClass, null, null);
 	}
 	
@@ -162,7 +165,8 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T> Pair<String, T> createPair(String left, T right, StringType type, Class<T> rightClass) {
-		Assert.test(!(right instanceof String));
+		if (!(right instanceof String))
+			throw new IllegalArgumentException("Invalid right argument");
 		return new Pair<>(left, right, String.class, rightClass, type, null);
 	}
 	
@@ -173,7 +177,8 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T> Pair<T, String> createPair(T left, String right, Class<T> leftClass, StringType type) {
-		Assert.test(!(left instanceof String));
+		if (!(left instanceof String))
+			throw new IllegalArgumentException("Invalid left argument");
 		return new Pair<>(left, right, leftClass, String.class, null, type);
 	}
 	

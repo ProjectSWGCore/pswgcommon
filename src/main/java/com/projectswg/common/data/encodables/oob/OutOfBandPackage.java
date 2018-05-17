@@ -33,7 +33,7 @@ import java.util.List;
 
 import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;

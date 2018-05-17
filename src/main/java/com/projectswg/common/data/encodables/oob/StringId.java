@@ -27,7 +27,7 @@
 ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;

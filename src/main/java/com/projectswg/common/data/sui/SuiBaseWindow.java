@@ -27,7 +27,7 @@
 ***********************************************************************************/
 package com.projectswg.common.data.sui;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 

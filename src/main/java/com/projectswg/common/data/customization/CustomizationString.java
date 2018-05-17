@@ -27,18 +27,21 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization;
 
-import com.projectswg.common.concurrency.SynchronizedMap;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.visitors.CustomizationIDManagerData;
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.log.Log;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -54,7 +57,7 @@ public class CustomizationString implements Encodable, Persistable {
 	private Map<String, CustomizationVariable> variables;
 	
 	public CustomizationString() {
-		variables = new SynchronizedMap<>(new LinkedHashMap<>());	// Ordered and synchronized
+		variables = Collections.synchronizedMap(new LinkedHashMap<>());	// Ordered and synchronized
 	}
 	
 	boolean isEmpty() {

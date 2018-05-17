@@ -27,14 +27,14 @@
 ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
-import java.math.BigInteger;
-
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.log.Log;
+
+import java.math.BigInteger;
+import java.util.Objects;
 
 public class ProsePackage implements OutOfBandData {
 	
@@ -194,7 +194,7 @@ public class ProsePackage implements OutOfBandData {
 	
 	@Override
 	public byte[] encode() {
-		Assert.notNull(base, "There must be a StringId base!");
+		Objects.requireNonNull(base, "There must be a StringId base!");
 		NetBuffer data = NetBuffer.allocate(getLength());
 		data.addEncodable(base);
 		data.addEncodable(actor);
@@ -291,12 +291,12 @@ public class ProsePackage implements OutOfBandData {
 		}
 		
 		public void setStringId(StringId stringId) {
-			Assert.notNull(stringId, "StringId cannot be null!");
+			Objects.requireNonNull(stringId, "StringId cannot be null!");
 			this.stringId = stringId;
 		}
 		
 		public void setText(String text) {
-			Assert.notNull(text, "Text cannot be null!");
+			Objects.requireNonNull(text, "Text cannot be null!");
 			this.text = text;
 		}
 		

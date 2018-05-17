@@ -1,7 +1,5 @@
 package com.projectswg.common.process;
 
-import com.projectswg.common.debug.Assert;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
@@ -40,19 +38,22 @@ public class JarProcessBuilder {
 	}
 	
 	public JarProcessBuilder setMinMemory(long minMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.minMemory = unit.getBytes(minMemory);
 		return this;
 	}
 	
 	public JarProcessBuilder setMaxMemory(long maxMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.maxMemory = unit.getBytes(maxMemory);
 		return this;
 	}
 	
 	public JarProcessBuilder setMemory(long minMemory, long maxMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.minMemory = unit.getBytes(minMemory);
 		this.maxMemory = unit.getBytes(maxMemory);
 		return this;

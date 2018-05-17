@@ -3,7 +3,7 @@ package com.projectswg.common.network.packets;
 import java.net.SocketAddress;
 
 import com.projectswg.common.data.CRC;
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 
 public abstract class SWGPacket {
@@ -51,6 +51,11 @@ public abstract class SWGPacket {
 	
 	public abstract void decode(NetBuffer data);
 	public abstract NetBuffer encode();
+	
+	protected void packetAssert(boolean condition, String constraint) {
+		if (!condition)
+			throw new PacketSerializationException(this, constraint);
+	}
 	
 	public static int getCrc(String string) {
 		return CRC.getCrc(string);
