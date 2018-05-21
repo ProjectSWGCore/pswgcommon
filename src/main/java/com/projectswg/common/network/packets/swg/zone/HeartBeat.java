@@ -33,21 +33,33 @@ import com.projectswg.common.network.packets.SWGPacket;
 public class HeartBeat extends SWGPacket {
 	public static final int CRC = getCrc("HeartBeat");
 	
+	private byte [] payload;
+	
 	public HeartBeat() {
-		
+		this.payload = new byte[0];
+	}
+	
+	public HeartBeat(byte [] payload) {
+		this.payload = payload;
 	}
 	
 	@Override
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
+		payload = data.getArray(data.remaining());
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(6);
+		NetBuffer data = NetBuffer.allocate(6 + payload.length);
 		data.addShort(1);
 		data.addInt(CRC);
+		data.addRawArray(payload);
 		return data;
+	}
+	
+	public byte [] getPayload() {
+		return payload;
 	}
 }
