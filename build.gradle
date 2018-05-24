@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.6.6'
+	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.6.8'
 	compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.59'
 	testCompile 'junit:junit:4.12'
 }
