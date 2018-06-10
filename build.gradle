@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 9
+targetCompatibility = 9
 
 repositories {
 	jcenter()
@@ -15,6 +15,3 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 }
 
-task wrapper(type: Wrapper) {
-	gradleVersion = "4.7"
-}
