@@ -32,6 +32,7 @@ import com.projectswg.common.data.swgfile.visitors.appearance.*;
 import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
 import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +91,21 @@ public class ClientFactory extends DataFactory {
 		if (data != null)
 			DATA_MAP.putIfAbsent(fileInterned, data);
 		return data;
+	}
+
+	/**
+	 * Retrieves information from a client file used by SWG. Parsing of the file is done internally using {@link ClientData} which also
+	 * stores the variables and is the returned type. Retrieving info from this file puts a reference of the returned 
+	 * {@link ClientData} into a {@link HashMap}. Future calls for this file will try and obtain this reference if it's not null to prevent
+	 * the file from being parsed multiple times if the save variable is true.
+	 * @param file The SWG file you wish to get information from which resides in the ./clientdata/ folder.
+	 * @return Specific visitor type of {@link ClientData} relating to the chosen file. For example, loading the file
+	 * creation/profession_defaults_combat_brawler.iff would return an instance of {@link ProfTemplateData} extended from {@link ClientData}.
+	 * A null instance of {@link ClientData} means that parsing for the type of file is not done, or a file was entered that doesn't exist on the
+	 * file system.
+	 */
+	public static ClientData getInfoFromFile(File file) {
+		return getInstance().readFile(file);
 	}
 
 	public static String formatToSharedFile(String original) {

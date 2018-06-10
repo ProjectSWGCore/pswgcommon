@@ -34,11 +34,11 @@ import com.projectswg.common.persistable.Persistable;
 
 public class StringId implements OutOfBandData, Persistable {
 	
-	private String key = "";
-	private String file = "";
+	private String key;
+	private String file;
 	
 	public StringId() {
-		
+		this("", "");
 	}
 	
 	public StringId(String file, String key) {
@@ -49,6 +49,8 @@ public class StringId implements OutOfBandData, Persistable {
 	public StringId(String stf) {
 		if (!stf.contains(":")) {
 			Log.e("Invalid stf format! Expected a semi-colon for " + stf);
+			this.key = "";
+			this.file = "";
 			return;
 		}
 		
@@ -56,10 +58,8 @@ public class StringId implements OutOfBandData, Persistable {
 			stf = stf.substring(1);
 		
 		String[] split = stf.split(":", 2);
-		file = split[0];
-		
-		if (split.length == 2)
-			key = split[1];
+		this.file = split[0];
+		this.key = (split.length >= 2) ? split[1] : "";
 	}
 	
 	@Override
@@ -109,16 +109,8 @@ public class StringId implements OutOfBandData, Persistable {
 		return key;
 	}
 	
-	public void setKey(String key) {
-		this.key = key;
-	}
-	
 	public String getFile() {
 		return file;
-	}
-	
-	public void setFile(String file) {
-		this.file = file;
 	}
 	
 	@Override

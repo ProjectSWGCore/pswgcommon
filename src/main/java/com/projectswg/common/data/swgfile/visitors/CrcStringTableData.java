@@ -87,7 +87,7 @@ public class CrcStringTableData extends ClientData {
 	
 	public int getCrcForString(String str) {
 		Integer crc = reverseCrcMap.get(str);
-		return crc == null ? 0 : crc.intValue();
+		return crc == null ? 0 : crc;
 	}
 	
 	public Map<Integer, String> getCrcMap() {

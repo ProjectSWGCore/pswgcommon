@@ -39,7 +39,10 @@ import me.joshlarson.jlcommon.log.Log;
 public abstract class DataFactory {
 	
 	protected ClientData readFile(String filename) {
-		File file = new File(getFolder() + filename);
+		return readFile(new File(getFolder() + filename));
+	}
+	
+	protected ClientData readFile(File file) {
 		if (!file.isFile()) {
 			return null;
 		}
