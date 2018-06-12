@@ -47,6 +47,14 @@ public class DataTransformWithParent extends ObjectController {
 		super(objectId, CRC);
 	}
 	
+	public DataTransformWithParent(long objectId, int counter, long cellId, Location l, float speed) {
+		super(objectId, CRC);
+		this.counter = counter;
+		this.cellId = cellId;
+		this.l = l;
+		this.speed = speed;
+	}
+	
 	public DataTransformWithParent(NetBuffer data) {
 		super(CRC);
 		decode(data);
@@ -66,7 +74,16 @@ public class DataTransformWithParent extends ObjectController {
 	
 	@Override
 	public NetBuffer encode() {
-		return null;
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 53);
+		encodeHeader(data);
+		data.addInt(timestamp);
+		data.addInt(counter);
+		data.addLong(cellId);
+		data.addEncodable(l);
+		data.addFloat(speed);
+		data.addFloat(lookAtYaw);
+		data.addBoolean(useLookAtYaw);
+		return data;
 	}
 	
 	public void setUpdateCounter(int counter) {

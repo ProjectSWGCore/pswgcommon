@@ -104,6 +104,7 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x012E: return new PlayerEmote(data);
 			case 0x0131: return new PostureUpdate(data);
 			case 0x0134: return new CombatSpam(data);
+			case 0x013F: return new TeleportAck(data);
 			case 0x0146: return new ObjectMenuRequest(data);
 			case 0x01BD: return new ShowFlyText(data);
 			case 0x01BF: return new DraftSlotsQueryResponse(data);
