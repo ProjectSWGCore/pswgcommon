@@ -27,28 +27,30 @@
  ***********************************************************************************/
 package com.projectswg.common.data.combat;
 
-import com.projectswg.common.data.EnumLookup;
-
 public enum TargetType {
-	NONE(0),
-	REQUIRED(1),
-	OPTIONAL(2),
-	LOCATION(3),
-	ALL(4);
+	NONE	("none"),
+	REQUIRED("required"),
+	OPTIONAL("optional"),
+	LOCATION("location"),
+	ALL		("all");
 	
-	private static final EnumLookup<Integer, TargetType> LOOKUP = new EnumLookup<>(TargetType.class, TargetType::getNum);
+	private static final TargetType [] VALUES = values();
 	
-	private int num;
+	private final String name;
 	
-	TargetType(int num) {
-		this.num = num;
+	TargetType(String name) {
+		this.name = name;
 	}
 	
-	public int getNum() {
-		return num;
+	public String getName() {
+		return name;
 	}
 	
-	public static TargetType getTargetType(int num) {
-		return LOOKUP.getEnum(num, NONE);
+	public static TargetType getTargetType(String name) {
+		for (TargetType p : VALUES) {
+			if (p.getName().equals(name))
+				return p;
+		}
+		return NONE;
 	}
 }
