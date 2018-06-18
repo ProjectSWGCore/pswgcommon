@@ -34,7 +34,7 @@ public enum HitType {
 	ATTACK								(-1),
 	BUFF								(0),
 	DEBUFF								(4),
-	HEAL									(5),
+	HEAL								(5),
 	DELAY_ATTACK						(6),
 	REVIVE								(7);
 	

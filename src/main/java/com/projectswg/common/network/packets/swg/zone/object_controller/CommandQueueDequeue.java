@@ -43,6 +43,14 @@ public class CommandQueueDequeue extends ObjectController {
 		super(objectId, CRC);
 	}
 	
+	public CommandQueueDequeue(long objectId, int counter, float timer, int error, int action) {
+		super(objectId, CRC);
+		this.counter = counter;
+		this.timer = timer;
+		this.error = error;
+		this.action = action;
+	}
+	
 	public CommandQueueDequeue(NetBuffer data) {
 		super(CRC);
 		decode(data);
