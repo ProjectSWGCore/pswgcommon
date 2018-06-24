@@ -37,7 +37,7 @@ import com.projectswg.common.network.NetBufferStream;
 
 public class WaypointPackage implements OutOfBandData  {
 	
-	private final Point3D position;
+	private Point3D position;
 	
 	private long objectId;
 	private Terrain terrain;
@@ -95,6 +95,10 @@ public class WaypointPackage implements OutOfBandData  {
 	
 	public void setTerrain(Terrain terrain) {
 		this.terrain = terrain;
+	}
+
+	public void setPosition(Point3D position) {
+		this.position = position;
 	}
 	
 	public void setCellId(long cellId) {
