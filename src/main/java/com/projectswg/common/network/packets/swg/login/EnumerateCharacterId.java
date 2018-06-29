@@ -81,7 +81,7 @@ public class EnumerateCharacterId extends SWGPacket {
 		private int type;
 		
 		public SWGCharacter() {
-			
+			this("", 0, 0, 0, 0);
 		}
 		
 		public SWGCharacter(String name, int raceCrc, long id, int galaxyId, int type) {

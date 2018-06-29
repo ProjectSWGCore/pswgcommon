@@ -28,6 +28,8 @@
 package com.projectswg.common.network.packets;
 
 import com.projectswg.common.data.EnumLookup;
+import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
+import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
 import com.projectswg.common.network.packets.swg.ServerUnixEpochTime;
@@ -185,6 +187,8 @@ public enum PacketType {
 	LAG_REQUEST									(LagRequest.CRC,			LagRequest.class),
 
 	// Login
+	HOLO_LOGIN_REQUEST							(HoloLoginRequestPacket.CRC,	HoloLoginRequestPacket.class),
+	HOLO_LOGIN_RESPONSE							(HoloLoginResponsePacket.CRC,	HoloLoginResponsePacket.class),
 	CLIENT_ID_MSG								(ClientIdMsg.CRC, 				ClientIdMsg.class),
 	ERROR_MESSAGE								(ErrorMessage.CRC, 				ErrorMessage.class),
 	ACCOUNT_FEATURE_BITS						(AccountFeatureBits.CRC, 		AccountFeatureBits.class),

@@ -53,4 +53,8 @@ public class CustomizationVariable {
 	public void setValue(int value) {
 		this.value = value;
 	}
+	
+	public String toString() {
+		return "CustomizationVariable["+value+']';
+	}
 }

@@ -30,7 +30,9 @@ package com.projectswg.common.network.packets.swg.login.creation;
 import com.projectswg.common.data.customization.CustomizationString;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
+import com.projectswg.common.utilities.ByteUtilities;
 
+import java.util.List;
 
 public class ClientCreateCharacter extends SWGPacket {
 	public static final int CRC = getCrc("ClientCreateCharacter");

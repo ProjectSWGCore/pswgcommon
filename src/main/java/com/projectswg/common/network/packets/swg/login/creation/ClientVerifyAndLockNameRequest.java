@@ -54,7 +54,7 @@ public class ClientVerifyAndLockNameRequest extends SWGPacket {
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(10 + race.length() + name.length() * 2);
+		NetBuffer data = NetBuffer.allocate(12 + race.length() + name.length() * 2);
 		data.addShort(4);
 		data.addInt(CRC);
 		data.addAscii(race);

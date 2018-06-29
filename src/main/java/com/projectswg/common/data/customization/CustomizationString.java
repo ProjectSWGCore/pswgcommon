@@ -107,6 +107,10 @@ public class CustomizationString implements Encodable, Persistable {
 		return variables.get(name);
 	}
 	
+	public Map<String, CustomizationVariable> getVariables() {
+		return Collections.unmodifiableMap(variables);
+	}
+	
 	public void forEach(BiConsumer<? super String, ? super CustomizationVariable> consumer) {
 		variables.forEach(consumer);
 	}
