@@ -27,6 +27,9 @@
 ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupCloseLotteryWindow;
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupOpenLotteryWindow;
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -109,6 +112,9 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x01BD: return new ShowFlyText(data);
 			case 0x01BF: return new DraftSlotsQueryResponse(data);
 			case 0x01DB: return new BiographyUpdate(data);
+			case 0x043D: return new GroupOpenLotteryWindow(data);
+			case 0x043E: return new GroupCloseLotteryWindow(data);
+			case 0x0440: return new GroupRequestLotteryItems(data);
 			case 0x0448: return new CommandTimer(data);
 			case 0x044D: return new ChangeRoleIconChoice(data);
 			case 0x04BC: return new ShowLootBox(data);
