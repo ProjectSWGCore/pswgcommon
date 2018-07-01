@@ -47,8 +47,6 @@ public class ClientCreateCharacter extends SWGPacket {
 	private float height				= 0;
 	private String biography			= "";
 	private boolean tutorial			= false;
-	private String profession			= "";
-	private String startingPhase		= "";
 	
 	public ClientCreateCharacter() {
 		
@@ -68,8 +66,6 @@ public class ClientCreateCharacter extends SWGPacket {
 		height				= data.getFloat();
 		biography			= data.getUnicode();
 		tutorial			= data.getBoolean();
-		profession			= data.getAscii();
-		startingPhase		= data.getAscii();
 	}
 	
 	public NetBuffer encode() {
@@ -77,8 +73,7 @@ public class ClientCreateCharacter extends SWGPacket {
 		extraSize += name.length()*2;
 		extraSize += race.length() + start.length();
 		extraSize += hair.length() + hairCustomization.getLength();
-		extraSize += clothes.length() + profession.length();
-		extraSize += startingPhase.length();
+		extraSize += clothes.length();
 		NetBuffer data = NetBuffer.allocate(36+extraSize);
 		data.addShort(2);
 		data.addInt(CRC);
@@ -93,8 +88,6 @@ public class ClientCreateCharacter extends SWGPacket {
 		data.addFloat(height);
 		data.addUnicode(biography);
 		data.addBoolean(tutorial);
-		data.addAscii(profession);
-		data.addAscii(startingPhase);
 		return data;
 	}
 	
@@ -107,20 +100,33 @@ public class ClientCreateCharacter extends SWGPacket {
 	public String getClothes() { return clothes; }
 	public float getHeight() { return height; }
 	public boolean isTutorial() { return tutorial; }
-	public String getProfession() { return profession; }
-	public String getStartingPhase() { return startingPhase; }
 	
 	public void setCharCustomization(CustomizationString data) { this.charCustomization = data; }
 	public void setName(String name) { this.name = name; }
 	public String getStart() { return start; }
 	public void setStart(String start) { this.start = start; }
+	
+	public boolean isJedi() {
+		return jedi;
+	}
+	
+	public void setJedi(boolean jedi) {
+		this.jedi = jedi;
+	}
+	
+	public String getBiography() {
+		return biography;
+	}
+	
+	public void setBiography(String biography) {
+		this.biography = biography;
+	}
+	
 	public void setRace(String race) { this.race = race; }
 	public void setHair(String hair) { this.hair = hair; }
 	public void setHairCustomization(CustomizationString hairCustomization) { this.hairCustomization = hairCustomization; }
 	public void setClothes(String clothes) { this.clothes = clothes; }
 	public void setHeight(float height) { this.height = height; }
 	public void setTutorial(boolean tutorial) { this.tutorial = tutorial; }
-	public void setProfession(String profession) { this.profession = profession; }
-	public void setStartingPhase(String startingPhase) { this.startingPhase = startingPhase; }
 	
 }

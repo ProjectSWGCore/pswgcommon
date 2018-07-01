@@ -51,13 +51,15 @@ public class ChangeRoleIconChoice extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
+		data.getInt();	// CU Object Controller spacer
 		iconChoice = data.getInt();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + Integer.BYTES);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 2 * Integer.BYTES);
 		encodeHeader(data);
+		data.addInt(0);	// CU Object Controller spacer
 		data.addInt(iconChoice);
 		return data;
 	}

@@ -62,6 +62,7 @@ public class ObjectMenuResponse extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
+		data.getInt();	// CU Object Controller spacer
 		targetId = data.getLong();
 		requestorId = data.getLong();
 		options = data.getEncodable(RadialOptionList.class);
@@ -70,8 +71,9 @@ public class ObjectMenuResponse extends ObjectController {
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + options.getSize() + 17);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + options.getSize() + 21);
 		encodeHeader(data);
+		data.addInt(0);	// CU Object Controller spacer
 		data.addLong(targetId);
 		data.addLong(requestorId);
 		data.addEncodable(options);

@@ -62,6 +62,35 @@ import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterR
 import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterResponse;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameRequest;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameResponse;
+import com.projectswg.common.network.packets.swg.zone.ClientOpenContainerMessage;
+import com.projectswg.common.network.packets.swg.zone.CmdSceneReady;
+import com.projectswg.common.network.packets.swg.zone.ConnectPlayerResponseMessage;
+import com.projectswg.common.network.packets.swg.zone.EnterTicketPurchaseModeMessage;
+import com.projectswg.common.network.packets.swg.zone.ExpertiseRequestMessage;
+import com.projectswg.common.network.packets.swg.zone.GalaxyLoopTimesResponse;
+import com.projectswg.common.network.packets.swg.zone.GameServerLagResponse;
+import com.projectswg.common.network.packets.swg.zone.HeartBeat;
+import com.projectswg.common.network.packets.swg.zone.LagRequest;
+import com.projectswg.common.network.packets.swg.zone.ObjectMenuSelect;
+import com.projectswg.common.network.packets.swg.zone.ParametersMessage;
+import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListRequest;
+import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListResponse;
+import com.projectswg.common.network.packets.swg.zone.PlayClientEffectObjectMessage;
+import com.projectswg.common.network.packets.swg.zone.PlayMusicMessage;
+import com.projectswg.common.network.packets.swg.zone.RequestGalaxyLoopTimes;
+import com.projectswg.common.network.packets.swg.zone.SceneCreateObjectByCrc;
+import com.projectswg.common.network.packets.swg.zone.SceneDestroyObject;
+import com.projectswg.common.network.packets.swg.zone.SceneEndBaselines;
+import com.projectswg.common.network.packets.swg.zone.ServerNowEpochTime;
+import com.projectswg.common.network.packets.swg.zone.ServerTimeMessage;
+import com.projectswg.common.network.packets.swg.zone.ServerWeatherMessage;
+import com.projectswg.common.network.packets.swg.zone.SetWaypointColor;
+import com.projectswg.common.network.packets.swg.zone.StopClientEffectObjectByLabelMessage;
+import com.projectswg.common.network.packets.swg.zone.UpdateContainmentMessage;
+import com.projectswg.common.network.packets.swg.zone.UpdatePostureMessage;
+import com.projectswg.common.network.packets.swg.zone.UpdatePvpStatusMessage;
+import com.projectswg.common.network.packets.swg.zone.UpdateTransformMessage;
+import com.projectswg.common.network.packets.swg.zone.UpdateTransformWithParentMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.CancelLiveAuctionMessage;
@@ -109,7 +138,6 @@ import com.projectswg.common.network.packets.swg.zone.chat.ChatSystemMessage;
 import com.projectswg.common.network.packets.swg.zone.chat.ChatUnbanAvatarFromRoom;
 import com.projectswg.common.network.packets.swg.zone.chat.ChatUninviteFromRoom;
 import com.projectswg.common.network.packets.swg.zone.chat.ConGenericMessage;
-import com.projectswg.common.network.packets.swg.zone.chat.VoiceChatStatus;
 import com.projectswg.common.network.packets.swg.zone.combat.GrantCommandMessage;
 import com.projectswg.common.network.packets.swg.zone.deltas.DeltasMessage;
 import com.projectswg.common.network.packets.swg.zone.guild.GuildRequestMessage;
@@ -208,8 +236,6 @@ public enum PacketType {
 	DELTA										(DeltasMessage.CRC, 				DeltasMessage.class),
 	SERVER_TIME_MESSAGE							(ServerTimeMessage.CRC, 			ServerTimeMessage.class),
 	SET_WAYPOINT_COLOR							(SetWaypointColor.CRC, 				SetWaypointColor.class),
-	SHOW_BACKPACK								(ShowBackpack.CRC, 					ShowBackpack.class),
-	SHOW_HELMET									(ShowHelmet.CRC, 					ShowHelmet.class),
 	SERVER_WEATHER_MESSAGE						(ServerWeatherMessage.CRC, 			ServerWeatherMessage.class),
 	PLAY_MUSIC_MESSAGE							(PlayMusicMessage.CRC,				PlayMusicMessage.class),
 	PLAY_CLIENT_EFFECT_OBJECT_MESSAGE			(PlayClientEffectObjectMessage.CRC, PlayClientEffectObjectMessage.class),
@@ -223,7 +249,7 @@ public enum PacketType {
 	GUILD_REQUEST_MESSAGE						(GuildRequestMessage.CRC,			GuildRequestMessage.class),
 	GUILD_RESPONSE_MESSAGE						(GuildResponseMessage.CRC,			GuildResponseMessage.class),
 	COMM_PLAYER_MESSAGE							(CommPlayerMessage.CRC,				CommPlayerMessage.class),
-	
+
 		// Chat
 		CHAT_CREATE_ROOM						(ChatCreateRoom.CRC,				ChatCreateRoom.class),
 		CHAT_DESTROY_ROOM						(ChatDestroyRoom.CRC,				ChatDestroyRoom.class),
@@ -260,7 +286,6 @@ public enum PacketType {
 		CHAT_ADD_MODERATOR_TO_ROOM				(ChatAddModeratorToRoom.CRC,		ChatAddModeratorToRoom.class),
 		CHAT_REMOVE_MODERATOR_FROM_ROOM			(ChatRemoveModeratorFromRoom.CRC,	ChatRemoveModeratorFromRoom.class),
 		CON_GENERIC_MESSAGE						(ConGenericMessage.CRC, 			ConGenericMessage.class),
-		VOICE_CHAT_STATUS						(VoiceChatStatus.CRC, 				VoiceChatStatus.class),
 
 		// Scene
 		SCENE_END_BASELINES						(SceneEndBaselines.CRC, 				SceneEndBaselines.class),
@@ -326,7 +351,7 @@ public enum PacketType {
 		GCW_REGIONS_REQUEST_MESSAGE				(GcwRegionsReq.CRC,							GcwRegionsReq.class),
 		GCW_REGIONS_RESPONSE_MESSAGE			(GcwRegionsRsp.CRC,							GcwRegionsRsp.class),
 		GCW_GROUPS_RESPONSE_MESSAGE				(GcwGroupsRsp.CRC,							GcwGroupsRsp.class),
-	
+
 	UNKNOWN (0xFFFFFFFF, SWGPacket.class);
 	
 	private static final EnumLookup<Integer, PacketType> LOOKUP = new EnumLookup<>(PacketType.class, PacketType::getCrc);

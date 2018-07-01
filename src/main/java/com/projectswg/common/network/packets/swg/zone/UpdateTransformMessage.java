@@ -40,18 +40,14 @@ public class UpdateTransformMessage extends SWGPacket {
 	private short posZ;
 	private byte direction;
 	private float speed;
-	private boolean useLookAtYaw;
-	private byte lookAtYaw;
-	
+
 	public UpdateTransformMessage(long objId, int updateCounter, Location location, float speed) {
 		this.objId = objId;
 		this.updateCounter = updateCounter;
 		this.speed = speed;
-		this.useLookAtYaw = false;
-		this.lookAtYaw = 0;
 		setLocation(location);
 	}
-	
+
 	public UpdateTransformMessage() {
 		this.objId = 0;
 		this.updateCounter = 0;
@@ -60,8 +56,6 @@ public class UpdateTransformMessage extends SWGPacket {
 		this.posZ = 0;
 		this.speed = 0;
 		this.direction = 0;
-		this.useLookAtYaw = false;
-		this.lookAtYaw = 0;
 	}
 	
 	public void decode(NetBuffer data) {
@@ -74,8 +68,6 @@ public class UpdateTransformMessage extends SWGPacket {
 		updateCounter = data.getInt();
 		speed = data.getByte();
 		direction = data.getByte();
-		lookAtYaw = data.getByte();
-		useLookAtYaw = data.getBoolean();
 	}
 	
 	public NetBuffer encode() {
@@ -89,8 +81,6 @@ public class UpdateTransformMessage extends SWGPacket {
 		data.addInt(updateCounter);
 		data.addByte((byte) speed);
 		data.addByte(direction);
-		data.addByte(lookAtYaw); // lookAtYaw
-		data.addBoolean(useLookAtYaw); // useLookAtYaw
 		return data;
 	}
 	
@@ -110,29 +100,13 @@ public class UpdateTransformMessage extends SWGPacket {
 	public byte getDirection() { return direction; }
 	public float getSpeed() { return speed; }
 
-	public boolean isUseLookAtYaw() {
-		return useLookAtYaw;
-	}
-
-	public void setUseLookAtYaw(boolean useLookAtYaw) {
-		this.useLookAtYaw = useLookAtYaw;
-	}
-
-	public byte getLookAtYaw() {
-		return lookAtYaw;
-	}
-
-	public void setLookAtYaw(byte lookAtYaw) {
-		this.lookAtYaw = lookAtYaw;
-	}
-	
 	public final void setLocation(Location location) {
 		this.posX = (short) (location.getX() * 4 + 0.5);
 		this.posY = (short) (location.getY() * 4 + 0.5);
 		this.posZ = (short) (location.getZ() * 4 + 0.5);
 		this.direction = getMovementAngle(location);
 	}
-	
+
 	@Override
 	protected String getPacketData() {
 		return createPacketInformation(
@@ -143,13 +117,13 @@ public class UpdateTransformMessage extends SWGPacket {
 				"dir", direction
 		);
 	}
-	
+
 	private byte getMovementAngle(Location requestedLocation) {
 		byte movementAngle = (byte) 0.0f;
 		double wOrient = requestedLocation.getOrientationW();
 		double yOrient = requestedLocation.getOrientationY();
 		double sq = Math.sqrt(1 - (wOrient*wOrient));
-		
+
 		if (sq != 0) {
 			if (requestedLocation.getOrientationW() > 0 && requestedLocation.getOrientationY() < 0) {
 				wOrient *= -1;
@@ -157,8 +131,8 @@ public class UpdateTransformMessage extends SWGPacket {
 			}
 			movementAngle = (byte) ((yOrient / sq) * (2 * Math.acos(wOrient) / 0.06283f));
 		}
-		
+
 		return movementAngle;
 	}
-	
+
 }

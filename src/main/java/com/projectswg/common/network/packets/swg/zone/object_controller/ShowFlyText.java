@@ -78,6 +78,7 @@ public class ShowFlyText extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
+		data.getInt();	// CU Object Controller spacer
 		data.getLong();
 		text = data.getEncodable(StringId.class);
 		oob = data.getEncodable(OutOfBandPackage.class);
@@ -88,8 +89,9 @@ public class ShowFlyText extends ObjectController {
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 27 + text.getFile().length() + text.getKey().length() + oob.getLength());
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 31 + text.getFile().length() + text.getKey().length() + oob.getLength());
 		encodeHeader(data);
+		data.addInt(0);	// CU Object Controller spacer
 		data.addLong(getObjectId());
 		data.addEncodable(text);
 		data.addEncodable(oob);

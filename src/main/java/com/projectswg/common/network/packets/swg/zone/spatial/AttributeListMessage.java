@@ -39,24 +39,21 @@ public class AttributeListMessage extends SWGPacket {
 	public static final int CRC = getCrc("AttributeListMessage");
 	
 	private long objectId;
-	private String staticItemName;
 	private Map <String, String> attributes;
 	private int serverRevision;
-	
+
 	public AttributeListMessage() {
 		this(0, new LinkedHashMap<>(), 0);
 	}
-	
-	public AttributeListMessage(String staticItemName, Map <String, String> attributes, int serverRevision) {
+
+	public AttributeListMessage(Map <String, String> attributes, int serverRevision) {
 		this.objectId = 0;
-		this.staticItemName = staticItemName;
 		this.attributes = new LinkedHashMap<>(attributes);
 		this.serverRevision = serverRevision;
 	}
 	
 	public AttributeListMessage(long objectId, Map <String, String> attributes, int serverRevision) {
 		this.objectId = objectId;
-		this.staticItemName = "";
 		this.attributes = new LinkedHashMap<>(attributes);
 		this.serverRevision = serverRevision;
 	}
@@ -70,7 +67,6 @@ public class AttributeListMessage extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		objectId = data.getLong();
-		staticItemName = data.getAscii();
 		int count = data.getInt();
 		for (int i = 0; i < count; i++) {
 			String name = data.getAscii();
@@ -86,11 +82,10 @@ public class AttributeListMessage extends SWGPacket {
 		for (Entry <String, String> e : attributes.entrySet()) {
 			size += 6 + e.getKey().length() + (e.getValue().length() * 2);
 		}
-		NetBuffer data = NetBuffer.allocate(24 + size);
+		NetBuffer data = NetBuffer.allocate(22 + size);
 		data.addShort(3);
 		data.addInt(CRC);
 		data.addLong(objectId);
-		data.addAscii(staticItemName);
 		data.addInt(attributes.size());
 		for (Entry <String, String> e : attributes.entrySet()) {
 			data.addAscii(e.getKey());
@@ -103,31 +98,23 @@ public class AttributeListMessage extends SWGPacket {
 	public long getObjectId() {
 		return objectId;
 	}
-	
-	public String getStaticItemName() {
-		return staticItemName;
-	}
-	
+
 	public Map<String, String> getAttributes() {
 		return Collections.unmodifiableMap(attributes);
 	}
-	
+
 	public int getServerRevision() {
 		return serverRevision;
 	}
-	
+
 	public void setObjectId(long objectId) {
 		this.objectId = objectId;
 	}
-	
-	public void setStaticItemName(String staticItemName) {
-		this.staticItemName = staticItemName;
-	}
-	
+
 	public void setAttributes(Map<String, String> attributes) {
 		this.attributes = new HashMap<>(attributes);
 	}
-	
+
 	public void setServerRevision(int serverRevision) {
 		this.serverRevision = serverRevision;
 	}
