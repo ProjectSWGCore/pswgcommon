@@ -29,6 +29,7 @@ package com.projectswg.common.data.swgfile.visitors;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.data.swgfile.ClientData;
@@ -58,6 +59,8 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 
 		int version = versionForm.getVersionFromTag();
 		switch(version) {
+			case 1:
+			case 2:
 			case 3:
 				readVersion3(iff);
 				break;
@@ -198,11 +201,15 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 		
 		private String name;
 		private String appearance;
+		private List<Integer> portalIndices;
 		private List<RenderData> renderDataList;
 		private RenderData renderData;
 		private boolean isSingleRenderData;
 		
 		public Cell(SWGFile iff) {
+			this.name = null;
+			this.appearance = null;
+			this.portalIndices = new ArrayList<>();
 			renderDataList = new ArrayList<>();
 			renderData = new RenderData();
 			isSingleRenderData = true;
@@ -220,11 +227,16 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 			int version = versionForm.getVersionFromTag();
 			switch(version) {
 				case 3: readVersion3(iff); break;
+				case 4:
 				case 5: readVersion5(iff); break;
 				default: System.err.println("Don't know how to handle version " + version + " CELL " + iff.getFileName());
 			}
 
 			iff.exitForm();
+		}
+		
+		public List<Integer> getPortals() {
+			return portalIndices;
 		}
 		
 		public RenderData getRenderData() {
@@ -249,7 +261,7 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 		
 		private void readVersion3(SWGFile iff) {
 			IffNode dataChunk = iff.enterChunk("DATA");
-			dataChunk.readInt(); // cellPortals
+			int portalCount = dataChunk.readInt();
 			dataChunk.readBoolean(); // canSeeParentCell
 			appearance = dataChunk.readString();
 			ClientData data = ClientFactory.getInfoFromFile(appearance);
@@ -261,11 +273,13 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 				renderDataList.addAll(((RenderableData) data).getAllRenderData());
 				isSingleRenderData = false;
 			}
+			
+			readPortals(iff, portalCount);
 		}
 		
 		private void readVersion5(SWGFile iff) {
 			IffNode dataChunk = iff.enterChunk("DATA");
-			dataChunk.readInt(); // cellPortals
+			int portalCount = dataChunk.readInt();
 			dataChunk.readBoolean(); // canSeeParentCell
 			name = dataChunk.readString();
 			appearance = dataChunk.readString();
@@ -277,6 +291,35 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 				renderDataList.clear();
 				renderDataList.addAll(((RenderableData) data).getAllRenderData());
 				isSingleRenderData = false;
+			}
+			
+			readPortals(iff, portalCount);
+		}
+		
+		private void readPortals(SWGFile iff, int portalCount) {
+			for (int i = 0; i < portalCount; i++) {
+				iff.enterForm("PRTL");
+				IffNode chunk = iff.enterNextChunk();
+				int portalIndex;
+				switch (chunk.getVersionFromTag()) {
+					case 1:
+						portalIndex = chunk.readInt();
+						break;
+					case 2:
+					case 3:
+					case 4:
+						chunk.readByte(); // passable
+						portalIndex = chunk.readInt();
+						break;
+					case 5:
+					default:
+						chunk.readByte(); // disabled
+						chunk.readByte(); // passable
+						portalIndex = chunk.readInt();
+						break;
+				}
+				portalIndices.add(portalIndex);
+				iff.exitForm();
 			}
 		}
 		
