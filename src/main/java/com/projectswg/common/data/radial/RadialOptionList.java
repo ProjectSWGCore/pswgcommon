@@ -69,7 +69,7 @@ public class RadialOptionList implements Encodable {
 		for (int i = 0; i < optionsCount; i++) {
 			int opt = data.getByte(); // option number
 			int parent = data.getByte(); // parentId
-			int radialType = data.getShort(); // radialType
+			int radialType = data.getByte(); // radialType
 			byte flags = data.getByte(); // optionType
 			String label = data.getUnicode(); // text
 			RadialItem item = RadialItem.getFromId(radialType);
@@ -154,11 +154,11 @@ public class RadialOptionList implements Encodable {
 		int myIndex = index++;
 		data.addByte(myIndex);
 		data.addByte(parentIndex);
-		data.addShort(parent.getType().getType());
+		data.addByte(parent.getType().getType());
 		data.addByte(parent.getFlags());
-		
+
 		data.addUnicode(parent.getLabel());
-		
+
 		for (RadialOption option : parent.getChildren()) {
 			index = addOption(data, option, myIndex, index);
 		}

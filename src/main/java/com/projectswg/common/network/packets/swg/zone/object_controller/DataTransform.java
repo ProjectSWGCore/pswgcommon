@@ -32,13 +32,10 @@ import com.projectswg.common.network.NetBuffer;
 public class DataTransform extends ObjectController {
 	
 	public static final int CRC = 0x0071;
-	
-	private int timestamp;
+
 	private int updateCounter = 0;
 	private Location l;
-	private float speed = 0;
-	private float lookAtYaw = 0;
-	private boolean useLookAtYaw;
+	private float speed;
 	
 	public DataTransform(long objectId) {
 		super(objectId, CRC);
@@ -46,22 +43,17 @@ public class DataTransform extends ObjectController {
 	
 	public DataTransform(DataTransform transform) {
 		super(transform.getObjectId(), CRC);
-		timestamp = transform.getTimestamp();
 		updateCounter = transform.getUpdateCounter();
 		l = new Location(transform.getLocation());
 		speed = transform.getSpeed();
-		lookAtYaw = transform.getLookAtYaw();
-		useLookAtYaw = transform.isUseLookAtYaw();
 	}
 	
-	public DataTransform(long objectId, int timestamp, int counter, Location l, float speed) {
+	public DataTransform(long objectId, int counter, Location l) {
 		super(objectId, CRC);
 		if (l == null)
 			l = new Location();
-		this.timestamp = timestamp;
-		this.updateCounter = counter;
 		this.l = l;
-		this.speed = speed;
+		this.updateCounter = counter;
 	}
 	
 	public DataTransform(NetBuffer data) {
@@ -73,31 +65,22 @@ public class DataTransform extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		timestamp = data.getInt();
 		updateCounter = data.getInt();
 		l = data.getEncodable(Location.class);
 		speed = data.getFloat();
-		lookAtYaw = data.getFloat();
-		useLookAtYaw = data.getBoolean();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 45);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 40);
 		encodeHeader(data);
-		data.addInt(timestamp);
 		data.addInt(updateCounter);
 		data.addEncodable(l);
 		data.addFloat(speed);
-		data.addFloat(lookAtYaw);
-		data.addBoolean(useLookAtYaw);
+
 		return data;
 	}
-	
-	public void setTimestamp(int timestamp) {
-		this.timestamp = timestamp;
-	}
-	
+
 	public void setUpdateCounter(int counter) {
 		this.updateCounter = counter;
 	}
@@ -121,27 +104,7 @@ public class DataTransform extends ObjectController {
 	public float getSpeed() {
 		return speed;
 	}
-	
-	public boolean isUseLookAtYaw() {
-		return useLookAtYaw;
-	}
-	
-	public void setUseLookAtYaw(boolean useLookAtYaw) {
-		this.useLookAtYaw = useLookAtYaw;
-	}
-	
-	public float getLookAtYaw() {
-		return lookAtYaw;
-	}
-	
-	public void setLookAtYaw(float lookAtYaw) {
-		this.lookAtYaw = lookAtYaw;
-	}
-	
-	public int getTimestamp() {
-		return timestamp;
-	}
-	
+
 	public byte getMovementAngle() {
 		byte movementAngle = (byte) 0.0f;
 		double wOrient = l.getOrientationW();
@@ -163,11 +126,10 @@ public class DataTransform extends ObjectController {
 	protected String getPacketData() {
 		return createPacketInformation(
 				"objId", getObjectId(),
-				"timestamp", timestamp,
 				"counter", updateCounter,
 				"location", l,
 				"speed", speed
 		);
 	}
-	
+
 }

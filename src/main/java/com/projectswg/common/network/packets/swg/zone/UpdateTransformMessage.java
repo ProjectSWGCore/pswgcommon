@@ -71,7 +71,7 @@ public class UpdateTransformMessage extends SWGPacket {
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(28);
+		NetBuffer data = NetBuffer.allocate(26);
 		data.addShort(10);
 		data.addInt(CRC);
 		data.addLong(objId);

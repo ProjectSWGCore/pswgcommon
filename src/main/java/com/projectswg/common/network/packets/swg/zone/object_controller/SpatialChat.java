@@ -77,6 +77,7 @@ public class SpatialChat extends ObjectController {
 	
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
+		data.getInt();	// CU spacer
 		sourceId = data.getLong();
 		targetId = data.getLong();
 		text = data.getUnicode();
@@ -90,19 +91,20 @@ public class SpatialChat extends ObjectController {
 	}
 	
 	public NetBuffer encode() {
-		int length = 39 + text.length()*2 + outOfBand.length()*2 + sourceName.length()*2;
+		int length = 40 + text.length()*2 + outOfBand.length()*2 + sourceName.length()*2;
 		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + length);
 		encodeHeader(data);
+		data.addInt(0);	// CU spacer
 		data.addLong(sourceId);
 		data.addLong(targetId);
 		data.addUnicode(text);
-		data.addInt(0); // flags
 		data.addShort(balloonSize);
 		data.addShort(balloonType);
 		data.addShort(moodId);
-		data.addByte(languageId); // languageId
+		data.addByte(languageId);
 		data.addUnicode(outOfBand);
 		data.addUnicode(sourceName);
+		data.addByte(0);	// TODO unknown
 		return data;
 	}
 	
