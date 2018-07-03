@@ -34,13 +34,10 @@ public class DataTransformWithParent extends ObjectController {
 	
 	public static final int CRC = 0x00F1;
 	
-	private int timestamp;
 	private int counter;
 	private long cellId;
 	private Location l;
 	private float speed;
-	private float lookAtYaw;
-	private boolean useLookAtYaw;
 	
 	public DataTransformWithParent(long objectId) {
 		super(objectId, CRC);
@@ -63,35 +60,25 @@ public class DataTransformWithParent extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		timestamp = data.getInt(); // Timestamp
 		counter = data.getInt();
 		cellId = data.getLong();
 		l = data.getEncodable(Location.class);
 		speed = data.getFloat();
-		lookAtYaw = data.getFloat();
-		useLookAtYaw = data.getBoolean();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 53);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 44);
 		encodeHeader(data);
-		data.addInt(timestamp);
 		data.addInt(counter);
 		data.addLong(cellId);
 		data.addEncodable(l);
 		data.addFloat(speed);
-		data.addFloat(lookAtYaw);
-		data.addBoolean(useLookAtYaw);
 		return data;
 	}
 	
 	public void setUpdateCounter(int counter) {
 		this.counter = counter;
-	}
-	
-	public void setTimestamp(int timestamp) {
-		this.timestamp = timestamp;
 	}
 	
 	public void setCellId(long cellId) {
@@ -104,14 +91,6 @@ public class DataTransformWithParent extends ObjectController {
 	
 	public void setSpeed(float speed) {
 		this.speed = speed;
-	}
-	
-	public void setLookAtYaw(float lookAtYaw) {
-		this.lookAtYaw = lookAtYaw;
-	}
-	
-	public void setUseLookAtYaw(boolean useLookAtYaw) {
-		this.useLookAtYaw = useLookAtYaw;
 	}
 	
 	public int getUpdateCounter() {
@@ -128,18 +107,6 @@ public class DataTransformWithParent extends ObjectController {
 	
 	public float getSpeed() {
 		return speed;
-	}
-	
-	public float getLookAtYaw() {
-		return lookAtYaw;
-	}
-	
-	public boolean isUseLookAtYaw() {
-		return useLookAtYaw;
-	}
-	
-	public int getTimestamp() {
-		return timestamp;
 	}
 	
 	public byte getMovementAngle() {
