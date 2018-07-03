@@ -26,8 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller.combat;
 
-import com.projectswg.common.data.combat.*;
-import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
+import com.projectswg.common.data.combat.AttackInfo;
 import com.projectswg.common.data.encodables.oob.StringId;
 import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.network.NetBuffer;
@@ -37,20 +36,38 @@ public class CombatSpam extends ObjectController {
 	
 	public static final int CRC = 0x0134;
 	
-	private byte dataType;
 	private long attacker;
-	private Point3D attackerPosition;
 	private long defender;
-	private Point3D defenderPosition;
 	private long weapon;
-	private StringId weaponName;
-	private StringId attackName;
-	private AttackInfo info;
-	private OutOfBandPackage spamMessage;
-	private CombatSpamType spamType;
+	private int damage;
+	private StringId spam;
+	private byte colorFlag;	// 0=white, 1=auto green/red, 11=yellow. TODO ENUM!
+	private String customString;	// String to display in combat spam
 	
 	public CombatSpam(long objectId) {
 		super(objectId, CRC);
+	}
+	
+	/**
+	 *
+	 * @param receiver object ID of the SWGObject that should receive this packet
+	 * @param attacker object ID for attacker
+	 * @param defender object ID for defender
+	 * @param weapon object ID of attacker's weapon used to attack the defender
+	 * @param damage done to defender by attacker
+	 * @param spam message to show in combat log
+	 * @param colorFlag of damage flytext
+	 * @param customString optional string to display in the combat log
+	 */
+	public CombatSpam(long receiver, long attacker, long defender, long weapon, int damage, StringId spam, byte colorFlag, String customString) {
+		super(receiver, CRC);
+		this.attacker = attacker;
+		this.defender = defender;
+		this.weapon = weapon;
+		this.damage = damage;
+		this.spam = spam;
+		this.colorFlag = colorFlag;
+		this.customString = customString;
 	}
 	
 	public CombatSpam(NetBuffer data) {
@@ -61,212 +78,85 @@ public class CombatSpam extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		info = new AttackInfo();
-		dataType = data.getByte();
 		attacker = data.getLong();
-		attackerPosition = data.getEncodable(Point3D.class);
 		defender = data.getLong();
-		defenderPosition = data.getEncodable(Point3D.class);
-		if (isAttackDataWeaponObject(dataType) || isAttackWeaponName(dataType)) {
-			if (isAttackDataWeaponObject(dataType))
-				weapon = data.getLong();
-			else
-				weaponName = data.getEncodable(StringId.class);
-			attackName = data.getEncodable(StringId.class);
-			info.setSuccess(data.getBoolean());
-			if (info.isSuccess()) {
-				info.setArmor(data.getLong());
-				info.setRawDamage(data.getInt());
-				info.setDamageType(DamageType.getDamageType(data.getInt()));
-				info.setElementalDamage(data.getInt());
-				info.setElementalDamageType(DamageType.getDamageType(data.getInt()));
-				info.setBleedDamage(data.getInt());
-				info.setCriticalDamage(data.getInt());
-				info.setBlockedDamage(data.getInt());
-				info.setFinalDamage(data.getInt());
-				info.setHitLocation(HitLocation.getHitLocation(data.getInt()));
-				info.setCrushing(data.getBoolean());
-				info.setStrikethrough(data.getBoolean());
-				info.setStrikethroughAmount(data.getFloat());
-				info.setEvadeResult(data.getBoolean());
-				info.setEvadeAmount(data.getFloat());
-				info.setBlockResult(data.getBoolean());
-				info.setBlock(data.getInt());
-			} else {
-				info.setDodge(data.getBoolean());
-				info.setParry(data.getBoolean());
-			}
-		} else if (isMessageData(dataType)) {
-			spamMessage = data.getEncodable(OutOfBandPackage.class);
-		}
-		info.setCritical(data.getBoolean());
-		info.setGlancing(data.getBoolean());
-		info.setProc(data.getBoolean());
-		spamType = CombatSpamType.getCombatSpamType(data.getInt());
+		weapon = data.getLong();
+		
+		damage = data.getInt();
+		spam = data.getEncodable(StringId.class);
+		colorFlag = data.getByte();
+		customString = data.getUnicode();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(getEncodeSize());
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 33 + spam.getLength());
 		encodeHeader(data);
-		data.addByte(dataType);
 		data.addLong(attacker);
-		data.addEncodable(attackerPosition);
 		data.addLong(defender);
-		data.addEncodable(defenderPosition);
-		if (isAttackDataWeaponObject(dataType) || isAttackWeaponName(dataType)) {
-			if (isAttackDataWeaponObject(dataType))
-				data.addLong(weapon);
-			else
-				data.addEncodable(weaponName);
-			data.addEncodable(attackName);
-			data.addBoolean(info.isSuccess());
-			if (info.isSuccess()) {
-				data.addLong(info.getArmor());
-				data.addInt(info.getRawDamage());
-				data.addInt(info.getDamageType().getNum());
-				data.addInt(info.getElementalDamage());
-				data.addInt(info.getElementalDamageType().getNum());
-				data.addInt(info.getBleedDamage());;
-				data.addInt(info.getCriticalDamage());
-				data.addInt(info.getBlockedDamage());
-				data.addInt(info.getFinalDamage());
-				data.addInt(info.getHitLocation().getNum());
-				data.addBoolean(info.isCrushing());
-				data.addBoolean(info.isStrikethrough());
-				data.addFloat((float) info.getStrikethroughAmount());
-				data.addBoolean(info.isEvadeResult());
-				data.addFloat((float) info.getEvadeAmount());
-				data.addBoolean(info.isBlockResult());
-				data.addInt(info.getBlock());
-			} else {
-				data.addBoolean(info.isDodge());
-				data.addBoolean(info.isParry());
-			}
-		} else if (isMessageData(dataType)) {
-			data.addEncodable(spamMessage);
-		}
-		data.addBoolean(info.isCritical());
-		data.addBoolean(info.isGlancing());
-		data.addBoolean(info.isProc());
-		data.addInt(spamType.getNum());
+		data.addLong(weapon);
+		data.addInt(damage);
+		data.addEncodable(spam);
+		data.addByte(colorFlag);
+		data.addUnicode(customString);
+		
 		return data;
 	}
 	
-	private int getEncodeSize() {
-		int size = HEADER_LENGTH + 24 + attackerPosition.getLength() + defenderPosition.getLength();
-		if (isAttackDataWeaponObject(dataType))
-			size += 9 + attackName.getLength() + (info.isSuccess() ? 60 : 2);
-		else if (isAttackWeaponName(dataType))
-			size += 1 + attackName.getLength() + weaponName.getLength() + (info.isSuccess() ? 60 : 2);
-		else if (isMessageData(dataType))
-			size += spamMessage.getLength();
-		return size;
+	public StringId getSpam() {
+		return spam;
 	}
 	
-	public byte getDataType() {
-		return dataType;
+	public void setSpam(StringId spam) {
+		this.spam = spam;
+	}
+	
+	public byte getColorFlag() {
+		return colorFlag;
+	}
+	
+	public void setColorFlag(byte colorFlag) {
+		this.colorFlag = colorFlag;
+	}
+	
+	public String getCustomString() {
+		return customString;
+	}
+	
+	public void setCustomString(String customString) {
+		this.customString = customString;
 	}
 	
 	public long getAttacker() {
 		return attacker;
 	}
 	
-	public Point3D getAttackerPosition() {
-		return attackerPosition;
-	}
-	
 	public long getDefender() {
 		return defender;
-	}
-	
-	public Point3D getDefenderPosition() {
-		return defenderPosition;
 	}
 	
 	public long getWeapon() {
 		return weapon;
 	}
 	
-	public StringId getWeaponName() {
-		return weaponName;
-	}
-	
-	public StringId getAttackName() {
-		return attackName;
-	}
-	
-	public AttackInfo getInfo() {
-		return info;
-	}
-	
-	public OutOfBandPackage getSpamMessage() {
-		return spamMessage;
-	}
-	
-	public CombatSpamType getSpamType() {
-		return spamType;
-	}
-	
-	public void setDataType(byte dataType) {
-		this.dataType = dataType;
-	}
-	
 	public void setAttacker(long attacker) {
 		this.attacker = attacker;
-	}
-	
-	public void setAttackerPosition(Point3D attackerPosition) {
-		this.attackerPosition = attackerPosition;
 	}
 	
 	public void setDefender(long defender) {
 		this.defender = defender;
 	}
 	
-	public void setDefenderPosition(Point3D defenderPosition) {
-		this.defenderPosition = defenderPosition;
-	}
-	
 	public void setWeapon(long weapon) {
 		this.weapon = weapon;
 	}
 	
-	public void setWeaponName(StringId weaponName) {
-		this.weaponName = weaponName;
+	public int getDamage() {
+		return damage;
 	}
 	
-	public void setAttackName(StringId attackName) {
-		this.attackName = attackName;
+	public void setDamage(int damage) {
+		this.damage = damage;
 	}
-	
-	public void setInfo(AttackInfo info) {
-		this.info = info;
-	}
-	
-	public void setSpamMessage(OutOfBandPackage spamMessage) {
-		this.spamMessage = spamMessage;
-	}
-	
-	/**
-	 * Controls the color of the combat log entry shown in the client
-	 * @param spamType color to show this entry in
-	 */
-	public void setSpamType(CombatSpamType spamType) {
-		this.spamType = spamType;
-	}
-	
-	private boolean isAttackDataWeaponObject(byte b) {
-		return b == 0;
-	}
-	
-	private boolean isAttackWeaponName(byte b) {
-		return b == 1;
-	}
-	
-	private boolean isMessageData(byte b) {
-		return b == 2;
-	}
-	
 }
 
