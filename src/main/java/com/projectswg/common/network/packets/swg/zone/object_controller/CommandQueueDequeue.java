@@ -58,7 +58,6 @@ public class CommandQueueDequeue extends ObjectController {
 	
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		data.getInt();	// CU Object Controller spacer
 		counter = data.getInt();
 		timer = data.getFloat();
 		error = ErrorCode.getFromCode(data.getInt());
@@ -66,9 +65,8 @@ public class CommandQueueDequeue extends ObjectController {
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 20);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 16);
 		encodeHeader(data);
-		data.addInt(0);	// CU Object Controller spacer
 		data.addInt(counter);
 		data.addFloat(timer);
 		data.addInt(error.getCode());
