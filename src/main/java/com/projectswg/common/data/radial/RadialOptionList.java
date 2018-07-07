@@ -143,7 +143,7 @@ public class RadialOptionList implements Encodable {
 	}
 	
 	private int getOptionSize(RadialOption parent) {
-		int size = 9 + parent.getLabel().length() * 2;
+		int size = 8 + parent.getLabel().length() * 2;
 		for (RadialOption child : parent.getChildren()) {
 			size += getOptionSize(child);
 		}
