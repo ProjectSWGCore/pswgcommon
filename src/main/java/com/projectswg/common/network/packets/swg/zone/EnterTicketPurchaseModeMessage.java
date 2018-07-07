@@ -34,16 +34,14 @@ public class EnterTicketPurchaseModeMessage extends SWGPacket {
 	
 	private String planetName;
 	private String nearestPointName;
-	private boolean instant;
 	
 	public EnterTicketPurchaseModeMessage() {
 		
 	}
 	
-	public EnterTicketPurchaseModeMessage(String planetName, String nearestPointName, boolean instant) {
+	public EnterTicketPurchaseModeMessage(String planetName, String nearestPointName) {
 		this.planetName = planetName;
 		this.nearestPointName = nearestPointName;
-		this.instant = instant;
 	}
 	
 	@Override
@@ -52,17 +50,15 @@ public class EnterTicketPurchaseModeMessage extends SWGPacket {
 			return;
 		planetName = data.getAscii();
 		nearestPointName = data.getAscii();
-		instant = data.getBoolean();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(11 + planetName.length() + nearestPointName.length());	// 2x ascii length shorts, 1x opcount short, 1x boolean, int CRC = 11
+		NetBuffer data = NetBuffer.allocate(10 + planetName.length() + nearestPointName.length());	// 2x ascii length shorts, 1x opcount short, int CRC = 10
 		data.addShort(3);	// Operand count of 3
 		data.addInt(CRC);
 		data.addAscii(planetName);
 		data.addAscii(nearestPointName);
-		data.addBoolean(instant);
 		return data;
 	}
 	
