@@ -138,6 +138,14 @@ public class Location implements Encodable, Persistable {
 		return orientation.getYaw();
 	}
 	
+	public double getHeadingTo(Location target) {
+		return (Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360;
+	}
+	
+	public double getHeadingTo(Point3D target) {
+		return (Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360;
+	}
+	
 	private static double square(double x) {
 		return x * x;
 	}

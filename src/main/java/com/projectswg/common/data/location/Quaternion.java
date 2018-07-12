@@ -70,7 +70,7 @@ public class Quaternion implements Encodable, Persistable {
 	}
 	
 	public double getYaw() {
-		return Math.toDegrees(Math.atan2(y*y, w*w));
+		return Math.toDegrees(2 * Math.acos(w));
 	}
 
 	public void setX(double x) {
