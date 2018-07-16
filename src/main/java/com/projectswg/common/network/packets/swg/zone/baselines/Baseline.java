@@ -27,10 +27,10 @@
 ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.baselines;
 
-import java.nio.charset.StandardCharsets;
-
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
+
+import java.nio.charset.StandardCharsets;
 
 public class Baseline extends SWGPacket {
 	public static final int CRC = getCrc("BaselinesMessage");
@@ -86,18 +86,82 @@ public class Baseline extends SWGPacket {
 	public void setNum(int num) { this.num = num; }
 	public void setId(long id) { this.objId = id; }
 	public void setBaselineData(byte [] data) { this.baseData = data; }
-	public void setOperandCount(int count) { this.opCount = (short) count;}
 	
+	public enum BaselineType {
+		/** Battlefield Marker > Tangible */
+		BMRK,
+		/** Building > Tangible */
+		BUIO,
+		/** City > Universe */
+		CITY,
+		/** Construction Contract > Intangible */
+		CONC,
+		/** Creature > Tangible */
+		CREO,
+		/** Draft Schematic > Intangible */
+		DSCO,
+		/** Factory > Tangible */
+		FCYT,
+		/** Guild > Universe */
+		GILD,
+		/** Group > Universe */
+		GRUP,
+		/** Harvester Installation > Installation */
+		HINO,
+		/** Installation > Tangible */
+		INSO,
+		/** Intangible > Object */
+		ITNO,
+		/** Jedi > Universe */
+		JEDI,
+		/** Manufacture Installation > Installation */
+		MINO,
+		/** Mission Board > Universe */
+		MISB,
+		/** Mission Data > Intangible */
+		MISD,
+		/** Mission > Intangible */
+		MISO,
+		/** Mission List > Intangible */
+		MLEO,
+		/** Manufacture Schematic > Intangible */
+		MSCO,
+		/** Planet Object > Universe */
+		PLAN,
+		/** Player > Intangible */
+		PLAY,
+		/** Player Quest > Tangible */
+		PQOS,
+		/** Resource Container > Tangible */
+		RCNO,
+		/** Cell Object > Object */
+		SCLT,
+		/** Ship > Tangible */
+		SHIP,
+		/** Static > Object */
+		STAO,
+		/** Object */
+		SWOO,
+		/** Tangible > Object */
+		TANO,
+		/** Token > Intangible */
+		TOKN,
+		/** Universe > Object */
+		UNIO,
+		/** Vehicle > Tangible */
+		VEHO,
+		/** Waypoint > Intangible */
+		WAYP,
+		/** Weapon > Tangible */
+		WEAO,
+		/** XP Manager > Universe */
+		XPMG
+	}
+	
+	public void setOperandCount(int count) { this.opCount = (short) count;}
 	public BaselineType getType() { return type; }
 	public int getNum() { return num; }
 	public long getId() { return objId; }
-	public byte [] getBaselineData() { return baseData; }
 	
-	public enum BaselineType {
-		BMRK, BUIO, CREO, FCYT,
-		GILD, GRUP, HINO, INSO,
-		ITNO, MINO, MISO, MSCO,
-		PLAY, RCNO, SCLT, STAO,
-		SHIP, TANO, WAYP, WEAO
-	}
+	public byte [] getBaselineData() { return baseData; }
 }

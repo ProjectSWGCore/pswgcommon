@@ -33,6 +33,7 @@ import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
+import com.projectswg.common.network.packets.swg.zone.baselines.Baseline.BaselineType;
 import me.joshlarson.jlcommon.log.Log;
 
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ public class ObjectData extends ClientData {
 		ARRANGEMENT_DESCRIPTOR_FILENAME			("arrangementDescriptorFilename"),
 		ATTACK_TYPE								("attackType"),
 		ATTRIBUTES								("attributes"),
+		BASELINE_TYPE							("baselineType"),
 		CAMERA_HEIGHT							("cameraHeight"),
 		CERTIFICATIONS_REQUIRED					("certificationsRequired"),
 		CLEAR_FLORA_RADIUS						("clearFloraRadius"),
@@ -143,9 +145,46 @@ public class ObjectData extends ClientData {
 	@Override
 	public void readIff(SWGFile iff) {
 		readNextForm(iff);
+		if (!attributes.containsKey(ObjectDataAttribute.BASELINE_TYPE))
+			System.err.println("Unknown baseline type: " + iff.getFileName());
 	}
 	
 	private void readNextForm(SWGFile iff) {
+		BaselineType type;
+		switch (iff.getCurrentForm().getTag()) {
+			case "SBMK": type = BaselineType.BMRK; break; // Battlefield Marker
+			case "SBOT": type = BaselineType.BUIO; break; // Building
+			case "CCLT": type = BaselineType.SCLT; break; // Cell
+			case "SCNC": type = BaselineType.CONC; break; // Construction Contraction
+			case "SCOU": type = null; break; // Counting
+			case "SCOT": type = BaselineType.CREO; break; // Creature / Mobile
+			case "SDSC": type = BaselineType.DSCO; break; // Draft Schematic
+			case "SFOT": type = BaselineType.FCYT; break; // Factory
+			case "SGRP": type = BaselineType.GRUP; break; // Group
+			case "SGLD": type = BaselineType.GILD; break; // Guild
+			case "SIOT": type = BaselineType.INSO; break; // Installation
+			case "SITN": type = BaselineType.ITNO; break; // Intangible
+			case "SJED": type = BaselineType.JEDI; break; // Jedi Manager
+			case "SMSC": type = BaselineType.MSCO; break; // Manufacture Schematic
+			case "SMSO": type = BaselineType.MISO; break; // Mission
+			case "SHOT": type = null; break; // Object
+			case "STOT": type = BaselineType.TANO; break; // Tangible / Path Waypoint
+			case "SPLY": type = BaselineType.PLAY; break; // Player
+			case "SPQO": type = BaselineType.PQOS; break; // Player Quest
+			case "RCCT": type = BaselineType.RCNO; break; // Resource Container
+			case "SSHP": type = BaselineType.SHIP; break; // Ship
+			case "STAT": type = BaselineType.STAO; break; // Sound Object / Static
+			case "STOK": type = BaselineType.TOKN; break; // Token
+			case "SUNI": type = null; break; // Universe
+			case "SWAY": type = BaselineType.WAYP; break; // Waypoint
+			case "SWOT": type = BaselineType.WEAO; break; // Weapon
+			default:
+				System.err.println("Unknown type: " + iff.getCurrentForm().getTag() + " for " + iff.getFileName());
+				type = null; break;
+		}
+		if (type != null)
+			attributes.putIfAbsent(ObjectDataAttribute.BASELINE_TYPE, type.name());
+		
 		IffNode next;
 		while ((next = iff.enterNextForm()) != null) {
 			String tag = next.getTag();
@@ -180,7 +219,10 @@ public class ObjectData extends ClientData {
 		}
 
 		// Put all the extended attributes in this map so it's accessible. Note that some of these are overridden.
+		Object prevBaselineType = attributes.get(ObjectDataAttribute.BASELINE_TYPE);
 		attributes.putAll(((ObjectData)attrData).getAttributes());
+		if (prevBaselineType != null)
+			attributes.put(ObjectDataAttribute.BASELINE_TYPE, prevBaselineType);
 
 		parsedFiles.add(file);
 	}
