@@ -1,30 +1,29 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.swgfile;
 
 import com.projectswg.common.data.swgfile.visitors.*;
@@ -141,18 +140,17 @@ public class ClientFactory extends DataFactory {
 		TYPE_MAP.put("CIDM", ClientFactoryType.CUSTOMIZATION_ID_MANAGER_DATA);
 		TYPE_MAP.put("FOOT", ClientFactoryType.FOOTPRINT_DATA);
 		// Appearance Related Data
-		boolean loadAppearanceData = false;
-		TYPE_MAP.put("APPR", !loadAppearanceData ? null : ClientFactoryType.APPEARANCE_TEMPLATE_DATA);
-		TYPE_MAP.put("APT ", !loadAppearanceData ? null : ClientFactoryType.APPEARANCE_TEMPLATE_LIST);
-		TYPE_MAP.put("CSHD", !loadAppearanceData ? null : ClientFactoryType.CUSTOMIZABLE_SHADER_DATA);
-		TYPE_MAP.put("DTLA", !loadAppearanceData ? null : ClientFactoryType.DETAILED_APPEARANCE_TEMPLATE_DATA);
-		TYPE_MAP.put("SKTM", !loadAppearanceData ? null : ClientFactoryType.BASIC_SKELETON_TEMPLATE);
-		TYPE_MAP.put("MESH", !loadAppearanceData ? null : ClientFactoryType.MESH_APPEARANCE_TEMPLATE);
-		TYPE_MAP.put("MLOD", !loadAppearanceData ? null : ClientFactoryType.LOD_MESH_GENERATOR_TEMPLATE_DATA);
-		TYPE_MAP.put("SLOD", !loadAppearanceData ? null : ClientFactoryType.LOD_SKELETON_TEMPLATE_DATA);
-		TYPE_MAP.put("SMAT", !loadAppearanceData ? null : ClientFactoryType.SKELETAL_APPEARANCE_DATA);
-		TYPE_MAP.put("SKMG", !loadAppearanceData ? null : ClientFactoryType.SKELETAL_MESH_GENERATOR_TEMPLATE_DATA);
-		TYPE_MAP.put("SSHT", !loadAppearanceData ? null : ClientFactoryType.STATIC_SHADER_DATA);
+		TYPE_MAP.put("APPR", ClientFactoryType.APPEARANCE_TEMPLATE_DATA);
+		TYPE_MAP.put("APT ", ClientFactoryType.APPEARANCE_TEMPLATE_LIST);
+		TYPE_MAP.put("CSHD", ClientFactoryType.CUSTOMIZABLE_SHADER_DATA);
+		TYPE_MAP.put("DTLA", ClientFactoryType.DETAILED_APPEARANCE_TEMPLATE_DATA);
+		TYPE_MAP.put("SKTM", ClientFactoryType.BASIC_SKELETON_TEMPLATE);
+		TYPE_MAP.put("MESH", ClientFactoryType.MESH_APPEARANCE_TEMPLATE);
+		TYPE_MAP.put("MLOD", ClientFactoryType.LOD_MESH_GENERATOR_TEMPLATE_DATA);
+		TYPE_MAP.put("SLOD", ClientFactoryType.LOD_SKELETON_TEMPLATE_DATA);
+		TYPE_MAP.put("SMAT", ClientFactoryType.SKELETAL_APPEARANCE_DATA);
+		TYPE_MAP.put("SKMG", ClientFactoryType.SKELETAL_MESH_GENERATOR_TEMPLATE_DATA);
+		TYPE_MAP.put("SSHT", ClientFactoryType.STATIC_SHADER_DATA);
 		// Objects
 		TYPE_MAP.put("SBMK", ClientFactoryType.OBJECT_DATA); // object/battlefield_marker
 		TYPE_MAP.put("SBOT", ClientFactoryType.OBJECT_DATA); // object/building
