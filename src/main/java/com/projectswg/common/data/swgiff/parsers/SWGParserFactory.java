@@ -21,6 +21,7 @@ enum SWGParserFactory {
 		PARSERS.put("APT ", AppearanceTemplateList::new);
 		PARSERS.put("APPR", AppearanceTemplate::new);
 		PARSERS.put("CELL", PortalLayoutCellTemplate::new);
+		PARSERS.put("CMPT", ComponentExtentParser::new);
 		PARSERS.put("CMSH", MeshExtentParser::new);
 		PARSERS.put("CPST", CompositeExtentParser::new);
 		PARSERS.put("CSTB", CrcStringDataParser::new);
