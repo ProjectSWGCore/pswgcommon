@@ -30,6 +30,7 @@ import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.utilities.Arguments;
 
 public class Quaternion implements Encodable, Persistable {
 	
@@ -51,6 +52,45 @@ public class Quaternion implements Encodable, Persistable {
 		this.rotationMatrix = new double[3][3];
 		updateRotationMatrix();
 	}
+	
+	public Quaternion(double [][] matrix) {
+		Arguments.validate(matrix.length >= 3 && matrix[0].length >= 3, "Matrix must be at least 3x3!");
+		this.rotationMatrix = new double[3][3];
+		for (int i = 0; i < 3; i++) {
+			System.arraycopy(matrix, 0, this.rotationMatrix, 0, 3);
+		}
+		
+		// Optimization and thread safe
+		matrix = rotationMatrix;
+		
+		// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+		double tr = matrix[0][0] + matrix[1][1] + matrix[2][2];
+		if (tr > 0) {
+			double S = Math.sqrt(tr+1.0) * 2; // S=4*w
+			w = S / 4;
+			x = (matrix[2][1] - matrix[1][2]) / S;
+			y = (matrix[0][2] - matrix[2][0]) / S;
+			z = (matrix[1][0] - matrix[0][1]) / S;
+		} else if ((matrix[0][0] > matrix[1][1])&(matrix[0][0] > matrix[2][2])) {
+			double S = Math.sqrt(1.0 + matrix[0][0] - matrix[1][1] - matrix[2][2]) * 2; // S=4*x 
+			w = (matrix[2][1] - matrix[1][2]) / S;
+			x = S / 4;
+			y = (matrix[0][1] + matrix[1][0]) / S;
+			z = (matrix[0][2] + matrix[2][0]) / S;
+		} else if (matrix[1][1] > matrix[2][2]) {
+			double S = Math.sqrt(1.0 + matrix[1][1] - matrix[0][0] - matrix[2][2]) * 2; // S=4*qy
+			w = (matrix[0][2] - matrix[2][0]) / S;
+			x = (matrix[0][1] + matrix[1][0]) / S;
+			y = S / 4;
+			z = (matrix[1][2] + matrix[2][1]) / S;
+		} else {
+			double S = Math.sqrt(1.0 + matrix[2][2] - matrix[0][0] - matrix[1][1]) * 2; // S=4*qz
+			w = (matrix[1][0] - matrix[0][1]) / S;
+			x = (matrix[0][2] + matrix[2][0]) / S;
+			y = (matrix[1][2] + matrix[2][1]) / S;
+			z = S / 4;
+		}
+	}
 
 	public double getX() {
 		return x;
@@ -71,7 +111,14 @@ public class Quaternion implements Encodable, Persistable {
 	public double getYaw() {
 		return Math.toDegrees(2 * Math.acos(w));
 	}
-
+	
+	public void getRotationMatrix(double [][] rotationMatrix) {
+		Arguments.validate(rotationMatrix.length >= 3 && rotationMatrix[0].length >= 3, "Matrix must be at least 3x3!");
+		for (int i = 0; i < 3; i++) {
+			System.arraycopy(this.rotationMatrix, 0, rotationMatrix, 0, 3);
+		}
+	}
+	
 	public void setX(double x) {
 		this.x = x;
 		updateRotationMatrix();
