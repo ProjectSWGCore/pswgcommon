@@ -3,9 +3,6 @@ package com.projectswg.common.data.swgiff.parsers.appearance;
 import com.projectswg.common.data.swgiff.IffChunk;
 import com.projectswg.common.data.swgiff.IffForm;
 import com.projectswg.common.data.swgiff.parsers.SWGParser;
-import me.joshlarson.jlcommon.log.Log;
-
-import java.io.IOException;
 
 public class AppearanceTemplateList implements SWGParser {
 	
@@ -31,13 +28,9 @@ public class AppearanceTemplateList implements SWGParser {
 		assert form.getVersion() == 0;
 		
 		try (IffChunk name = form.readChunk("NAME")) {
-			try {
-				redirectFile = name.readString();
-				SWGParser parser = SWGParser.parse(redirectFile);
-				this.appearance = parser instanceof AppearanceTemplateList ? ((AppearanceTemplateList) parser).getAppearance() : (AppearanceTemplate) parser;
-			} catch (IOException e) {
-				Log.e(e);
-			}
+			redirectFile = name.readString();
+			SWGParser parser = SWGParser.parse(redirectFile);
+			this.appearance = parser instanceof AppearanceTemplateList ? ((AppearanceTemplateList) parser).getAppearance() : (AppearanceTemplate) parser;
 		}
 	}
 	
@@ -47,6 +40,11 @@ public class AppearanceTemplateList implements SWGParser {
 		name.writeString(redirectFile);
 		
 		return IffForm.of("APT ", 0, name);
+	}
+	
+	@Override
+	public String toString() {
+		return "AppearanceTemplateList["+appearance+"]";
 	}
 	
 }

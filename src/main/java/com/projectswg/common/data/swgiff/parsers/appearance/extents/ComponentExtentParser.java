@@ -18,7 +18,7 @@ public class ComponentExtentParser extends CompositeExtentParser {
 		assert form.getTag().equals("CMPT");
 		assert form.getVersion() == 0;
 		
-		super.read(form);
+		super.read(form.readForm("CPST"));
 	}
 	
 	@Override

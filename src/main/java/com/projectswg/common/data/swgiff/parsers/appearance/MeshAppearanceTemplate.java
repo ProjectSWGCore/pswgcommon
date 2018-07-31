@@ -46,6 +46,7 @@ public class MeshAppearanceTemplate extends AppearanceTemplate {
 	}
 	
 	private void loadOld(IffForm form) {
+		form.readForm("SPS ").close();
 		sphere = SphereExtentParser.loadOld(form);
 		loadExtent(form);
 		loadHardpoints(form);
@@ -54,6 +55,7 @@ public class MeshAppearanceTemplate extends AppearanceTemplate {
 	private void load(IffForm form) {
 		super.read(form.readForm("APPR"));
 		sphere = getExtent().getSphere();
+		form.readForm("SPS ").close();
 	}
 	
 }

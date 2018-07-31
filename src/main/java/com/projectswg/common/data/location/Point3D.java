@@ -46,7 +46,9 @@ public class Point3D implements Encodable, Persistable {
 	}
 	
 	public Point3D(double x, double y, double z) {
-		set(x, y, z);
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	public double getX() {
@@ -92,6 +94,78 @@ public class Point3D implements Encodable, Persistable {
 	public void rotateAround(double x, double y, double z, Quaternion rot) {
 		rot.rotatePoint(this);
 		translate(x, y, z);
+	}
+	
+	public double distanceTo(Point3D p) {
+		return distanceTo(p.getX(), p.getY(), p.getZ());
+	}
+	
+	public double distanceTo(double x, double y, double z) {
+		double dist = 0, tmp;
+		tmp = this.x - x;
+		dist += tmp * tmp;
+		tmp = this.y - y;
+		dist += tmp * tmp;
+		tmp = this.z - z;
+		dist += tmp * tmp;
+		return Math.sqrt(dist);
+	}
+	
+	public double flatDistanceTo(Point3D p) {
+		return flatDistanceTo(p.getX(), p.getZ());
+	}
+	
+	public double flatDistanceTo(double x, double z) {
+		double dist = 0, tmp;
+		tmp = this.x - x;
+		dist += tmp * tmp;
+		tmp = this.z - z;
+		dist += tmp * tmp;
+		return Math.sqrt(dist);
+	}
+	
+	public boolean isWithinDistance(Point3D p, double x, double y, double z) {
+		if (Math.abs(getX() - p.getX()) > x)
+			return false;
+		if (Math.abs(getY() - p.getY()) > y)
+			return false;
+		if (Math.abs(getZ() - p.getZ()) > z)
+			return false;
+		return true;
+	}
+	
+	public boolean isWithinDistance(Point3D p, double radius) {
+		return isWithinDistance(p.getX(), p.getY(), p.getZ(), radius);
+	}
+	
+	public boolean isWithinDistance(double x, double y, double z, double radius) {
+		double dist = 0, tmp;
+		tmp = this.x - x;
+		dist += tmp * tmp;
+		tmp = this.y - y;
+		dist += tmp * tmp;
+		tmp = this.z - z;
+		dist += tmp * tmp;
+		return dist <= radius * radius;
+	}
+	
+	public boolean isWithinFlatDistance(Point3D target, double radius) {
+		double dist = 0, tmp;
+		tmp = target.x - x;
+		dist += tmp * tmp;
+		tmp = target.z - z;
+		dist += tmp * tmp;
+		return dist <= radius * radius;
+	}
+	
+	public double getSpeed(Point3D p, double deltaTime) {
+		double dist = 0, tmp;
+		tmp = p.x - x;
+		dist += tmp * tmp;
+		tmp = p.z - z;
+		dist += tmp * tmp;
+		dist = Math.sqrt(dist);
+		return dist / deltaTime;
 	}
 
 	@Override
@@ -151,4 +225,5 @@ public class Point3D implements Encodable, Persistable {
 	public String toString() {
 		return String.format("Point3D[%.2f, %.2f, %.2f]", x, y, z);
 	}
+	
 }

@@ -25,6 +25,7 @@ enum SWGParserFactory {
 		PARSERS.put("CMSH", MeshExtentParser::new);
 		PARSERS.put("CPST", CompositeExtentParser::new);
 		PARSERS.put("CSTB", CrcStringDataParser::new);
+		PARSERS.put("DTAL", DetailExtentParser::new);
 		PARSERS.put("DTLA", DetailAppearanceTemplate::new);
 		PARSERS.put("EXBX", BoxExtentParser::new);
 		PARSERS.put("EXSP", SphereExtentParser::new);
