@@ -52,15 +52,10 @@ public class ObjectMenuResponse extends ObjectController {
 		this.requestorId = requestorId;
 		this.options = new RadialOptionList(options);
 		this.counter = counter;
-		setTargetId(targetId);
-		setRequestorId(requestorId);
-		setRadialOptions(options);
-		setCounter(counter);
 	}
 	
 	public ObjectMenuResponse(NetBuffer data) {
 		super(CRC);
-		this.options = new RadialOptionList();
 		decode(data);
 	}
 	

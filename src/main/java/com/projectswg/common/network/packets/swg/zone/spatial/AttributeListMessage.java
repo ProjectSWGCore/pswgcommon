@@ -26,6 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.spatial;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,15 +38,26 @@ public class AttributeListMessage extends SWGPacket {
 	public static final int CRC = getCrc("AttributeListMessage");
 	
 	private long objectId;
+	private String staticItemName;
 	private Map <String, String> attributes;
+	private int serverRevision;
 	
 	public AttributeListMessage() {
-		this(0, new HashMap<>());
+		this(0, new HashMap<>(), 0);
 	}
 	
-	public AttributeListMessage(long objectId, Map <String, String> attributes) {
+	public AttributeListMessage(String staticItemName, Map <String, String> attributes, int serverRevision) {
+		this.objectId = 0;
+		this.staticItemName = staticItemName;
+		this.attributes = new HashMap<>(attributes);
+		this.serverRevision = serverRevision;
+	}
+	
+	public AttributeListMessage(long objectId, Map <String, String> attributes, int serverRevision) {
 		this.objectId = objectId;
-		this.attributes = attributes;
+		this.staticItemName = "";
+		this.attributes = new HashMap<>(attributes);
+		this.serverRevision = serverRevision;
 	}
 	
 	public AttributeListMessage(NetBuffer data) {
@@ -57,14 +69,14 @@ public class AttributeListMessage extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		objectId = data.getLong();
-		data.getAscii(); // static item name
+		staticItemName = data.getAscii();
 		int count = data.getInt();
 		for (int i = 0; i < count; i++) {
 			String name = data.getAscii();
 			String attr = data.getUnicode();
 			attributes.put(name, attr);
 		}
-		data.getInt();
+		serverRevision = data.getInt();
 	}
 	
 	@Override
@@ -77,15 +89,45 @@ public class AttributeListMessage extends SWGPacket {
 		data.addShort(3);
 		data.addInt(CRC);
 		data.addLong(objectId);
-		data.addShort(0);
+		data.addAscii(staticItemName);
 		data.addInt(attributes.size());
 		for (Entry <String, String> e : attributes.entrySet()) {
 			data.addAscii(e.getKey());
 			data.addUnicode(e.getValue());
 		}
-		data.addInt(0);
+		data.addInt(serverRevision);
 		return data;
 	}
 	
+	public long getObjectId() {
+		return objectId;
+	}
+	
+	public String getStaticItemName() {
+		return staticItemName;
+	}
+	
+	public Map<String, String> getAttributes() {
+		return Collections.unmodifiableMap(attributes);
+	}
+	
+	public int getServerRevision() {
+		return serverRevision;
+	}
+	
+	public void setObjectId(long objectId) {
+		this.objectId = objectId;
+	}
+	
+	public void setStaticItemName(String staticItemName) {
+		this.staticItemName = staticItemName;
+	}
+	
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = new HashMap<>(attributes);
+	}
+	
+	public void setServerRevision(int serverRevision) {
+		this.serverRevision = serverRevision;
+	}
 }
-

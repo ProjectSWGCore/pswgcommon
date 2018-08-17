@@ -67,18 +67,17 @@ public class RadialOptionList implements Encodable {
 		int optionsCount = data.getInt();
 		Map<Integer, RadialOption> optionMap = new HashMap<>();
 		for (int i = 0; i < optionsCount; i++) {
-			RadialOption option = new RadialOption();
 			int opt = data.getByte(); // option number
 			int parent = data.getByte(); // parentId
 			int radialType = data.getShort(); // radialType
-			data.getByte(); // optionType
-			data.getUnicode(); // text
+			byte flags = data.getByte(); // optionType
+			String label = data.getUnicode(); // text
 			RadialItem item = RadialItem.getFromId(radialType);
 			if (item == null) {
 				Log.e("No radial item found for: %04X");
 				continue;
 			}
-			option.setItem(item);
+			RadialOption option = RadialOption.createRaw(item, label, flags);
 			optionMap.put(opt, option);
 			if (parent == 0) {
 				options.add(option);
@@ -87,7 +86,9 @@ public class RadialOptionList implements Encodable {
 				if (parentOpt == null) {
 					Log.e("Parent not found! Parent=%d  Option=%s", parent, option);
 				} else {
-					parentOpt.addChild(option);
+					List<RadialOption> children = new ArrayList<>(parentOpt.getChildren());
+					children.add(option);
+					optionMap.put(parent, RadialOption.createRaw(parentOpt, children));
 				}
 			}
 		}
@@ -142,9 +143,7 @@ public class RadialOptionList implements Encodable {
 	}
 	
 	private int getOptionSize(RadialOption parent) {
-		int size = 9;
-		if (parent.getText() != null && !parent.getText().isEmpty())
-			size += parent.getText().length()*2;
+		int size = 9 + parent.getLabel().length() * 2;
 		for (RadialOption child : parent.getChildren()) {
 			size += getOptionSize(child);
 		}
@@ -155,12 +154,11 @@ public class RadialOptionList implements Encodable {
 		int myIndex = index++;
 		data.addByte(myIndex);
 		data.addByte(parentIndex);
-		data.addShort(parent.getId());
-		data.addByte(parent.getOptionType());
-		if (parent.getText() != null || !parent.getText().isEmpty())
-			data.addUnicode(parent.getText());
-		else
-			data.addInt(0);
+		data.addShort(parent.getType().getType());
+		data.addByte(parent.getFlags());
+		
+		data.addUnicode(parent.getLabel());
+		
 		for (RadialOption option : parent.getChildren()) {
 			index = addOption(data, option, myIndex, index);
 		}

@@ -138,6 +138,18 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 		return objectId;
 	}
 	
+	public short getX() {
+		return x;
+	}
+	
+	public short getY() {
+		return y;
+	}
+	
+	public short getZ() {
+		return z;
+	}
+	
 	public int getUpdateCounter() {
 		return updateCounter;
 	}

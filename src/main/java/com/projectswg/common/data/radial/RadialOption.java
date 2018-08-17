@@ -26,43 +26,224 @@
  ***********************************************************************************/
 package com.projectswg.common.data.radial;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public class RadialOption {
 	
-	private RadialItem item;
-	private List<RadialOption> children;
-	private String overriddenText;
+	private static final int FLAG_ENABLED		= 0x01;
+	private static final int FLAG_SERVER_NOTIFY	= 0x02;
 	
-	public RadialOption() {
-		this.children = new ArrayList<>();
+	private final List<RadialOption> children;
+	private final RadialItem type;
+	private final String label;
+	private final byte flags;
+	
+	private RadialOption(@NotNull List<RadialOption> children, @NotNull RadialItem type, @NotNull String label, int flags) {
+		for (RadialOption child : children)
+			Objects.requireNonNull(child, "child cannot be null");
+		this.children = children;
+		this.type = type;
+		this.label = label;
+		this.flags = (byte) flags;
 	}
 	
-	public RadialOption(RadialItem item) {
-		this.item = item;
-		this.children = new ArrayList<>();
+	@NotNull
+	public List<RadialOption> getChildren() {
+		return Collections.unmodifiableList(children);
 	}
 	
-	public void setItem(RadialItem item) { this.item = item; }
-	public void addChild(RadialOption option) { this.children.add(option); }
-	public void addChild(RadialItem item) { addChild(new RadialOption(item)); }
-	public void addChildWithOverriddenText(RadialItem item, String overriddenText) {
-		RadialOption childOption = new RadialOption(item);
-		childOption.setOverriddenText(overriddenText);
-		addChild(childOption);
+	@NotNull
+	public RadialItem getType() {
+		return type;
 	}
-	public void setOverriddenText(String overridenText) { this.overriddenText = overridenText; }
 	
-	public int getId() { return item.getId(); }
-	public int getOptionType() { return item.getOptionType(); }
-	public String getText() { return overriddenText != null ? overriddenText : item.getText(); }
+	@NotNull
+	public String getLabel() {
+		return label;
+	}
 	
-	public List<RadialOption> getChildren() { return children; }
+	public byte getFlags() {
+		return flags;
+	}
 	
 	@Override
 	public String toString() { 
-		return String.format("ID=%d Option=%d Text=%s", getId(), getOptionType(), getText()); 
+		return String.format("RadialOption[%s label='%s' flags=%d children=%s]", type, label, flags, children); 
+	}
+	
+	/**
+	 * Creates a radial option based on the specified option, with a different set of children options
+	 * @param option the base option
+	 * @param children the children of this radial option
+	 * @return a new radial option with the new children list
+	 */
+	@NotNull
+	public static RadialOption createRaw(@NotNull RadialOption option, @NotNull List<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), option.getType(), option.getLabel(), option.getFlags());
+	}
+	
+	/**
+	 * Creates a radial option based on the specified option, with a different set of children options
+	 * @param option the base option
+	 * @param children the children of this radial option
+	 * @return a new radial option with the new children list
+	 */
+	@NotNull
+	public static RadialOption createRaw(@NotNull RadialOption option, RadialOption ... children) {
+		return new RadialOption(List.of(children), option.getType(), option.getLabel(), option.getFlags());
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param flags the option flags (enabled/notify/out of range)
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createRaw(@NotNull RadialItem type, @NotNull String label, byte flags, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, label, flags);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createSilent(@NotNull RadialItem type, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, "", FLAG_ENABLED);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createSilent(@NotNull RadialItem type, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, "", FLAG_ENABLED);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption create(@NotNull RadialItem type, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, "", FLAG_ENABLED | FLAG_SERVER_NOTIFY);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption create(@NotNull RadialItem type, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, "", FLAG_ENABLED | FLAG_SERVER_NOTIFY);
+	}
+	
+	/**
+	 * Creates a radial option that is disabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createDisabled(@NotNull RadialItem type, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, "", 0);
+	}
+	
+	/**
+	 * Creates a radial option that is disabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createDisabled(@NotNull RadialItem type, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, "", 0);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createSilent(@NotNull RadialItem type, @NotNull String label, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, label, FLAG_ENABLED);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createSilent(@NotNull RadialItem type, @NotNull String label, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, label, FLAG_ENABLED);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption create(@NotNull RadialItem type, @NotNull String label, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, label, FLAG_ENABLED | FLAG_SERVER_NOTIFY);
+	}
+	
+	/**
+	 * Creates a radial option that is enabled and will send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption create(@NotNull RadialItem type, @NotNull String label, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, label, FLAG_ENABLED | FLAG_SERVER_NOTIFY);
+	}
+	
+	/**
+	 * Creates a radial option that is disabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createDisabled(@NotNull RadialItem type, @NotNull String label, @NotNull Collection<RadialOption> children) {
+		return new RadialOption(new ArrayList<>(children), type, label, 0);
+	}
+	
+	/**
+	 * Creates a radial option that is disabled and will not send a selection notification to the server when selected
+	 * @param type the action type
+	 * @param label the override label
+	 * @param children the children of this radial option
+	 * @return a new radial option with the specified properties
+	 */
+	@NotNull
+	public static RadialOption createDisabled(@NotNull RadialItem type, @NotNull String label, RadialOption ... children) {
+		return new RadialOption(List.of(children), type, label, 0);
 	}
 	
 }
