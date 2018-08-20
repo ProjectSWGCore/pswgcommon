@@ -88,4 +88,9 @@ public abstract class SWGPacket {
 		return CRC.getCrc(string);
 	}
 	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[?]";
+	}
+	
 }

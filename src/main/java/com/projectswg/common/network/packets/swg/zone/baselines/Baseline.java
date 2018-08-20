@@ -163,4 +163,10 @@ public class Baseline extends SWGPacket {
 	public long getId() { return objId; }
 	
 	public byte [] getBaselineData() { return baseData; }
+	
+	@Override
+	public String toString() {
+		return String.format("Baseline[objId=%d type=%s num=%d]", objId, type, num);
+	}
+	
 }

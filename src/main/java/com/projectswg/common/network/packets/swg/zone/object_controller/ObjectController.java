@@ -89,7 +89,12 @@ public abstract class ObjectController extends SWGPacket {
 	
 	public void setUpdate(int update) { this.update = update; }
 	
-	public static final ObjectController decodeController(NetBuffer data) {
+	@Override
+	public String toString() {
+		return String.format("ObjectController[objId=%d crc=%04X \"%s\"]", objectId, controllerCrc, getClass().getSimpleName());
+	}
+	
+	public static ObjectController decodeController(NetBuffer data) {
 		if (data.array().length < 14)
 			return null;
 		int pos = data.position();

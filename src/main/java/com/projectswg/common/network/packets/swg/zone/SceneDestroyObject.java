@@ -65,4 +65,9 @@ public class SceneDestroyObject extends SWGPacket {
 	public long getObjectId() { return objId; }
 	public void setObjectId(long objId) { this.objId = objId; }
 	
+	@Override
+	public String toString() {
+		return "SceneDestroyObject[objId=" + objId + "]";
+	}
+	
 }

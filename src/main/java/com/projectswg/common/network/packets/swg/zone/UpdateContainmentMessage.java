@@ -67,4 +67,10 @@ public class UpdateContainmentMessage extends SWGPacket {
 	public long getObjectId() { return objectId; }
 	public long getContainerId() { return containerId; }
 	public int getSlotIndex() { return slotIndex; }
+	
+	@Override
+	public String toString() {
+		return String.format("UpdateContainmentMessage[objId=%d containerId=%d slot=%d]", objectId, containerId, slotIndex);
+	}
+	
 }

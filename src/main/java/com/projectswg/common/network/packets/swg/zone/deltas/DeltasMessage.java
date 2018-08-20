@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 import com.projectswg.common.network.packets.swg.zone.baselines.Baseline.BaselineType;
+import com.projectswg.common.utilities.ByteUtilities;
 
 public class DeltasMessage extends SWGPacket {
 	
@@ -124,6 +125,11 @@ public class DeltasMessage extends SWGPacket {
 	
 	public void setUpdate(int update) {
 		this.update = update;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("DeltasMessage[objId=%d type=%s num=%d update=%d data=%s]", objId, type, num, update, ByteUtilities.getHexString(deltaData));
 	}
 	
 	private String reverse(String str) {

@@ -175,4 +175,10 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 		this.y = (short) (location.getY() * 8 + 0.5);
 		this.z = (short) (location.getZ() * 8 + 0.5);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("UpdateTransformWithParentMessage[objId=%d cell=%d posX=%d posY=%d posZ=%d direction=%d]", objectId, cellId, x, y, z, direction);
+	}
+	
 }

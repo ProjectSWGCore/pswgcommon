@@ -117,4 +117,10 @@ public class UpdateTransformMessage extends SWGPacket {
 	public void setLookAtYaw(byte lookAtYaw) {
 		this.lookAtYaw = lookAtYaw;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("UpdateTransformMessage[objId=%d posX=%d posY=%d posZ=%d direction=%d]", objId, posX, posY, posZ, direction);
+	}
+	
 }

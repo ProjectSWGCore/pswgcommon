@@ -26,62 +26,111 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone;
 
+import com.projectswg.common.data.location.Location;
+import com.projectswg.common.data.location.Terrain;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
-public class ObjectMenuSelect extends SWGPacket {
+public class SceneCreateObjectByName extends SWGPacket {
 	
-	public static final int CRC = getCrc("ObjectMenuSelectMessage::MESSAGE_TYPE");
+	public static final int CRC = getCrc("SceneCreateObjectByName");
 	
-	private long objectId;
-	private short selection;
+	private long objId;
+	private String template;
+	private Location location;
+	private boolean hyperspace;
 	
-	public ObjectMenuSelect() {
-		this(0, (short) 0);
+	public SceneCreateObjectByName() {
+		this(0, null, null, false);
 	}
 	
-	public ObjectMenuSelect(long objectId, short selection) {
-		this.objectId = objectId;
-		this.selection = selection;
+	public SceneCreateObjectByName(long objId, String template, Location location, boolean hyperspace) {
+		this.objId = objId;
+		this.template = template;
+		this.location = location;
+		this.hyperspace = hyperspace;
 	}
 	
 	@Override
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
-		objectId = data.getLong();
-		selection = data.getShort();
+		objId = data.getLong();
+		location = data.getEncodable(Location.class);
+		template = data.getAscii();
+		hyperspace = data.getBoolean();
+		verifyInternals();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(16);
-		data.addShort(3);
+		verifyInternals();
+		NetBuffer data = NetBuffer.allocate(45 + template.length());
+		data.addShort(5);
 		data.addInt(CRC);
-		data.addLong(objectId);
-		data.addShort(selection);
+		data.addLong(objId);
+		data.addEncodable(location);
+		data.addAscii(template);
+		data.addBoolean(hyperspace);
 		return data;
 	}
 	
-	public void setObjectId(long objectId) {
-		this.objectId = objectId;
+	public void setObjectId(long objId) {
+		if (objId == 0)
+			throw new IllegalArgumentException("Object ID cannot be 0!");
+		this.objId = objId;
 	}
 	
-	public void setSelection(short selection) {
-		this.selection = selection;
+	public void setLocation(Location l) {
+		this.location = new Location(l);
+		verifyLocationInternals();
+	}
+	
+	public void setTemplate(String template) {
+		this.template = template;
+	}
+	
+	public void setHyperspace(boolean hyperspace) {
+		this.hyperspace = hyperspace;
 	}
 	
 	public long getObjectId() {
-		return objectId;
+		return objId;
 	}
 	
-	public short getSelection() {
-		return selection;
+	public Location getLocation() {
+		return location;
+	}
+	
+	public String getTemplate() {
+		return template;
+	}
+	
+	public boolean isHyperspace() {
+		return hyperspace;
 	}
 	
 	@Override
 	public String toString() {
-		return "ObjectMenuSelect[objId=" + objectId + " selection=" + selection + "]";
+		return "SceneCreateObjectByName[objId=" + objId + " location=" + location + " obj=" + template + " hyperspace=" + hyperspace + "]";
+	}
+	
+	private void verifyInternals() {
+		packetAssert(objId != 0, "Object ID cannot be 0!");
+		packetAssert(template != null, "template cannot be null");
+		verifyLocationInternals();
+	}
+	
+	private void verifyLocationInternals() {
+		packetAssert(location != null, "location cannot be null");
+		packetAssert(location.getTerrain() != Terrain.GONE, "location terrain cannot be GONE");
+		packetAssert(!Double.isNaN(location.getX()), "X Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getY()), "Y Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getZ()), "Z Coordinate is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationX()), "X Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationY()), "Y Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationZ()), "Z Orientation is NaN!");
+		packetAssert(!Double.isNaN(location.getOrientationW()), "W Orientation is NaN!");
 	}
 	
 }

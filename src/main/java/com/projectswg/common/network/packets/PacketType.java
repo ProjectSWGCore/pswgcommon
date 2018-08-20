@@ -29,6 +29,7 @@ package com.projectswg.common.network.packets;
 import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
+import com.projectswg.common.network.packets.swg.zone.*;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
 import com.projectswg.common.network.packets.swg.ServerUnixEpochTime;
@@ -61,37 +62,6 @@ import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterR
 import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterResponse;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameRequest;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameResponse;
-import com.projectswg.common.network.packets.swg.zone.ClientOpenContainerMessage;
-import com.projectswg.common.network.packets.swg.zone.CmdSceneReady;
-import com.projectswg.common.network.packets.swg.zone.ConnectPlayerResponseMessage;
-import com.projectswg.common.network.packets.swg.zone.EnterTicketPurchaseModeMessage;
-import com.projectswg.common.network.packets.swg.zone.ExpertiseRequestMessage;
-import com.projectswg.common.network.packets.swg.zone.GalaxyLoopTimesResponse;
-import com.projectswg.common.network.packets.swg.zone.GameServerLagResponse;
-import com.projectswg.common.network.packets.swg.zone.HeartBeat;
-import com.projectswg.common.network.packets.swg.zone.LagRequest;
-import com.projectswg.common.network.packets.swg.zone.ObjectMenuSelect;
-import com.projectswg.common.network.packets.swg.zone.ParametersMessage;
-import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListRequest;
-import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListResponse;
-import com.projectswg.common.network.packets.swg.zone.PlayClientEffectObjectMessage;
-import com.projectswg.common.network.packets.swg.zone.PlayMusicMessage;
-import com.projectswg.common.network.packets.swg.zone.RequestGalaxyLoopTimes;
-import com.projectswg.common.network.packets.swg.zone.SceneCreateObjectByCrc;
-import com.projectswg.common.network.packets.swg.zone.SceneDestroyObject;
-import com.projectswg.common.network.packets.swg.zone.SceneEndBaselines;
-import com.projectswg.common.network.packets.swg.zone.ServerNowEpochTime;
-import com.projectswg.common.network.packets.swg.zone.ServerTimeMessage;
-import com.projectswg.common.network.packets.swg.zone.ServerWeatherMessage;
-import com.projectswg.common.network.packets.swg.zone.SetWaypointColor;
-import com.projectswg.common.network.packets.swg.zone.ShowBackpack;
-import com.projectswg.common.network.packets.swg.zone.ShowHelmet;
-import com.projectswg.common.network.packets.swg.zone.StopClientEffectObjectByLabelMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateContainmentMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdatePostureMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdatePvpStatusMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateTransformMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateTransformWithParentMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.CancelLiveAuctionMessage;
@@ -286,6 +256,7 @@ public enum PacketType {
 
 		// Scene
 		SCENE_END_BASELINES						(SceneEndBaselines.CRC, 				SceneEndBaselines.class),
+		SCENE_CREATE_OBJECT_BY_NAME				(SceneCreateObjectByName.CRC, 			SceneCreateObjectByName.class),
 		SCENE_CREATE_OBJECT_BY_CRC				(SceneCreateObjectByCrc.CRC, 			SceneCreateObjectByCrc.class),
 		SCENE_DESTROY_OBJECT					(SceneDestroyObject.CRC, 				SceneDestroyObject.class),
 		UPDATE_CONTAINMENT_MESSAGE				(UpdateContainmentMessage.CRC, 			UpdateContainmentMessage.class),
