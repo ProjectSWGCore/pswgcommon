@@ -26,6 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import com.projectswg.common.data.encodables.tangible.PvpFaction;
@@ -81,5 +82,14 @@ public class UpdatePvpStatusMessage extends SWGPacket {
 	public long getObjectId() { return objId; }
 	public PvpFaction getPlayerFaction() { return pvpFaction; }
 	public PvpFlag[] getPvpFlags() { return pvpFlags; }
+	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"faction", pvpFaction,
+				"flags", Arrays.toString(pvpFlags)
+		);
+	}
 	
 }

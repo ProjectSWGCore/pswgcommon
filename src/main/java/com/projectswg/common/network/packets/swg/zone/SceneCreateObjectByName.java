@@ -111,8 +111,13 @@ public class SceneCreateObjectByName extends SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return "SceneCreateObjectByName[objId=" + objId + " location=" + location + " obj=" + template + " hyperspace=" + hyperspace + "]";
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"location", location,
+				"template", template,
+				"hyperspace", hyperspace
+		);
 	}
 	
 	private void verifyInternals() {

@@ -96,9 +96,15 @@ public class ChatCreateRoom extends SWGPacket {
 	}
 
 	@Override
-	public String toString() {
-		return "ChatCreateRoom[isPublic=" + isPublic + ", isModerated=" + isModerated +
-				", owner='" + owner + "'," + "roomName='" + roomName + "'," + "roomTitle='" + roomTitle + '\'' +
-				", sequence=" + sequence + "]";
+	protected String getPacketData() {
+		return createPacketInformation(
+				"public", isPublic,
+				"moderated", isModerated,
+				"owner", owner,
+				"name", roomName,
+				"title", roomTitle,
+				"sequence", sequence
+		);
 	}
+	
 }

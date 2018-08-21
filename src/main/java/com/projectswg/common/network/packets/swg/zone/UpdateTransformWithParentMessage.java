@@ -37,46 +37,49 @@ import com.projectswg.common.network.packets.SWGPacket;
 public class UpdateTransformWithParentMessage extends SWGPacket {
 	public static final int CRC = getCrc("UpdateTransformWithParentMessage");
 
+	private long objId;
 	private long cellId;
-	private long objectId;
-	private short x;
-	private short y;
-	private short z;
 	private int updateCounter;
+	private short posX;
+	private short posY;
+	private short posZ;
 	private byte speed;
 	private byte direction;
-	private byte lookDirection;
 	private boolean useLookDirection;
+	private byte lookDirection;
 	
 	public UpdateTransformWithParentMessage() {
-		
+		this.objId = 0;
+		this.cellId = 0;
+		this.updateCounter = 0;
+		this.posX = 0;
+		this.posY = 0;
+		this.posZ = 0;
+		this.speed = 0;
+		this.direction = 0;
+		this.useLookDirection = false;
+		this.lookDirection = 0;
 	}
 	
-	public UpdateTransformWithParentMessage(long cellId, long objectId) {
+	public UpdateTransformWithParentMessage(long objId, long cellId, int updateCounter, Location location, byte speed) {
+		this.objId = objId;
 		this.cellId = cellId;
-		this.objectId = objectId;
-	}
-
-	public UpdateTransformWithParentMessage(long cellId, long objectId, Location location, int updateCounter, byte speed, byte direction, byte lookDirection, boolean useLookDirection) {
-		this.cellId = cellId;
-		this.objectId = objectId;
 		this.updateCounter = updateCounter;
 		this.speed = speed;
-		this.direction = direction;
-		this.lookDirection = lookDirection;
-		this.useLookDirection = useLookDirection;
+		this.useLookDirection = false;
+		this.lookDirection = 0;
 		setLocation(location);
 	}
-
+	
 	@Override
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
 		cellId			= data.getLong();
-		objectId		= data.getLong();
-		x				= data.getShort();
-		y				= data.getShort();
-		z				= data.getShort();
+		objId = data.getLong();
+		posX = data.getShort();
+		posY = data.getShort();
+		posZ = data.getShort();
 		updateCounter	= data.getInt();
 		speed			= data.getByte();
 		direction		= data.getByte();
@@ -90,10 +93,10 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 		data.addShort(11);
 		data.addInt(CRC);
 		data.addLong(cellId);
-		data.addLong(objectId);
-		data.addShort(x);
-		data.addShort(y);
-		data.addShort(z);
+		data.addLong(objId);
+		data.addShort(posX);
+		data.addShort(posY);
+		data.addShort(posZ);
 		data.addInt(updateCounter);
 		data.addByte(speed);
 		data.addByte(direction);
@@ -107,7 +110,7 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 	}
 	
 	public void setObjectId(long objectId) {
-		this.objectId = objectId;
+		this.objId = objectId;
 	}
 	
 	public void setUpdateCounter(int updateCounter) {
@@ -135,19 +138,19 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 	}
 	
 	public long getObjectId() {
-		return objectId;
+		return objId;
 	}
 	
 	public short getX() {
-		return x;
+		return posX;
 	}
 	
 	public short getY() {
-		return y;
+		return posY;
 	}
 	
 	public short getZ() {
-		return z;
+		return posZ;
 	}
 	
 	public int getUpdateCounter() {
@@ -170,15 +173,40 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 		return useLookDirection;
 	}
 	
-	public void setLocation(Location location) {
-		this.x = (short) (location.getX() * 8 + 0.5);
-		this.y = (short) (location.getY() * 8 + 0.5);
-		this.z = (short) (location.getZ() * 8 + 0.5);
+	public final void setLocation(Location location) {
+		this.posX = (short) (location.getX() * 8 + 0.5);
+		this.posY = (short) (location.getY() * 8 + 0.5);
+		this.posZ = (short) (location.getZ() * 8 + 0.5);
+		this.direction = getMovementAngle(location);
 	}
 	
 	@Override
-	public String toString() {
-		return String.format("UpdateTransformWithParentMessage[objId=%d cell=%d posX=%d posY=%d posZ=%d direction=%d]", objectId, cellId, x, y, z, direction);
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"cellId", cellId,
+				"posX", posX / 4,
+				"posY", posY / 4,
+				"posZ", posZ / 4,
+				"dir", direction
+		);
+	}
+	
+	private byte getMovementAngle(Location requestedLocation) {
+		byte movementAngle = (byte) 0.0f;
+		double wOrient = requestedLocation.getOrientationW();
+		double yOrient = requestedLocation.getOrientationY();
+		double sq = Math.sqrt(1 - (wOrient*wOrient));
+		
+		if (sq != 0) {
+			if (requestedLocation.getOrientationW() > 0 && requestedLocation.getOrientationY() < 0) {
+				wOrient *= -1;
+				yOrient *= -1;
+			}
+			movementAngle = (byte) ((yOrient / sq) * (2 * Math.acos(wOrient) / 0.06283f));
+		}
+		
+		return movementAngle;
 	}
 	
 }

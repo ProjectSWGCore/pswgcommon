@@ -66,8 +66,8 @@ public class SceneDestroyObject extends SWGPacket {
 	public void setObjectId(long objId) { this.objId = objId; }
 	
 	@Override
-	public String toString() {
-		return "SceneDestroyObject[objId=" + objId + "]";
+	protected String getPacketData() {
+		return "objId="+objId;
 	}
 	
 }

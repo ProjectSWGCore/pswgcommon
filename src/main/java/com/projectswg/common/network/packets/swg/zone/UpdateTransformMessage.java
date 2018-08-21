@@ -26,6 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone;
 
+import com.projectswg.common.data.location.Location;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
@@ -33,27 +34,34 @@ public class UpdateTransformMessage extends SWGPacket {
 	public static final int CRC = getCrc("UpdateTransformMessage");
 
 	private long objId;
+	private int updateCounter;
 	private short posX;
 	private short posY;
 	private short posZ;
-	private int updateCounter;
 	private byte direction;
 	private float speed;
-	private byte lookAtYaw;
 	private boolean useLookAtYaw;
-
+	private byte lookAtYaw;
+	
+	public UpdateTransformMessage(long objId, int updateCounter, Location location, float speed) {
+		this.objId = objId;
+		this.updateCounter = updateCounter;
+		this.speed = speed;
+		this.useLookAtYaw = false;
+		this.lookAtYaw = 0;
+		setLocation(location);
+	}
+	
 	public UpdateTransformMessage() {
 		this.objId = 0;
+		this.updateCounter = 0;
 		this.posX = 0;
 		this.posY = 0;
 		this.posZ = 0;
-		this.updateCounter = 0;
-		this.direction = 0;
 		this.speed = 0;
-	}
-	
-	public UpdateTransformMessage(NetBuffer data) {
-		decode(data);
+		this.direction = 0;
+		this.useLookAtYaw = false;
+		this.lookAtYaw = 0;
 	}
 	
 	public void decode(NetBuffer data) {
@@ -118,9 +126,39 @@ public class UpdateTransformMessage extends SWGPacket {
 		this.lookAtYaw = lookAtYaw;
 	}
 	
+	public final void setLocation(Location location) {
+		this.posX = (short) (location.getX() * 4 + 0.5);
+		this.posY = (short) (location.getY() * 4 + 0.5);
+		this.posZ = (short) (location.getZ() * 4 + 0.5);
+		this.direction = getMovementAngle(location);
+	}
+	
 	@Override
-	public String toString() {
-		return String.format("UpdateTransformMessage[objId=%d posX=%d posY=%d posZ=%d direction=%d]", objId, posX, posY, posZ, direction);
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"posX", posX / 4,
+				"posY", posY / 4,
+				"posZ", posZ / 4,
+				"dir", direction
+		);
+	}
+	
+	private byte getMovementAngle(Location requestedLocation) {
+		byte movementAngle = (byte) 0.0f;
+		double wOrient = requestedLocation.getOrientationW();
+		double yOrient = requestedLocation.getOrientationY();
+		double sq = Math.sqrt(1 - (wOrient*wOrient));
+		
+		if (sq != 0) {
+			if (requestedLocation.getOrientationW() > 0 && requestedLocation.getOrientationY() < 0) {
+				wOrient *= -1;
+				yOrient *= -1;
+			}
+			movementAngle = (byte) ((yOrient / sq) * (2 * Math.acos(wOrient) / 0.06283f));
+		}
+		
+		return movementAngle;
 	}
 	
 }

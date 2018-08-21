@@ -90,8 +90,11 @@ public abstract class ObjectController extends SWGPacket {
 	public void setUpdate(int update) { this.update = update; }
 	
 	@Override
-	public String toString() {
-		return String.format("ObjectController[objId=%d crc=%04X \"%s\"]", objectId, controllerCrc, getClass().getSimpleName());
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objectId,
+				"crc", "0x"+Integer.toHexString(controllerCrc)
+		);
 	}
 	
 	public static ObjectController decodeController(NetBuffer data) {

@@ -68,4 +68,12 @@ public class UpdateCellPermissionMessage extends SWGPacket {
 	public long getCellId() { return cellId; }
 	public byte getPermissions() { return permissionFlag; }
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"cellId", cellId,
+				"permissionFlag", permissionFlag
+		);
+	}
+	
 }

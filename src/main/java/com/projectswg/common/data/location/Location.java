@@ -33,6 +33,8 @@ import com.projectswg.common.persistable.Persistable;
 
 public class Location implements Encodable, Persistable {
 	
+	private static final Location ZERO = new Location(0, 0, 0, Terrain.GONE);
+	
 	private final Point3D point;
 	private final Quaternion orientation;
 	private Terrain terrain;
@@ -268,6 +270,10 @@ public class Location implements Encodable, Persistable {
 	
 	public static LocationBuilder builder(Location location) {
 		return new LocationBuilder(location);
+	}
+	
+	public static Location zero() {
+		return ZERO;
 	}
 	
 	public static class LocationBuilder {

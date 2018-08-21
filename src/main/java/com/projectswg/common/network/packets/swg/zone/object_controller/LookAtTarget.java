@@ -60,4 +60,12 @@ public class LookAtTarget extends ObjectController {
 	
 	public void setTargetId(long targetId) { this.targetId = targetId; }
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", getObjectId(),
+				"target", targetId
+		);
+	}
+	
 }

@@ -77,8 +77,8 @@ public class ChatRoomList extends SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return "ChatRoomList[roomSize=" + rooms.size() + "]";
+	protected String getPacketData() {
+		return "roomSize="+rooms.size();
 	}
 	
 }

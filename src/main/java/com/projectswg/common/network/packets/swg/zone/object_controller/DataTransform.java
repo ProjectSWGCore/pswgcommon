@@ -54,13 +54,14 @@ public class DataTransform extends ObjectController {
 		useLookAtYaw = transform.isUseLookAtYaw();
 	}
 	
-	public DataTransform(long objectId, int counter, Location l, float speed) {
+	public DataTransform(long objectId, int timestamp, int counter, Location l, float speed) {
 		super(objectId, CRC);
 		if (l == null)
 			l = new Location();
+		this.timestamp = timestamp;
+		this.updateCounter = counter;
 		this.l = l;
 		this.speed = speed;
-		this.updateCounter = counter;
 	}
 	
 	public DataTransform(NetBuffer data) {
@@ -156,6 +157,17 @@ public class DataTransform extends ObjectController {
 		}
 		
 		return movementAngle;
+	}
+	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", getObjectId(),
+				"timestamp", timestamp,
+				"counter", updateCounter,
+				"location", l,
+				"speed", speed
+		);
 	}
 	
 }

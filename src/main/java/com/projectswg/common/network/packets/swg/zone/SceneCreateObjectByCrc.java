@@ -110,8 +110,13 @@ public class SceneCreateObjectByCrc extends SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return "SceneCreateObjectByCrc[objId=" + objId + " location=" + location + " obj=" + com.projectswg.common.data.CRC.getString(objCrc) + " hyperspace=" + hyperspace + "]";
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"location", location,
+				"template", com.projectswg.common.data.CRC.getString(objCrc),
+				"hyperspace", hyperspace
+		);
 	}
 	
 	private void verifyInternals() {

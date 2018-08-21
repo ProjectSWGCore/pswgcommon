@@ -89,8 +89,27 @@ public abstract class SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "[?]";
+	public final String toString() {
+		return getClass().getSimpleName() + "[" + getPacketData() + "]";
+	}
+	
+	protected String getPacketData() {
+		return "?";
+	}
+	
+	protected final String createPacketInformation(Object ... data) {
+		assert data.length % 2 == 0;
+		StringBuilder str = new StringBuilder();
+		for (int i = 0; i+1 < data.length; i += 2) {
+			assert data[i] instanceof String;
+			String key = data[i] == null ? "null" : data[i].toString();
+			if (i > 0)
+				str.append(' ');
+			str.append(key);
+			str.append('=');
+			str.append(data[i+1]);
+		}
+		return str.toString();
 	}
 	
 }

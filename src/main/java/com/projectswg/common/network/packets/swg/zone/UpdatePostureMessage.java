@@ -33,7 +33,7 @@ import com.projectswg.common.network.packets.SWGPacket;
 public class UpdatePostureMessage extends SWGPacket {
 	public static final int CRC = getCrc("UpdatePostureMessage");
 
-	private int posture = 0;
+	private byte posture = 0;
 	private long objId = 0;
 	
 	public UpdatePostureMessage() {
@@ -46,7 +46,7 @@ public class UpdatePostureMessage extends SWGPacket {
 	}
 	
 	public UpdatePostureMessage(int posture, long objId) {
-		this.posture = posture;
+		this.posture = (byte) posture;
 		this.objId = objId;
 	}
 	
@@ -68,7 +68,7 @@ public class UpdatePostureMessage extends SWGPacket {
 		return data;
 	}
 	
-	public int getPosture() {
+	public byte getPosture() {
 		return posture;
 	}
 	
@@ -77,10 +77,19 @@ public class UpdatePostureMessage extends SWGPacket {
 	}
 	
 	public void setPosture(int posture) {
-		this.posture = posture;
+		this.posture = (byte) posture;
 	}
 	
 	public void setObjId(long objId) {
 		this.objId = objId;
 	}
+	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"posture", Posture.getFromId(posture)
+		);
+	}
+	
 }

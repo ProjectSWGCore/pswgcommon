@@ -80,8 +80,11 @@ public class ObjectMenuSelect extends SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return "ObjectMenuSelect[objId=" + objectId + " selection=" + selection + "]";
+	protected String getPacketData() {
+		return createPacketInformation(
+			"objId", objectId,
+			"selection", selection
+		);
 	}
 	
 }

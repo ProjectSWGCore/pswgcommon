@@ -75,9 +75,13 @@ public class GetMapLocationsMessage extends SWGPacket {
 	}
 
 	@Override
-	public String toString() {
-		return String.format("[GetMapLocationsMessage] planet=%s static=%d dynamic=%d persist=%d",
-				planet, versionStatic, versionDynamic, versionPersist);
+	protected String getPacketData() {
+		return createPacketInformation(
+				"planet", planet,
+				"static", versionStatic,
+				"dynamic", versionDynamic,
+				"persist", versionPersist
+		);
 	}
 }
 

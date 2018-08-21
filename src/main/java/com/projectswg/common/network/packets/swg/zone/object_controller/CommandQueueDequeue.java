@@ -83,4 +83,15 @@ public class CommandQueueDequeue extends ObjectController {
 	public void setError(int error) { this.error = error; }
 	public void setAction(int action) { this.action = action; }
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", getObjectId(),
+				"counter", counter,
+				"timer", timer,
+				"error", error,
+				"action", action
+		);
+	}
+	
 }

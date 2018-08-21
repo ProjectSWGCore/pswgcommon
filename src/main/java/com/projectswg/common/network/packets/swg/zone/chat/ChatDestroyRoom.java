@@ -68,7 +68,10 @@ public class ChatDestroyRoom extends SWGPacket {
 	}
 
 	@Override
-	public String toString() {
-		return "ChatDestroyRoom[roomId=" + roomId + ", sequence=" + sequence + "]";
+	protected String getPacketData() {
+		return createPacketInformation(
+				"roomId", roomId,
+				"sequence", sequence
+		);
 	}
 }

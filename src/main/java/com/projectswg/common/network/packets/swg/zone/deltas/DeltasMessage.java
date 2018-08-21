@@ -128,8 +128,14 @@ public class DeltasMessage extends SWGPacket {
 	}
 	
 	@Override
-	public String toString() {
-		return String.format("DeltasMessage[objId=%d type=%s num=%d update=%d data=%s]", objId, type, num, update, ByteUtilities.getHexString(deltaData));
+	public String getPacketData() {
+		return createPacketInformation(
+				"objId", objId,
+				"type", type,
+				"num", num,
+				"update", update,
+				"data", ByteUtilities.getHexString(deltaData)
+		);
 	}
 	
 	private String reverse(String str) {

@@ -60,8 +60,8 @@ public class SceneEndBaselines extends SWGPacket {
 	public long getObjectId() { return objId; }
 	
 	@Override
-	public String toString() {
-		return "SceneEndBaselines[objId=" + objId + "]";
+	public String getPacketData() {
+		return "objId="+objId;
 	}
 	
 }

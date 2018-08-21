@@ -79,4 +79,15 @@ public class CommandQueueEnqueue extends ObjectController {
 	public void setArguments(String args) { this.arguments = args; }
 	public void setTargetId(long targetId) { this.targetId = targetId; }
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", getObjectId(),
+				"counter", counter,
+				"name", com.projectswg.common.data.CRC.getString(crc),
+				"target", targetId,
+				"arguments", "'"+arguments+"'"
+		);
+	}
+	
 }
