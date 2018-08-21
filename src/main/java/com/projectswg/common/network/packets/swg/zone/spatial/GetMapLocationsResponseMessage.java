@@ -119,11 +119,11 @@ public class GetMapLocationsResponseMessage extends SWGPacket {
 	protected String getPacketData() {
 		return createPacketInformation(
 				"planet", planet,
-				"staticLocations", updatedStaticLocations.size(),
+				"staticLocations", updatedStaticLocations == null ? "null" : updatedStaticLocations.size(),
 				"staticVersion", staticLocVersion,
-				"dynamicLocations", updatedDynamicLocations.size(),
+				"dynamicLocations", updatedDynamicLocations == null ? "null" : updatedDynamicLocations.size(),
 				"dynamicVersion", dynamicLocVersion,
-				"persistLocations", updatedPersistLocations.size(),
+				"persistLocations", updatedPersistLocations == null ? "null" : updatedPersistLocations.size(),
 				"persistVersion", persistentLocVersion
 		);
 	}
