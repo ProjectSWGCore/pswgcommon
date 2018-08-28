@@ -73,6 +73,16 @@ public class RadialOption {
 		return String.format("RadialOption[%s label='%s' flags=%d children=%s]", type, label, flags, children); 
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof RadialOption && ((RadialOption) o).type == type;
+	}
+	
+	@Override
+	public int hashCode() {
+		return type.hashCode();
+	}
+	
 	/**
 	 * Creates a radial option based on the specified option, with a different set of children options
 	 * @param option the base option
