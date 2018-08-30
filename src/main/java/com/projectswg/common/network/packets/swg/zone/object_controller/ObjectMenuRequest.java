@@ -26,11 +26,11 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
-import java.util.List;
-
 import com.projectswg.common.data.radial.RadialOption;
 import com.projectswg.common.data.radial.RadialOptionList;
 import com.projectswg.common.network.NetBuffer;
+
+import java.util.List;
 
 public class ObjectMenuRequest extends ObjectController {
 	
@@ -79,5 +79,6 @@ public class ObjectMenuRequest extends ObjectController {
 	public void setRequestorId(long requesterId) { this.requestorId = requesterId; }
 	public void setCounter(byte counter) { this.counter = counter; }
 	public void addOption(RadialOption opt) { options.addOption(opt); }
+	public void setRadialOptions(List<RadialOption> options) { this.options.setOptions(options); }
 	
 }
