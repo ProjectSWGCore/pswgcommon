@@ -136,7 +136,7 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public double getYaw() {
-		return orientation.getYaw();
+		return orientation.getHeading();
 	}
 	
 	public double getHeadingTo(Location target) {
@@ -327,7 +327,7 @@ public class Location implements Encodable, Persistable {
 		}
 		
 		public double getYaw() {
-			return orientation.getYaw();
+			return orientation.getHeading();
 		}
 		
 		public boolean isWithinDistance(Location l, double x, double y, double z) {

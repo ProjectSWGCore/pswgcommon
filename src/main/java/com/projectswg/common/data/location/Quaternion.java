@@ -108,8 +108,9 @@ public class Quaternion implements Encodable, Persistable {
 		return w;
 	}
 	
-	public double getYaw() {
-		return Math.toDegrees(2 * Math.acos(w));
+	public double getHeading() {
+		double heading = Math.toDegrees(Math.atan2(2*y*w - 2*x*z , 1 - 2*y*y - 2*z*z));
+		return (heading >= 0) ? heading : heading + 360;
 	}
 	
 	public void getRotationMatrix(double [][] rotationMatrix) {
