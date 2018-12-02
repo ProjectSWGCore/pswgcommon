@@ -2,15 +2,15 @@ plugins {
     id 'java'
 }
 
-sourceCompatibility = 9
-targetCompatibility = 9
+sourceCompatibility = 11
+targetCompatibility = 11
 
 repositories {
 	jcenter()
 }
 
 dependencies {
-	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.7.11'
+	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.7.14'
 	compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.59'
 	testCompile 'junit:junit:4.12'
 }
