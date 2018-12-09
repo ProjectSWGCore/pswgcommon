@@ -49,18 +49,22 @@ public class NetBuffer {
 	
 	private NetBuffer(ByteBuffer data) {
 		this.data = data;
-		this.size = data.array().length;
+		this.size = data.capacity();
 	}
 	
-	public static final NetBuffer allocate(int size) {
+	public static NetBuffer allocate(int size) {
 		return new NetBuffer(ByteBuffer.allocate(size));
 	}
 	
-	public static final NetBuffer wrap(byte [] data) {
+	public static NetBuffer allocateDirect(int size) {
+		return new NetBuffer(ByteBuffer.allocateDirect(size));
+	}
+	
+	public static NetBuffer wrap(byte [] data) {
 		return new NetBuffer(ByteBuffer.wrap(data));
 	}
 	
-	public static final NetBuffer wrap(ByteBuffer data) {
+	public static NetBuffer wrap(ByteBuffer data) {
 		return new NetBuffer(data);
 	}
 	
@@ -92,8 +96,24 @@ public class NetBuffer {
 		data.position(data.position()+relative);
 	}
 	
+	public void clear() {
+		data.clear();
+	}
+	
 	public void flip() {
 		data.flip();
+	}
+	
+	public void mark() {
+		data.mark();
+	}
+	
+	public void rewind() {
+		data.rewind();
+	}
+	
+	public void compact() {
+		data.compact();
 	}
 	
 	public ByteBuffer getBuffer() {
