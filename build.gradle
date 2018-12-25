@@ -1,17 +1,24 @@
 plugins {
+	id 'idea'
     id 'java'
+	id "org.javamodularity.moduleplugin"
 }
 
-sourceCompatibility = 9
-targetCompatibility = 9
+sourceCompatibility = 11
+targetCompatibility = 11
+
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
 
 repositories {
 	jcenter()
 }
 
 dependencies {
-	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.7.5'
-	compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.59'
+	compile group: 'me.joshlarson', name: 'jlcommon', version: '1.8.3'
+	compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.60'
 	testCompile 'junit:junit:4.12'
 }
-

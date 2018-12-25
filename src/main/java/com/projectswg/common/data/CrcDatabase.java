@@ -68,22 +68,18 @@ public class CrcDatabase {
 	}
 	
 	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("/crc_database.csv")) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		try (InputStream is = getClass().getResourceAsStream("/com/projectswg/common/data/crc_database.csv")) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				processLine(line);
+				int index = line.indexOf(',');
+				assert index > 0 : "invalid line in CRC csv";
+				int crc = Integer.parseInt(line.substring(0, index), 16);
+				crcTable.put(crc, line.substring(index+1).intern());
 			}
 		} catch (IOException e) {
 			Log.e(e);
 		}
-	}
-	
-	private void processLine(String line) {
-		int index = line.indexOf(',');
-		int crc = Integer.parseInt(line.substring(0, index), 16);
-		String str = line.substring(index+1).intern();
-		crcTable.put(crc, str);
 	}
 	
 	public static CrcDatabase getInstance() {
