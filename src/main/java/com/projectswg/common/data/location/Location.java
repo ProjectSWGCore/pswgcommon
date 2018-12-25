@@ -127,7 +127,11 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public boolean isWithinFlatDistance(Point3D target, double radius) {
-		return square(getX() - target.getX()) + square(getZ() - target.getZ()) <= square(radius);
+		double mX = getX(), mZ = getZ();
+		double tX = target.getX(), tZ = target.getZ();
+		if (Math.abs(mX - tX) >= radius || Math.abs(mZ - tZ) >= radius)
+			return false;
+		return square(mX - tX) + square(mZ - tZ) <= square(radius);
 	}
 	
 	public double getSpeed(Location l, double deltaTime) {
@@ -136,7 +140,7 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public double getYaw() {
-		return orientation.getYaw();
+		return orientation.getHeading();
 	}
 	
 	public double getHeadingTo(Location target) {
@@ -327,7 +331,7 @@ public class Location implements Encodable, Persistable {
 		}
 		
 		public double getYaw() {
-			return orientation.getYaw();
+			return orientation.getHeading();
 		}
 		
 		public boolean isWithinDistance(Location l, double x, double y, double z) {

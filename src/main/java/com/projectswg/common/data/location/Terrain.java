@@ -102,8 +102,8 @@ public enum Terrain {
 	WATERTABLETEST			("terrain/watertabletest.trn"),
 	YAVIN4					("terrain/yavin4.trn");
 	
-	private static final EnumLookup<Integer, Terrain> CRC_LOOKUP = new EnumLookup<>(Terrain.class, t -> t.getCrc());
-	private static final EnumLookup<String, Terrain> NAME_LOOKUP = new EnumLookup<>(Terrain.class, t -> t.getName());
+	private static final EnumLookup<Integer, Terrain> CRC_LOOKUP = new EnumLookup<>(Terrain.class, Terrain::getCrc);
+	private static final EnumLookup<String, Terrain> NAME_LOOKUP = new EnumLookup<>(Terrain.class, Terrain::getName);
 	
 	private String file;
 	private String name;

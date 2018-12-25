@@ -37,6 +37,10 @@ public class PlayMusicMessage extends SWGPacket {
 	private int repititions;	// playType?
 	private boolean loop;
 	
+	public PlayMusicMessage() {
+		this(0, "", 0, false);
+	}
+	
 	/**
 	 * 
 	 * @param objectId is the ID for the object where this sound originates from.
@@ -73,4 +77,47 @@ public class PlayMusicMessage extends SWGPacket {
 		data.addBoolean(loop);
 		return data;
 	}
+	
+	public long getObjectId() {
+		return objectId;
+	}
+	
+	public String getSoundFile() {
+		return soundFile;
+	}
+	
+	public int getRepititions() {
+		return repititions;
+	}
+	
+	public boolean isLoop() {
+		return loop;
+	}
+	
+	public void setObjectId(long objectId) {
+		this.objectId = objectId;
+	}
+	
+	public void setSoundFile(String soundFile) {
+		this.soundFile = soundFile;
+	}
+	
+	public void setRepititions(int repititions) {
+		this.repititions = repititions;
+	}
+	
+	public void setLoop(boolean loop) {
+		this.loop = loop;
+	}
+	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objectId,
+				"soundFile", soundFile,
+				"repititions", repititions,
+				"loop", loop
+		);
+	}
+	
 }

@@ -51,6 +51,18 @@ public class NetworkProtocol {
 		return data;
 	}
 	
+	public static boolean canDecode(NetBuffer buffer) throws IOException {
+		if (buffer.remaining() < 4)
+			return false;
+		
+		int length = buffer.getInt();
+		buffer.seek(-4);
+		
+		if (length < 0)
+			throw new IOException("Stream corrupted");
+		return length <= buffer.remaining();
+	}
+	
 	public static boolean canDecode(NetBufferStream buffer) throws IOException {
 		if (buffer.remaining() < 4)
 			return false;
@@ -63,11 +75,21 @@ public class NetworkProtocol {
 		return length <= buffer.remaining();
 	}
 	
+	public static SWGPacket decode(NetBuffer buffer) throws IOException {
+		if (!canDecode(buffer))
+			return null;
+		
+		return decodePacket(NetBuffer.wrap(buffer.getArray(buffer.getInt())));
+	}
+	
 	public static SWGPacket decode(NetBufferStream buffer) throws IOException {
 		if (!canDecode(buffer))
 			return null;
 		
-		NetBuffer swg = NetBuffer.wrap(buffer.getArray(buffer.getInt()));
+		return decodePacket(NetBuffer.wrap(buffer.getArray(buffer.getInt())));
+	}
+	
+	private static SWGPacket decodePacket(NetBuffer swg) {
 		if (swg.remaining() < 6)
 			return null;
 		

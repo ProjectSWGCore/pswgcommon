@@ -26,29 +26,30 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-
 import com.projectswg.common.data.encodables.tangible.PvpFaction;
 import com.projectswg.common.data.encodables.tangible.PvpFlag;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 public class UpdatePvpStatusMessage extends SWGPacket {
 	public static final int CRC = getCrc("UpdatePvpStatusMessage");
 
-	private PvpFlag[] pvpFlags;
+	private EnumSet<PvpFlag> pvpFlags;
 	private PvpFaction pvpFaction;
 	private long objId;
 	
 	public UpdatePvpStatusMessage() {
-		pvpFlags = new PvpFlag[]{PvpFlag.PLAYER};
+		pvpFlags = EnumSet.noneOf(PvpFlag.class);
 		pvpFaction = PvpFaction.NEUTRAL;
 		objId = 0;
 	}
 	
-	public UpdatePvpStatusMessage(PvpFaction pvpFaction, long objId, PvpFlag... pvpFlags) {
-		this.pvpFlags = pvpFlags;
+	public UpdatePvpStatusMessage(PvpFaction pvpFaction, long objId, Set<PvpFlag> pvpFlags) {
+		this.pvpFlags = EnumSet.copyOf(pvpFlags);
 		this.pvpFaction = pvpFaction;
 		this.objId = objId;
 	}
@@ -56,24 +57,18 @@ public class UpdatePvpStatusMessage extends SWGPacket {
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
-		EnumSet<PvpFlag> enumFlags = PvpFlag.getFlags(data.getInt());
 		
-		pvpFlags = enumFlags.toArray(new PvpFlag[enumFlags.size()]);
+		pvpFlags = PvpFlag.getFlags(data.getInt());
 		pvpFaction = PvpFaction.getFactionForCrc(data.getInt());
 		objId = data.getLong();
 	}
 	
 	public NetBuffer encode() {
-		int length = 22;
-		int flagBitmask = 0;
-		NetBuffer data = NetBuffer.allocate(length);
-		
-		for(PvpFlag pvpFlag : pvpFlags)
-			flagBitmask |= pvpFlag.getBitmask();
+		NetBuffer data = NetBuffer.allocate(22);
 		
 		data.addShort(4);
 		data.addInt(CRC);
-		data.addInt(flagBitmask);
+		data.addInt(pvpFlags.stream().mapToInt(PvpFlag::getBitmask).reduce(0, (a, b) -> a | b));
 		data.addInt(pvpFaction.getCrc());
 		data.addLong(objId);
 		return data;
@@ -81,14 +76,14 @@ public class UpdatePvpStatusMessage extends SWGPacket {
 	
 	public long getObjectId() { return objId; }
 	public PvpFaction getPlayerFaction() { return pvpFaction; }
-	public PvpFlag[] getPvpFlags() { return pvpFlags; }
+	public Set<PvpFlag> getPvpFlags() { return Collections.unmodifiableSet(pvpFlags); }
 	
 	@Override
 	protected String getPacketData() {
 		return createPacketInformation(
 				"objId", objId,
 				"faction", pvpFaction,
-				"flags", Arrays.toString(pvpFlags)
+				"flags", pvpFlags
 		);
 	}
 	
