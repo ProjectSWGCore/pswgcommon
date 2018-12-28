@@ -43,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 
 /**
@@ -116,6 +117,19 @@ public class CustomizationString implements Encodable, Persistable {
 	
 	public void clear() {
 		variables.clear();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		boolean first = true;
+		for (Entry<String, CustomizationVariable> e : variables.entrySet()) {
+			if (!first)
+				str.append(", ");
+			first = false;
+			str.append(e.getKey()).append('=').append(e.getValue().getValue());
+		}
+		return str.toString();
 	}
 	
 	@Override

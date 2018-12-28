@@ -1,9 +1,9 @@
-module pswgcommon {
+module com.projectswg.common {
+	requires transitive me.joshlarson.jlcommon;
+	requires static java.sql;
+	requires static java.desktop;
 	requires org.jetbrains.annotations;
-	requires bcprov.jdk15on;
-	requires me.joshlarson.jlcommon;
-	requires java.sql;
-	requires java.desktop;
+	requires org.bouncycastle.provider;
 	
 	exports com.projectswg.common.data;
 	exports com.projectswg.common.data.combat;

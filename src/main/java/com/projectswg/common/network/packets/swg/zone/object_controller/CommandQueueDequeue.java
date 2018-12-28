@@ -26,6 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
+import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.network.NetBuffer;
 
 
@@ -35,14 +36,14 @@ public class CommandQueueDequeue extends ObjectController {
 	
 	private int counter;
 	private float timer;
-	private int error;
+	private ErrorCode error;
 	private int action;
 	
 	public CommandQueueDequeue(long objectId) {
 		super(objectId, CRC);
 	}
 	
-	public CommandQueueDequeue(long objectId, int counter, float timer, int error, int action) {
+	public CommandQueueDequeue(long objectId, int counter, float timer, ErrorCode error, int action) {
 		super(objectId, CRC);
 		this.counter = counter;
 		this.timer = timer;
@@ -59,7 +60,7 @@ public class CommandQueueDequeue extends ObjectController {
 		decodeHeader(data);
 		counter = data.getInt();
 		timer = data.getFloat();
-		error = data.getInt();
+		error = ErrorCode.getFromCode(data.getInt());
 		action = data.getInt();
 	}
 	
@@ -68,19 +69,19 @@ public class CommandQueueDequeue extends ObjectController {
 		encodeHeader(data);
 		data.addInt(counter);
 		data.addFloat(timer);
-		data.addInt(error);
+		data.addInt(error.getCode());
 		data.addInt(action);
 		return data;
 	}
 	
 	public int getCounter() { return counter; }
 	public float getTimer() { return timer; }
-	public int getError() { return error; }
+	public ErrorCode getError() { return error; }
 	public int getAction() { return action; }
 	
 	public void setCounter(int counter) { this.counter = counter; }
 	public void setTimer(float timer) { this.timer = timer; }
-	public void setError(int error) { this.error = error; }
+	public void setError(ErrorCode error) { this.error = error; }
 	public void setAction(int action) { this.action = action; }
 	
 	@Override
@@ -92,6 +93,38 @@ public class CommandQueueDequeue extends ObjectController {
 				"error", error,
 				"action", action
 		);
+	}
+	
+	public enum ErrorCode {
+		SUCCESS				(0),
+		LOCOMOTION			(1),
+		ABILITY				(2),
+		TARGET_TYPE			(3),
+		TARGET_RANGE		(4),
+		/** Can't be in this state */
+		STATE_PROHIBITED	(5),
+		/** Need to be in a particular state */
+		STATE_REQUIRED		(6),
+		GOD_MODE			(7),
+		CANCELLED			(8),
+		MAX					(9);
+		
+		private static final EnumLookup<Integer, ErrorCode> CODE_LOOKUP = new EnumLookup<>(ErrorCode.class, ErrorCode::getCode);
+		
+		int code;
+		
+		ErrorCode(int code) {
+			this.code = code;
+		}
+		
+		public int getCode() {
+			return code;
+		}
+		
+		public static ErrorCode getFromCode(int code) {
+			return CODE_LOOKUP.getEnum(code, ErrorCode.SUCCESS);
+		}
+		
 	}
 	
 }
