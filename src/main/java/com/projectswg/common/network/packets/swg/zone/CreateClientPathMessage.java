@@ -56,16 +56,7 @@ public class CreateClientPathMessage extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		
-		int pointCount = data.getInt();
-		
-		for (int i = 0; i < pointCount; i++) {
-			Point3D point = new Point3D();
-			
-			// Read point from packet
-			point.decode(data);
-			
-			points.add(point);
-		}
+		points = data.getList(Point3D.class);
 	}
 	
 	@Override
@@ -75,12 +66,7 @@ public class CreateClientPathMessage extends SWGPacket {
 		NetBuffer data = NetBuffer.allocate(10 + pointSize);
 		data.addShort(5);
 		data.addInt(CRC);
-		
-		data.addInt(pointCount);
-		
-		for (Point3D point : points) {
-			data.addEncodable(point);
-		}
+		data.addList(points);
 		
 		return data;
 	}
