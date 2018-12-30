@@ -116,9 +116,12 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x0134: return new CombatSpam(data);
 			case 0x013F: return new TeleportAck(data);
 			case 0x0146: return new ObjectMenuRequest(data);
+			case 0x0147: return new ObjectMenuResponse(data);
 			case 0x01BD: return new ShowFlyText(data);
 			case 0x01BF: return new DraftSlotsQueryResponse(data);
 			case 0x01DB: return new BiographyUpdate(data);
+			case 0x0229: return new BuffAddUpdate(data);
+			case 0x022A: return new BuffRemoveUpdate(data);
 			case 0x043D: return new GroupOpenLotteryWindow(data);
 			case 0x043E: return new GroupCloseLotteryWindow(data);
 			case 0x0440: return new GroupRequestLotteryItems(data);

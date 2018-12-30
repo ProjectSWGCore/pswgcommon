@@ -7,67 +7,82 @@
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
  *                                                                                 *
- * This file is part of PSWGCommon.                                                *
+ * This file is part of Holocore.                                                  *
  *                                                                                 *
  * --------------------------------------------------------------------------------*
  *                                                                                 *
- * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * Holocore is free software: you can redistribute it and/or modify                *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
  *                                                                                 *
- * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * Holocore is distributed in the hope that it will be useful,                     *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
  *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
-import com.projectswg.common.data.encodables.tangible.Posture;
 import com.projectswg.common.network.NetBuffer;
 
-public class PostureUpdate extends ObjectController {
+public class BuffAddUpdate extends ObjectController {
 	
-	public static final int CRC = 0x0131;
+	public static final int CRC = 0x0229;
 	
-	private Posture posture;
+	private int buffCrc;
+	private double duration;
 	
-	public PostureUpdate(long objectId, Posture posture) {
+	public BuffAddUpdate(long objectId, int buffCrc, double duration) {
 		super(objectId, CRC);
-		this.posture = posture;
+		this.buffCrc = buffCrc;
+		this.duration = duration;
 	}
 	
-	public PostureUpdate(NetBuffer data) {
+	public BuffAddUpdate(NetBuffer data) {
 		super(CRC);
 		decode(data);
 	}
 	
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		posture = Posture.getFromId(data.getByte());
-		data.getBoolean(); // isClientImmediate
+		buffCrc = data.getInt();
+		duration = data.getFloat();
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 2);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 8);
 		encodeHeader(data);
-		data.addByte(posture.getId());
-		data.addBoolean(true); // isClientImmediate
+		data.addInt(buffCrc);
+		data.addFloat((float) duration);
 		return data;
 	}
 	
-	public Posture getPosture() { return posture; }
+	public int getBuffCrc() {
+		return buffCrc;
+	}
 	
-	public void setPosture(Posture posture) { this.posture = posture; }
+	public double getDuration() {
+		return duration;
+	}
+	
+	public void setBuffCrc(int buffCrc) {
+		this.buffCrc = buffCrc;
+	}
+	
+	public void setDuration(double duration) {
+		this.duration = duration;
+	}
 	
 	@Override
 	protected String getPacketData() {
 		return createPacketInformation(
 				"objId", getObjectId(),
-				"posture", posture
+				"buffCrc", String.format("%08X", buffCrc),
+				"buff", com.projectswg.common.data.CRC.getString(buffCrc),
+				"duration", duration
 		);
 	}
 	
