@@ -215,6 +215,8 @@ public enum PacketType {
 	EXPERTISE_REQUEST_MESSAGE					(ExpertiseRequestMessage.CRC,		ExpertiseRequestMessage.class),
 	CHANGE_ROLE_ICON_CHOICE						(ChangeRoleIconChoice.CRC,			ChangeRoleIconChoice.class),
 	SHOW_LOOT_BOX								(ShowLootBox.CRC,					ShowLootBox.class),
+	CREATE_CLIENT_PATH_MESSAGE					(CreateClientPathMessage.CRC,		CreateClientPathMessage.class),
+	DESTROY_CLIENT_PATH_MESSAGE					(DestroyClientPathMessage.CRC,		DestroyClientPathMessage.class),
 	
 		// Chat
 		CHAT_CREATE_ROOM						(ChatCreateRoom.CRC,				ChatCreateRoom.class),
