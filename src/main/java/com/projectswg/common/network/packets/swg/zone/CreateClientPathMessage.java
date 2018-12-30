@@ -71,4 +71,10 @@ public class CreateClientPathMessage extends SWGPacket {
 		return data;
 	}
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"points", points
+		);
+	}
 }
