@@ -24,51 +24,37 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.network.packets.swg.zone.object_controller;
+package com.projectswg.common.network.packets.swg.zone;
 
-import com.projectswg.common.data.encodables.tangible.Posture;
 import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.SWGPacket;
 
-public class PostureUpdate extends ObjectController {
+/**
+ * Destroys the currently active client path
+ */
+public class DestroyClientPathMessage extends SWGPacket {
 	
-	public static final int CRC = 0x0131;
+	public static final int CRC = getCrc("DestroyClientPathMessage");
 	
-	private Posture posture;
-	
-	public PostureUpdate(long objectId, Posture posture) {
-		super(objectId, CRC);
-		this.posture = posture;
+	public DestroyClientPathMessage() {
 	}
 	
-	public PostureUpdate(NetBuffer data) {
-		super(CRC);
+	public DestroyClientPathMessage(NetBuffer data) {
 		decode(data);
 	}
 	
+	@Override
 	public void decode(NetBuffer data) {
-		decodeHeader(data);
-		posture = Posture.getFromId(data.getByte());
-		data.getBoolean(); // isClientImmediate
+	
 	}
-	
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 2);
-		encodeHeader(data);
-		data.addByte(posture.getId());
-		data.addBoolean(true); // isClientImmediate
-		return data;
-	}
-	
-	public Posture getPosture() { return posture; }
-	
-	public void setPosture(Posture posture) { this.posture = posture; }
 	
 	@Override
-	protected String getPacketData() {
-		return createPacketInformation(
-				"objId", getObjectId(),
-				"posture", posture
-		);
+	public NetBuffer encode() {
+		NetBuffer data = NetBuffer.allocate(6);
+		data.addShort(5);
+		data.addInt(CRC);
+		
+		return data;
 	}
 	
 }

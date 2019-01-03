@@ -185,9 +185,9 @@ public class UpdateTransformWithParentMessage extends SWGPacket {
 		return createPacketInformation(
 				"objId", objId,
 				"cellId", cellId,
-				"posX", posX / 4,
-				"posY", posY / 4,
-				"posZ", posZ / 4,
+				"posX", posX / 8,
+				"posY", posY / 8,
+				"posZ", posZ / 8,
 				"dir", direction
 		);
 	}
