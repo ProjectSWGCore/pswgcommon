@@ -67,6 +67,22 @@ public class ClientVerifyAndLockNameResponse extends SWGPacket {
 		return data;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
+	public ErrorMessage getError() {
+		return error;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setError(ErrorMessage error) {
+		this.error = error;
+	}
+	
 	public enum ErrorMessage {
 		NAME_APPROVED,
 		NAME_APPROVED_MODIFIED,
