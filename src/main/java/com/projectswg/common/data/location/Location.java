@@ -26,12 +26,14 @@
  ***********************************************************************************/
 package com.projectswg.common.data.location;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class Location implements Encodable, Persistable {
+public class Location implements Encodable, Persistable, MongoPersistable {
 	
 	private static final Location ZERO = new Location(0, 0, 0, Terrain.GONE);
 	
@@ -241,6 +243,21 @@ public class Location implements Encodable, Persistable {
 		point.read(stream);
 		if (stream.getBoolean())
 			terrain = Terrain.valueOf(stream.getAscii());
+	}
+	
+	@Override
+	public void read(MongoData data) {
+		data.getDocument("orientation", orientation);
+		data.getDocument("point", point);
+		terrain = data.containsKey("terrain") ? Terrain.valueOf(data.getString("terrain")) : null;
+	}
+	
+	@Override
+	public void save(MongoData data) {
+		data.putDocument("orientation", orientation);
+		data.putDocument("point", point);
+		if (terrain != null)
+			data.putString("terrain", terrain.name());
 	}
 	
 	@Override

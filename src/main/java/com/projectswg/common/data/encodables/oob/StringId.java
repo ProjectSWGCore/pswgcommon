@@ -26,12 +26,14 @@
  ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class StringId implements OutOfBandData, Persistable {
+public class StringId implements OutOfBandData, Persistable, MongoPersistable {
 	
 	private String key;
 	private String file;
@@ -92,6 +94,18 @@ public class StringId implements OutOfBandData, Persistable {
 	public void read(NetBufferStream stream) {
 		file = stream.getAscii();
 		key = stream.getAscii();
+	}
+	
+	@Override
+	public void read(MongoData data) {
+		file = data.getString("file");
+		key = data.getString("key");
+	}
+	
+	@Override
+	public void save(MongoData data) {
+		data.putString("file", file);
+		data.putString("key", key);
 	}
 	
 	@Override

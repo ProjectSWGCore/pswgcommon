@@ -2,6 +2,7 @@ module com.projectswg.common {
 	requires transitive me.joshlarson.jlcommon;
 	requires static java.sql;
 	requires static java.desktop;
+	requires static org.mongodb.bson;
 	requires org.jetbrains.annotations;
 	requires org.bouncycastle.provider;
 	
@@ -11,6 +12,7 @@ module com.projectswg.common {
 	exports com.projectswg.common.data.encodables.chat;
 	exports com.projectswg.common.data.encodables.galaxy;
 	exports com.projectswg.common.data.encodables.map;
+	exports com.projectswg.common.data.encodables.mongo;
 	exports com.projectswg.common.data.encodables.oob;
 	exports com.projectswg.common.data.encodables.oob.waypoint;
 	exports com.projectswg.common.data.encodables.player;

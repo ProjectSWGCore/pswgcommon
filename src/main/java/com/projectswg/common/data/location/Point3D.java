@@ -26,12 +26,14 @@
  ***********************************************************************************/
 package com.projectswg.common.data.location;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class Point3D implements Encodable, Persistable {
+public class Point3D implements Encodable, Persistable, MongoPersistable {
 	
 	private double x;
 	private double y;
@@ -202,7 +204,21 @@ public class Point3D implements Encodable, Persistable {
 		y = stream.getFloat();
 		z = stream.getFloat();
 	}
-
+	
+	@Override
+	public void read(MongoData data) {
+		x = data.getDouble("x", 0);
+		y = data.getDouble("y", 0);
+		z = data.getDouble("z", 0);
+	}
+	
+	@Override
+	public void save(MongoData data) {
+		data.putDouble("x", x);
+		data.putDouble("y", y);
+		data.putDouble("z", z);
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Point3D))
