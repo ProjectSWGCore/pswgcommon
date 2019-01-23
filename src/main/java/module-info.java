@@ -2,7 +2,7 @@ module com.projectswg.common {
 	requires transitive me.joshlarson.jlcommon;
 	requires static java.sql;
 	requires static java.desktop;
-	requires static org.mongodb.bson;
+	requires org.mongodb.bson;
 	requires org.jetbrains.annotations;
 	requires org.bouncycastle.provider;
 	
