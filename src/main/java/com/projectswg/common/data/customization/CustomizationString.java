@@ -26,6 +26,8 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.data.swgfile.ClientFactory;
 import com.projectswg.common.data.swgfile.visitors.CustomizationIDManagerData;
 import com.projectswg.common.encoding.Encodable;
@@ -45,19 +47,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * The Customization string is used to set special properties
  * on objects. This can be lightsaber color, vehicle speed,
  * facial hair style...
  */
-public class CustomizationString implements Encodable, Persistable {
+public class CustomizationString implements Encodable, Persistable, MongoPersistable {
 	
-	private CustomizationIDManagerData table = (CustomizationIDManagerData) ClientFactory.getInfoFromFile("customization/customization_id_manager.iff");
-	private Map<String, CustomizationVariable> variables;
+	private final CustomizationIDManagerData table;
+	private final Map<String, CustomizationVariable> variables;
 	
 	public CustomizationString() {
-		variables = Collections.synchronizedMap(new LinkedHashMap<>());	// Ordered and synchronized
+		this.table = (CustomizationIDManagerData) ClientFactory.getInfoFromFile("customization/customization_id_manager.iff");
+		this.variables = Collections.synchronizedMap(new LinkedHashMap<>());	// Ordered and synchronized
 	}
 	
 	boolean isEmpty() {
@@ -87,6 +91,17 @@ public class CustomizationString implements Encodable, Persistable {
 		stream.getList((i) -> {
 			variables.put(stream.getAscii(), new CustomizationVariable(stream.getInt()));
 		});
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putMap("variables", variables, Function.identity(), CustomizationVariable::getValue);
+	}
+	
+	@Override
+	public void readMongo(MongoData data) {
+		variables.clear();
+		variables.putAll(data.getMap("variables", Integer.class, CustomizationVariable::new));
 	}
 	
 	/**

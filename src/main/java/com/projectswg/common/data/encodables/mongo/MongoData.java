@@ -28,22 +28,30 @@
 package com.projectswg.common.data.encodables.mongo;
 
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public class MongoData {
+public class MongoData implements Map<String, Object> {
 	
 	private final @NotNull Document doc;
 	
 	public MongoData() {
-		this(new Document());
+		this(0);
+	}
+	
+	public MongoData(int version) {
+		this(null);
+		if (version != 0)
+			doc.put("_ver", version);
 	}
 	
 	public MongoData(Document doc) {
@@ -54,8 +62,27 @@ public class MongoData {
 		return new Document(doc);
 	}
 	
+	@Override
+	public String toString() {
+		return doc.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return doc.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return (o instanceof MongoData && doc.equals(((MongoData) o).doc)) || (o instanceof Document && doc.equals(o));
+	}
+	
 	public boolean containsKey(String key) {
 		return doc.containsKey(key);
+	}
+	
+	public int version() {
+		return doc.getInteger("_ver", 0);
 	}
 	
 	@Nullable
@@ -129,24 +156,60 @@ public class MongoData {
 		return d == null ? null : d.toInstant();
 	}
 	
+	public byte [] getByteArray(String key) {
+		return getByteArray(key, null);
+	}
+	
+	public byte [] getByteArray(String key, byte [] defaultValue) {
+		Binary b = doc.get(key, Binary.class);
+		if (b == null)
+			return defaultValue;
+		return b.getData();
+	}
+	
 	@NotNull
 	public <T> List<T> getArray(String key, Class<T> klass) {
 		List<?> mdbArray = doc.get(key, List.class);
 		List<T> ret = new ArrayList<>(mdbArray.size());
-		if (klass == Instant.class) {
-			for (Object o : mdbArray) {
-				if (o == null)
-					ret.add(null);
-				else
-					//noinspection UseOfObsoleteDateTimeApi
-					ret.add(klass.cast(((Date) o).toInstant()));
+		for (Object o : mdbArray) {
+			if (o == null)
+				ret.add(null);
+			else if (klass == Instant.class)
+				//noinspection UseOfObsoleteDateTimeApi
+				ret.add(klass.cast(((Date) o).toInstant()));
+			else if (klass == MongoData.class)
+				ret.add(klass.cast(new MongoData((Document) o)));
+			else
+				ret.add(klass.cast(o));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable> List<T> getArray(String key, Supplier<T> generator) {
+		List<?> mdbArray = doc.get(key, List.class);
+		List<T> ret = new ArrayList<>(mdbArray.size());
+		for (Object o : mdbArray) {
+			if (o == null) {
+				ret.add(null);
+			} else {
+				T t = generator.get();
+				t.readMongo(new MongoData((Document) o));
+				ret.add(t);
 			}
-		} else {
-			for (Object o : mdbArray) {
-				if (o == null)
-					ret.add(null);
-				else
-					ret.add(klass.cast(o));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable> List<T> getArray(String key, Function<MongoData, T> generator) {
+		List<?> mdbArray = doc.get(key, List.class);
+		List<T> ret = new ArrayList<>(mdbArray.size());
+		for (Object o : mdbArray) {
+			if (o == null) {
+				ret.add(null);
+			} else {
+				ret.add(generator.apply(new MongoData((Document) o)));
 			}
 		}
 		return ret;
@@ -168,30 +231,50 @@ public class MongoData {
 	public <T extends MongoPersistable> T getDocument(String key, T dataInstance) {
 		Document doc = this.doc.get(key, Document.class);
 		if (doc != null)
-			dataInstance.read(new MongoData(doc));
+			dataInstance.readMongo(new MongoData(doc));
 		return dataInstance;
 	}
 	
 	@NotNull
 	public <T> Map<String, T> getMap(String key, Class<T> klass) {
+		return getMap(key, klass, Function.identity(), (k, v) -> v);
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable> Map<String, T> getMap(String key, Class<T> klass, Supplier<T> supplier) {
+		return getMap(key, MongoData.class, Function.identity(), (k, v) -> {
+			T ret = supplier.get();
+			ret.readMongo(v);
+			return ret;
+		});
+	}
+	
+	@NotNull
+	public <T, V> Map<String, V> getMap(String key, Class<T> klass, Function<T, V> valueParser) {
+		return getMap(key, klass, Function.identity(), valueParser);
+	}
+	
+	@NotNull
+	public <K, T, V> Map<K, V> getMap(String key, Class<T> klass, Function<String, K> keyParser, Function<T, V> valueParser) {
+		return getMap(key, klass, keyParser, (k, v) -> valueParser.apply(v));
+	}
+	
+	@NotNull
+	public <K, T, V> Map<K, V> getMap(String key, Class<T> klass, Function<String, K> keyParser, BiFunction<K, T, V> valueParser) {
 		Document mdbMap = doc.get(key, Document.class);
-		Map<String, T> ret = new HashMap<>(mdbMap.size());
-		if (klass == Instant.class) {
-			for (Entry<String, Object> e : mdbMap.entrySet()) {
-				Object o = e.getValue();
-				if (o == null)
-					ret.put(e.getKey(), null);
-				else
-					//noinspection UseOfObsoleteDateTimeApi
-					ret.put(e.getKey(), klass.cast(((Date) o).toInstant()));
-			}
-		} else {
-			for (Entry<String, Object> e : mdbMap.entrySet()) {
-				Object o = e.getValue();
-				if (o == null)
-					ret.put(e.getKey(), null);
-				else
-					ret.put(e.getKey(), klass.cast(o));
+		Map<K, V> ret = new HashMap<>(mdbMap.size());
+		for (Entry<String, Object> e : mdbMap.entrySet()) {
+			K childKey = keyParser.apply(e.getKey());
+			Object o = e.getValue();
+			if (o == null) {
+				ret.put(childKey, null);
+			} else if (klass == Instant.class) {
+				//noinspection UseOfObsoleteDateTimeApi
+				ret.put(childKey, valueParser.apply(childKey, klass.cast(((Date) o).toInstant())));
+			} else if (MongoData.class.isAssignableFrom(klass)) {
+				ret.put(childKey, valueParser.apply(childKey, klass.cast(new MongoData((Document) o))));
+			} else {
+				ret.put(childKey, valueParser.apply(childKey, klass.cast(o)));
 			}
 		}
 		return ret;
@@ -209,7 +292,7 @@ public class MongoData {
 	
 	public void putFloat(String key, float f) {
 		assert !containsKey(key) : "key already exists";
-		doc.put(key, f);
+		doc.put(key, (double) f);
 	}
 	
 	public void putDouble(String key, double d) {
@@ -237,12 +320,9 @@ public class MongoData {
 		doc.put(key, Date.from(date));
 	}
 	
-	public void putArray(String key, byte [] array) {
+	public void putByteArray(String key, byte [] array) {
 		assert !containsKey(key) : "key already exists";
-		List<Integer> mdbArray = new ArrayList<>(array.length);
-		for (byte b : array)
-			mdbArray.add((int) b);
-		doc.put(key, mdbArray);
+		doc.put(key, new Binary(array));
 	}
 	
 	public void putArray(String key, short [] array) {
@@ -282,7 +362,7 @@ public class MongoData {
 		doc.put(key, mdbArray);
 	}
 	
-	public void putArray(String key, List<?> array) {
+	public void putArray(String key, Collection<?> array) {
 		assert !containsKey(key) : "key already exists";
 		List<Object> mdbArray = new ArrayList<>(array.size());
 		for (Object o : array) {
@@ -291,7 +371,7 @@ public class MongoData {
 		doc.put(key, mdbArray);
 	}
 	
-	public <T> void putArray(String key, List<T> array, Function<T, ?> converter) {
+	public <T> void putArray(String key, Collection<T> array, Function<T, ?> converter) {
 		assert !containsKey(key) : "key already exists";
 		List<Object> mdbArray = new ArrayList<>(array.size());
 		for (T o : array) {
@@ -309,7 +389,7 @@ public class MongoData {
 		assert !containsKey(key) : "key already exists";
 		if (data != null) {
 			MongoData dataDoc = new MongoData();
-			data.save(dataDoc);
+			data.saveMongo(dataDoc);
 			doc.put(key, dataDoc.doc);
 		}
 	}
@@ -330,6 +410,14 @@ public class MongoData {
 		putDocument(key, doc);
 	}
 	
+	public <T, S> void putMap(String key, Map<T, S> data, Function<T, String> keyExtractor, Function<S, ?> valueExtractor) {
+		MongoData doc = new MongoData();
+		for (Entry<T, S> e : data.entrySet()) {
+			doc.doc.put(keyExtractor.apply(e.getKey()), translatePut(valueExtractor.apply(e.getValue())));
+		}
+		putDocument(key, doc);
+	}
+	
 	public <T, S> void putMap(String key, Map<T, S> data, Function<T, String> keyExtractor, BiFunction<T, S, ?> valueExtractor) {
 		MongoData doc = new MongoData();
 		for (Entry<T, S> e : data.entrySet()) {
@@ -344,13 +432,95 @@ public class MongoData {
 			return Date.from((Instant) input);
 		} else if (input instanceof String || input instanceof Boolean || input instanceof Long || input instanceof Date || input instanceof Document) {
 			return input;
+		} else if (input instanceof MongoData) {
+			return ((MongoData) input).toDocument();
 		} else if (input instanceof Float || input instanceof Double) {
 			return ((Number) input).doubleValue();
 		} else if (input instanceof Number) {
 			return ((Number) input).intValue();
-		} else
-			assert false : "bad object type: " + input;
+		} else if (input instanceof MongoPersistable) {
+			return store((MongoPersistable) input).toDocument();
+		}
+		assert false : "bad object type: " + input;
 		return null;
+	}
+	
+	/* Map functions */
+	
+	@Override
+	public int size() {
+		return doc.size();
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return doc.isEmpty();
+	}
+	
+	@Override
+	public boolean containsKey(Object key) {
+		return doc.containsKey(key);
+	}
+	
+	@Override
+	public boolean containsValue(Object value) {
+		return doc.containsValue(value);
+	}
+	
+	@Override
+	public Object get(Object key) {
+		return doc.get(key);
+	}
+	
+	@Nullable
+	@Override
+	public Object put(String key, Object value) {
+		throw new UnsupportedOperationException("must use another put method");
+	}
+	
+	@Override
+	public Object remove(Object key) {
+		return doc.remove(key);
+	}
+	
+	@Override
+	public void putAll(@NotNull Map<? extends String, ?> m) {
+		throw new UnsupportedOperationException("must use another put method");
+	}
+	
+	@Override
+	public void clear() {
+		doc.clear();
+	}
+	
+	@NotNull
+	@Override
+	public Set<String> keySet() {
+		return new HashSet<>(doc.keySet());
+	}
+	
+	@NotNull
+	@Override
+	public Collection<Object> values() {
+		return new ArrayList<>(doc.values());
+	}
+	
+	@NotNull
+	@Override
+	public Set<Entry<String, Object>> entrySet() {
+		return doc.entrySet().stream().map(e -> Map.entry(e.getKey(), e.getValue())).collect(Collectors.toSet());
+	}
+	
+	public static MongoData store(MongoPersistable obj) {
+		MongoData data = new MongoData();
+		obj.saveMongo(data);
+		return data;
+	}
+	
+	public static <T extends MongoPersistable> T create(MongoData data, Supplier<T> generator) {
+		T ret = generator.get();
+		ret.readMongo(data);
+		return ret;
 	}
 	
 }

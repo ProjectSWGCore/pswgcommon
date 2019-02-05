@@ -246,14 +246,14 @@ public class Location implements Encodable, Persistable, MongoPersistable {
 	}
 	
 	@Override
-	public void read(MongoData data) {
+	public void readMongo(MongoData data) {
 		data.getDocument("orientation", orientation);
 		data.getDocument("point", point);
 		terrain = data.containsKey("terrain") ? Terrain.valueOf(data.getString("terrain")) : null;
 	}
 	
 	@Override
-	public void save(MongoData data) {
+	public void saveMongo(MongoData data) {
 		data.putDocument("orientation", orientation);
 		data.putDocument("point", point);
 		if (terrain != null)

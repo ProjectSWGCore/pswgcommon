@@ -25,11 +25,61 @@
  * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
 
-package com.projectswg.common.data.encodables.mongo;
+package com.projectswg.common.network.hcap;
 
-public interface MongoPersistable {
+import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.PacketType;
+import com.projectswg.common.network.packets.SWGPacket;
+import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
+import com.projectswg.common.utilities.ByteUtilities;
+
+import java.nio.BufferUnderflowException;
+import java.time.Instant;
+
+public class PacketRecord {
 	
-	void readMongo(MongoData data);
-	void saveMongo(MongoData data);
+	private final boolean server;
+	private final Instant time;
+	private final byte[] data;
+	
+	public PacketRecord(boolean server, Instant time, byte[] data) {
+		this.server = server;
+		this.time = time;
+		this.data = data;
+	}
+	
+	public boolean isServer() {
+		return server;
+	}
+	
+	public Instant getTime() {
+		return time;
+	}
+	
+	public byte[] getData() {
+		return data;
+	}
+	
+	public PacketType parseType() {
+		NetBuffer data = NetBuffer.wrap(this.data);
+		data.position(2);
+		return PacketType.fromCrc(data.getInt());
+	}
+	
+	public SWGPacket parse() {
+		NetBuffer data = NetBuffer.wrap(this.data);
+		data.position(2);
+		PacketType type = PacketType.fromCrc(data.getInt());
+		data.position(0);
+		SWGPacket packet;
+		if (type == PacketType.OBJECT_CONTROLLER) {
+			return ObjectController.decodeController(data);
+		} else {
+			packet = PacketType.getForCrc(type.getCrc());
+			if (packet != null)
+				packet.decode(data);
+			return packet;
+		}
+	}
 	
 }

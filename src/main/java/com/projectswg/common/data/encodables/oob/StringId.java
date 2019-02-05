@@ -97,13 +97,13 @@ public class StringId implements OutOfBandData, Persistable, MongoPersistable {
 	}
 	
 	@Override
-	public void read(MongoData data) {
+	public void readMongo(MongoData data) {
 		file = data.getString("file");
 		key = data.getString("key");
 	}
 	
 	@Override
-	public void save(MongoData data) {
+	public void saveMongo(MongoData data) {
 		data.putString("file", file);
 		data.putString("key", key);
 	}

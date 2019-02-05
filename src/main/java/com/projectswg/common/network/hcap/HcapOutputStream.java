@@ -25,11 +25,64 @@
  * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
 
-package com.projectswg.common.data.encodables.mongo;
+package com.projectswg.common.network.hcap;
 
-public interface MongoPersistable {
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+public class HcapOutputStream implements AutoCloseable {
 	
-	void readMongo(MongoData data);
-	void saveMongo(MongoData data);
+	private final DataOutputStream os;
+	
+	public HcapOutputStream(OutputStream os) throws IOException {
+		this.os = new DataOutputStream(os);
+		
+		this.os.writeByte(3);
+		writeSystemHeader();
+	}
+	
+	/**
+	 * Closes this input stream and releases any system resources
+	 * associated with the stream.
+	 * This method simply performs <code>is.close()</code>.
+	 *
+	 * @exception IOException  if an I/O error occurs.
+	 * @see        DataInputStream#close
+	 */
+	@Override
+	public void close() throws IOException {
+		os.close();
+	}
+	
+	public void record(PacketRecord record) throws IOException {
+		this.os.writeBoolean(record.isServer());
+		this.os.writeLong(record.getTime().toEpochMilli());
+		this.os.writeShort(record.getData().length);
+		this.os.write(record.getData());
+	}
+	
+	private void writeSystemHeader() throws IOException {
+		OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+		Map<String, String> systemStrings = new TreeMap<>();
+		systemStrings.put("os.arch",			os.getArch());
+		systemStrings.put("os.details",			os.getName()+":"+os.getVersion());
+		systemStrings.put("os.processor_count", Integer.toString(os.getAvailableProcessors()));
+		systemStrings.put("java.version",		System.getProperty("java.version"));
+		systemStrings.put("java.vendor",		System.getProperty("java.vendor"));
+		systemStrings.put("time.time_zone",		ZoneId.systemDefault().getId());
+		systemStrings.put("time.current_time",	Instant.now().toString());
+		this.os.writeByte(systemStrings.size()); // Count of strings
+		for (Entry<String, String> e : systemStrings.entrySet())
+			this.os.writeUTF(e.getKey() + "=" + e.getValue());
+	}
 	
 }

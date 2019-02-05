@@ -26,6 +26,8 @@
  ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob.waypoint;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.data.encodables.oob.OutOfBandData;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage.Type;
@@ -34,7 +36,7 @@ import com.projectswg.common.data.location.Terrain;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 
-public class WaypointPackage implements OutOfBandData  {
+public class WaypointPackage implements OutOfBandData, MongoPersistable {
 	
 	private Point3D position;
 	
@@ -146,7 +148,29 @@ public class WaypointPackage implements OutOfBandData  {
 	public int getLength() {
 		return 42 + name.length() * 2;
 	}
-
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putLong("objectId", objectId);
+		data.putLong("cellId", cellId);
+		data.putDocument("position", position);
+		data.putString("terrain", terrain.name());
+		data.putString("name", name);
+		data.putInteger("color", color.getValue());
+		data.putBoolean("active", active);
+	}
+	
+	@Override
+	public void readMongo(MongoData data) {
+		objectId = data.getLong("objectId", 0);
+		cellId = data.getLong("cellId", 0);
+		data.getDocument("position", position);
+		terrain = Terrain.valueOf(data.getString("terrain", "GONE"));
+		name = data.getString("name", "New Waypoint");
+		color = WaypointColor.valueOf(data.getString("color", "BLUE"));
+		active = data.getBoolean("active", true);
+	}
+	
 	@Override
 	public void save(NetBufferStream stream) {
 		stream.addByte(0);

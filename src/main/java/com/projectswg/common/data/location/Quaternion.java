@@ -240,7 +240,7 @@ public class Quaternion implements Encodable, Persistable, MongoPersistable {
 	}
 	
 	@Override
-	public void read(MongoData data) {
+	public void readMongo(MongoData data) {
 		x = data.getDouble("x", 0);
 		y = data.getDouble("y", 0);
 		z = data.getDouble("z", 0);
@@ -248,7 +248,7 @@ public class Quaternion implements Encodable, Persistable, MongoPersistable {
 	}
 	
 	@Override
-	public void save(MongoData data) {
+	public void saveMongo(MongoData data) {
 		data.putDouble("x", x);
 		data.putDouble("y", y);
 		data.putDouble("z", z);

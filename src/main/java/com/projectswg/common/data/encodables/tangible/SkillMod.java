@@ -26,12 +26,14 @@
  ***********************************************************************************/
 package com.projectswg.common.data.encodables.tangible;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class SkillMod implements Encodable, Persistable {
+public class SkillMod implements Encodable, Persistable, MongoPersistable {
 	
 	private int base, modifier;
 	
@@ -66,6 +68,18 @@ public class SkillMod implements Encodable, Persistable {
 	}
 	
 	@Override
+	public void readMongo(MongoData data) {
+		base = data.getInteger("base", 0);
+		modifier = data.getInteger("modifier", 0);
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putInteger("base", base);
+		data.putInteger("modifier", modifier);
+	}
+	
+	@Override
 	public void save(NetBufferStream stream) {
 		stream.addInt(base);
 		stream.addInt(modifier);
@@ -76,7 +90,7 @@ public class SkillMod implements Encodable, Persistable {
 		base = stream.getInt();
 		modifier = stream.getInt();
 	}
-
+	
 	public void adjustBase(int adjustment) {
 		base += adjustment;
 	}
