@@ -28,6 +28,7 @@ package com.projectswg.common.network.packets.swg.zone;
 
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
+import org.jetbrains.annotations.NotNull;
 
 public final class ExpertiseRequestMessage extends SWGPacket {
 	
@@ -37,7 +38,12 @@ public final class ExpertiseRequestMessage extends SWGPacket {
 	private boolean clearAllExpertisesFirst;
 	
 	public ExpertiseRequestMessage() {
-		
+		this(new String[0], false);
+	}
+	
+	public ExpertiseRequestMessage(@NotNull String[] requestedSkills, boolean clearAllExpertisesFirst) {
+		this.requestedSkills = requestedSkills.clone();
+		this.clearAllExpertisesFirst = clearAllExpertisesFirst;
 	}
 	
 	public ExpertiseRequestMessage(NetBuffer data) {
