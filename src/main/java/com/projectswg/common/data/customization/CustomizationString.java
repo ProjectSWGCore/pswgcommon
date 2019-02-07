@@ -28,21 +28,17 @@ package com.projectswg.common.data.customization;
 
 import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
-import com.projectswg.common.data.swgfile.ClientFactory;
-import com.projectswg.common.data.swgfile.visitors.CustomizationIDManagerData;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 import me.joshlarson.jlcommon.log.Log;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,16 +52,54 @@ import java.util.function.Function;
  */
 public class CustomizationString implements Encodable, Persistable, MongoPersistable {
 	
-	private final CustomizationIDManagerData table;
-	private final Map<String, CustomizationVariable> variables;
+	private static final Map<String, Short> VAR_NAME_TO_ID = new HashMap<>();
+	private static final Map<Short, String> VAR_ID_TO_NAME = new HashMap<>();
+	
+	static {
+		try (BufferedInputStream bis = new BufferedInputStream(CustomizationString.class.getResourceAsStream("customization_variables.sdb"))) {
+			StringBuilder buffer = new StringBuilder();
+			String key = null;
+			int c;
+			while ((c = bis.read()) != -1) {
+				switch (c) {
+					case '\t':
+						key = buffer.toString();
+						buffer.setLength(0);
+						break;
+					//noinspection HardcodedLineSeparator
+					case '\r':
+					//noinspection HardcodedLineSeparator
+					case '\n':
+						if (buffer.length() <= 0)
+							continue;
+						assert key != null;
+						VAR_NAME_TO_ID.put(key, Short.valueOf(buffer.toString()));
+						VAR_ID_TO_NAME.put(Short.valueOf(buffer.toString()), key);
+						buffer.setLength(0);
+						break;
+					default:
+						buffer.append((char) c);
+						break;
+				}
+			}
+			if (buffer.length() > 0) {
+				assert key != null;
+				VAR_NAME_TO_ID.put(key, Short.valueOf(buffer.toString()));
+				VAR_ID_TO_NAME.put(Short.valueOf(buffer.toString()), key);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("could not load customization variables from resources", e);
+		}
+	}
+	
+	private final Map<String, Integer> variables;
 	
 	public CustomizationString() {
-		this.table = (CustomizationIDManagerData) ClientFactory.getInfoFromFile("customization/customization_id_manager.iff");
 		this.variables = Collections.synchronizedMap(new LinkedHashMap<>());	// Ordered and synchronized
 	}
 	
 	boolean isEmpty() {
-		return variables.size() <= 0;
+		return variables.isEmpty();
 	}
 	
 	/**
@@ -73,7 +107,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 	 * @return the amount of characters that would require escaping to be valid UTF-8
 	 */
 	int valuesToEscape() {
-		return (int) variables.values().stream().filter(CustomizationVariable::isReserved).count();
+		return (int) variables.values().stream().filter(CustomizationString::isReserved).count();
 	}
 	
 	@Override
@@ -81,52 +115,44 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 		stream.addByte(0);
 		stream.addMap(variables, (entry) -> {
 			stream.addAscii(entry.getKey());
-			stream.addInt(entry.getValue().getValue());	// Awful coincidence
+			stream.addInt(entry.getValue());
 		});
 	}
 	
 	@Override
 	public void read(NetBufferStream stream) {
 		stream.getByte();
-		stream.getList((i) -> {
-			variables.put(stream.getAscii(), new CustomizationVariable(stream.getInt()));
-		});
+		stream.getList((i) -> variables.put(stream.getAscii(), stream.getInt()));
 	}
 	
 	@Override
 	public void saveMongo(MongoData data) {
-		data.putMap("variables", variables, Function.identity(), CustomizationVariable::getValue);
+		data.putMap("variables", variables, Function.identity());
 	}
 	
 	@Override
 	public void readMongo(MongoData data) {
 		variables.clear();
-		variables.putAll(data.getMap("variables", Integer.class, CustomizationVariable::new));
+		variables.putAll(data.getMap("variables", Integer.class));
 	}
 	
-	/**
-	 * Puts a new {@link CustomizationVariable} in this {@code CustomizationString}.
-	 * @param name is the variable to set
-	 * @param value is the assigned value
-	 * @return previously assigned {@link CustomizationVariable} value for {@code variableName}
-	 */
-	public CustomizationVariable put(String name, CustomizationVariable value) {
+	public Integer put(String name, int value) {
 		return variables.put(name, value);
 	}
 	
-	public CustomizationVariable remove(String name) {
+	public Integer remove(String name) {
 		return variables.remove(name);
 	}
 	
-	public CustomizationVariable get(String name) {
+	public Integer get(String name) {
 		return variables.get(name);
 	}
 	
-	public Map<String, CustomizationVariable> getVariables() {
+	public Map<String, Integer> getVariables() {
 		return Collections.unmodifiableMap(variables);
 	}
 	
-	public void forEach(BiConsumer<? super String, ? super CustomizationVariable> consumer) {
+	public void forEach(BiConsumer<? super String, ? super Integer> consumer) {
 		variables.forEach(consumer);
 	}
 	
@@ -138,11 +164,11 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 	public String toString() {
 		StringBuilder str = new StringBuilder();
 		boolean first = true;
-		for (Entry<String, CustomizationVariable> e : variables.entrySet()) {
+		for (Entry<String, Integer> e : variables.entrySet()) {
 			if (!first)
 				str.append(", ");
 			first = false;
-			str.append(e.getKey()).append('=').append(e.getValue().getValue());
+			str.append(e.getKey()).append('=').append(e.getValue());
 		}
 		return str.toString();
 	}
@@ -169,7 +195,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 		
 		for (short i = 0; i < variableCount; i++) {
 			short variableId = (short) codePoints[position++];
-			String variableName = table.getVariableName(variableId);
+			String variableName = VAR_ID_TO_NAME.get(variableId);
 			
 			if (variableName == null) {	// Variable ID matched no variable name.
 				Log.w("Variable ID %d had no name associated", variableId);
@@ -177,8 +203,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 				continue;
 			}
 			
-			CustomizationVariable variable = new CustomizationVariable();
-			
+			int variable;
 			int current = codePoints[position++];
 			
 			if (current == 0xFF) {	// This marks an escaped character to follow
@@ -186,10 +211,11 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 				
 				switch (next) {
 					case 0x01:	// Value is 0
-						variable.setValue(0);
+					default:
+						variable = 0;
 						break;
 					case 0x02:	// Value is 255
-						variable.setValue(0xFF);
+						variable = 0xFF;
 						break;
 					case 0x03:	// We shouldn't be meeting an end here. Malformed input.
 						Log.w("Unexpected end of text in CustomizationString, assuming corruption!");
@@ -197,7 +223,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 						return;
 				}
 			} else {
-				variable.setValue(current);
+				variable = current;
 			}
 			
 			variables.put(variableName, variable);
@@ -210,7 +236,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 		}
 		
 		int escapeFlag = codePoints[position++];
-		int endOfText = codePoints[position++];
+		int endOfText = codePoints[position];
 		
 		if (escapeFlag == 0xFF && endOfText != 0x03) {
 			Log.w("Invalid UTF-8 ending for CustomizationString, assuming corruption!");
@@ -233,13 +259,12 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 			out.write(variables.size());
 			
 			variables.forEach((variableName, variable) -> {
-				short combinedVariable = table.getVariableId(variableName);
+				short combinedVariable = VAR_NAME_TO_ID.get(variableName);
 				
 				try {
 					writer.write(combinedVariable);    // Put variable
-					int value = variable.getValue();
 					
-					switch (value) {
+					switch (variable) {
 						case 0x00:
 							writer.write(0xFF);    // Escape
 							writer.write(0x01);    // Put variable value
@@ -249,7 +274,7 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 							writer.write(0x02);    // Put variable value
 							break;
 						default:
-							writer.write(value);
+							writer.write(variable);
 							break;
 					}
 				} catch (Exception e) {
@@ -289,6 +314,16 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 		length += 1;	//	UTF-8 end of text
 		
 		return length;
+	}
+	
+	/**
+	 *
+	 * @param value the value to check
+	 * @return {@code true} if the value is reserved by UTF-8 and escaping it
+	 * would be necessary for proper compatibility.
+	 */
+	private static boolean isReserved(int value) {
+		return value == 0x00 || value == 0xFF;
 	}
 	
 }

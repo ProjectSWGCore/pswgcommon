@@ -31,6 +31,7 @@ import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
 import me.joshlarson.jlcommon.log.Log;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,10 @@ public class CustomizationIDManagerData extends ClientData {
 				Log.e("Unhandled CIDM version %d in file %s", version, iff.getFileName());
 				break;
 		}
+	}
+	
+	public Map<String, Short> getCustomizationVariables() {
+		return Collections.unmodifiableMap(customizationVariables);
 	}
 	
 	/**

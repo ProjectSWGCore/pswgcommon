@@ -35,32 +35,29 @@ public class TestCustomizationString {
 	@Test
 	public void testPut() {
 		CustomizationString string = new CustomizationString();
-		CustomizationVariable variable = new CustomizationVariable();
 		String key = "test";
 		
-		Assert.assertNull(string.put(key, variable));	// Nothing should be replaced because string's empty
-		Assert.assertEquals(variable, string.put(key, null));	// Same key, so the variable we put earlier should be replaced
+		Assert.assertNull(string.put(key, 0));	// Nothing should be replaced because string's empty
+		Assert.assertEquals((Integer) 0, string.put(key, 1));	// Same key, so the variable we put earlier should be replaced
 	}
 	
 	@Test
 	public void testRemove() {
 		CustomizationString string = new CustomizationString();
-		CustomizationVariable variable = new CustomizationVariable();
 		String key = "test";
 		
-		string.put(key, variable);
+		string.put(key, 0);
 		
-		Assert.assertEquals(variable, string.remove(key));	// Same key, so the variable we put earlier should be returned
+		Assert.assertEquals((Integer) 0, string.remove(key));	// Same key, so the variable we put earlier should be returned
 	}
 	
 	@Test
 	public void testIsEmpty() {
 		CustomizationString string = new CustomizationString();
-		CustomizationVariable variable = new CustomizationVariable();
 		String key = "test";
 		
 		Assert.assertTrue(string.isEmpty());
-		string.put(key, variable);
+		string.put(key, 0);
 		Assert.assertFalse(string.isEmpty());
 		string.remove(key);
 		Assert.assertTrue(string.isEmpty());
@@ -69,19 +66,13 @@ public class TestCustomizationString {
 	@Test
 	public void testGetLength() {
 		CustomizationString string = new CustomizationString();
-		CustomizationVariable first = new CustomizationVariable();
-		CustomizationVariable second = new CustomizationVariable();
-		
-		first.setValue(7);	// Requires no escaping
-		second.setValue(0xFF);	// Requires escaping
-		
 		Assert.assertEquals(Short.BYTES, string.getLength());	// Should be an empty array at this point
 		
-		string.put("first", first);
+		string.put("first", 7);
 		int expected = Short.BYTES + 7;
 		Assert.assertEquals(expected, string.getLength());
 		
-		string.put("second", second);
+		string.put("second", 0xFF);
 		expected += 4;	// Two escape characters, an ID and a value
 		Assert.assertEquals(expected, string.getLength());
 	}
