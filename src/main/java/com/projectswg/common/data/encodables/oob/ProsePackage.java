@@ -90,15 +90,66 @@ public class ProsePackage implements OutOfBandData {
 	 * 
 	 * @param objects Key followed by the value. Can either be STF, TU, TT, TO, or DI.
 	 */
+	public ProsePackage(StringId stringId, Object ... objects) {
+		this(objects);
+		setStringId(stringId);
+	}
+	
+	/**
+	 * Creates a new ProsePackage with multiple defined parameters. The first Object must be the prose key, followed by the keys value, and so on. If you're only setting 1 parameter, you should use the ProsePackage(key, prose) constructor instead. <br>
+	 * <br>
+	 * Example: <br>
+	 * &nbsp&nbsp&nbsp&nbsp ProsePackage("StringId", new StringId("base_player", "prose_deposit_success"), "DI", 500)
+	 * 
+	 * @param objects Key followed by the value. Can either be STF, TU, TT, TO, or DI.
+	 */
 	public ProsePackage(Object ... objects) {
 		this();
 		int length = objects.length;
-		for (int i = 0; i < length - 1; i++) {
+		for (int i = 0; i < length - 1; i+=2) {
 			if (!(objects[i] instanceof String)) // Make sure that it's a key, chance of it being a customString though
 				continue;
 			
 			setProse((String) objects[i], objects[i + 1]);
 		}
+	}
+	
+	public final void setStringId(Object prose) {
+		if (prose instanceof StringId) {
+			base = (StringId) prose;
+		} else if (prose instanceof String) {
+			if (((String) prose).startsWith("@")) {
+				base = new StringId((String) prose);
+			} else {
+				Log.w("The base STF cannot be a custom string!");
+			}
+		} else {
+			Log.w("The base STF must be either a Stf or a String! Received class: " + prose.getClass().getName());
+		}
+	}
+	
+	public final void setTU(Object prose) {
+		setProse(actor, prose);
+	}
+	
+	public final void setTT(Object prose) {
+		setProse(target, prose);
+	}
+	
+	public final void setTO(Object prose) {
+		setProse(other, prose);
+	}
+	
+	public final void setDI(Integer prose) {
+		di = prose;
+	}
+	
+	public final void setDF(Float prose) {
+		df = prose;
+	}
+	
+	public final void setGrammarFlag(boolean useGrammar) {
+		grammarFlag = useGrammar;
 	}
 	
 	private void setProse(String key, Object prose) {
@@ -133,44 +184,6 @@ public class ProsePackage implements OutOfBandData {
 				break;
 			
 		}
-	}
-	
-	public void setStringId(Object prose) {
-		if (prose instanceof StringId) {
-			base = (StringId) prose;
-		} else if (prose instanceof String) {
-			if (((String) prose).startsWith("@")) {
-				base = new StringId((String) prose);
-			} else {
-				Log.w("The base STF cannot be a custom string!");
-			}
-		} else {
-			Log.w("The base STF must be either a Stf or a String! Received class: " + prose.getClass().getName());
-		}
-	}
-	
-	public void setTU(Object prose) {
-		setProse(actor, prose);
-	}
-	
-	public void setTT(Object prose) {
-		setProse(target, prose);
-	}
-	
-	public void setTO(Object prose) {
-		setProse(other, prose);
-	}
-	
-	public void setDI(Integer prose) {
-		di = prose;
-	}
-	
-	public void setDF(Float prose) {
-		df = prose;
-	}
-	
-	public void setGrammarFlag(boolean useGrammar) {
-		grammarFlag = useGrammar;
 	}
 	
 	private void setProse(Prose prose, Object obj) {
