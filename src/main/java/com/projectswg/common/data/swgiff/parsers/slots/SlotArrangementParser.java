@@ -62,7 +62,7 @@ public class SlotArrangementParser implements SWGParser {
 	public IffForm write() {
 		List<IffChunk> chunks = new ArrayList<>();
 		for (List<String> slots : arrangements) {
-			IffChunk chunk = new IffChunk("ARG");
+			IffChunk chunk = new IffChunk("ARG ");
 			for (String slot : slots) {
 				chunk.writeString(slot);
 			}
