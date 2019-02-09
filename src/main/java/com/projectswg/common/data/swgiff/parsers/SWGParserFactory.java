@@ -2,6 +2,8 @@ package com.projectswg.common.data.swgiff.parsers;
 
 import com.projectswg.common.data.swgiff.parsers.appearance.*;
 import com.projectswg.common.data.swgiff.parsers.appearance.extents.*;
+import com.projectswg.common.data.swgiff.parsers.creation.CombinedProfessionTemplateParser;
+import com.projectswg.common.data.swgiff.parsers.creation.ProfessionTemplateParser;
 import com.projectswg.common.data.swgiff.parsers.footprint.FootprintDataParser;
 import com.projectswg.common.data.swgiff.parsers.math.IndexedTriangleListParser;
 import com.projectswg.common.data.swgiff.parsers.misc.CrcStringDataParser;
@@ -36,6 +38,8 @@ enum SWGParserFactory {
 		PARSERS.put("IDTL", IndexedTriangleListParser::new);
 		PARSERS.put("MESH", MeshAppearanceTemplate::new);
 		PARSERS.put("NULL", NullExtentParser::new);
+		PARSERS.put("PFDT", CombinedProfessionTemplateParser::new);
+		PARSERS.put("PRFI", ProfessionTemplateParser::new);
 		PARSERS.put("PRTL", PortalLayoutCellPortalTemplate::new);
 		PARSERS.put("PRTO", PortalLayoutTemplate::new);
 		PARSERS.put("PTAT", TerrainDataParser::new);
