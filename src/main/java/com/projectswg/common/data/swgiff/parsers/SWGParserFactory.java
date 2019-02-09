@@ -5,6 +5,8 @@ import com.projectswg.common.data.swgiff.parsers.appearance.extents.*;
 import com.projectswg.common.data.swgiff.parsers.footprint.FootprintDataParser;
 import com.projectswg.common.data.swgiff.parsers.math.IndexedTriangleListParser;
 import com.projectswg.common.data.swgiff.parsers.misc.CrcStringDataParser;
+import com.projectswg.common.data.swgiff.parsers.slots.SlotArrangementParser;
+import com.projectswg.common.data.swgiff.parsers.slots.SlotDescriptorParser;
 import com.projectswg.common.data.swgiff.parsers.terrain.TerrainDataParser;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +22,7 @@ enum SWGParserFactory {
 	static {
 		PARSERS.put("APT ", AppearanceTemplateList::new);
 		PARSERS.put("APPR", AppearanceTemplate::new);
+		PARSERS.put("ARGD", SlotArrangementParser::new);
 		PARSERS.put("CELL", PortalLayoutCellTemplate::new);
 		PARSERS.put("CMPT", ComponentExtentParser::new);
 		PARSERS.put("CMSH", MeshExtentParser::new);
@@ -36,6 +39,7 @@ enum SWGParserFactory {
 		PARSERS.put("PRTL", PortalLayoutCellPortalTemplate::new);
 		PARSERS.put("PRTO", PortalLayoutTemplate::new);
 		PARSERS.put("PTAT", TerrainDataParser::new);
+		PARSERS.put("SLTD", SlotDescriptorParser::new);
 		PARSERS.put("XCYL", CylinderExtentParser::new);
 		PARSERS.put("XOCL", OrientedCylinderExtentParser::new);
 	}

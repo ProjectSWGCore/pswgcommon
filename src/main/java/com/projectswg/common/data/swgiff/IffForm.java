@@ -198,11 +198,11 @@ public class IffForm extends IffNode {
 		return new IffForm(tag, version, List.of(nodes));
 	}
 	
-	public static IffForm of(String tag, Collection<IffNode> nodes) {
+	public static IffForm of(String tag, Collection<? extends IffNode> nodes) {
 		return new IffForm(tag, -1, new ArrayList<>(nodes));
 	}
 	
-	public static IffForm of(String tag, int version, Collection<IffNode> nodes) {
+	public static IffForm of(String tag, int version, Collection<? extends IffNode> nodes) {
 		Arguments.validate(version >= 0, "Version must be greater than or equal to zero");
 		return new IffForm(tag, version, new ArrayList<>(nodes));
 	}
