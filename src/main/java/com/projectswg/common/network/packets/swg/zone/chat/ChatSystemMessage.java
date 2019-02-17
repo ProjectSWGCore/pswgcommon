@@ -26,6 +26,7 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.chat;
 
+import com.projectswg.common.data.encodables.oob.OutOfBandData;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -44,6 +45,10 @@ public class ChatSystemMessage extends SWGPacket {
 	
 	public ChatSystemMessage(SystemChatType type, String message) {
 		this(type, message, null);
+	}
+	
+	public ChatSystemMessage(SystemChatType type, OutOfBandData ... oobData) {
+		this(type, new OutOfBandPackage(oobData));
 	}
 	
 	public ChatSystemMessage(SystemChatType type, OutOfBandPackage oob) {

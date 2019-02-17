@@ -203,6 +203,8 @@ public enum RadialItem {
 	SERVER_MENU62					(0x00AB), // created
 	SERVER_MENU63					(0x00AC), // created
 	SERVER_MENU64					(0x00AD), // created
+	SERVER_ITEM_OPTIONS				(0x00D6),
+	SERVER_SURVEY_TOOL_RANGE		(0x00D7),
 	SERVER_PET_MOUNT				(0x011F),
 	SERVER_VEHICLE_ENTER_EXIT		(0x0124);
 	
