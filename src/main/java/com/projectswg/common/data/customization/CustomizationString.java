@@ -43,7 +43,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * The Customization string is used to set special properties
@@ -127,13 +126,13 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 	
 	@Override
 	public void saveMongo(MongoData data) {
-		data.putMap("variables", variables, Function.identity());
+		data.putMap("variables", variables);
 	}
 	
 	@Override
 	public void readMongo(MongoData data) {
 		variables.clear();
-		variables.putAll(data.getMap("variables", Integer.class));
+		variables.putAll(data.getMap("variables", String.class, Integer.class));
 	}
 	
 	public Integer put(String name, int value) {

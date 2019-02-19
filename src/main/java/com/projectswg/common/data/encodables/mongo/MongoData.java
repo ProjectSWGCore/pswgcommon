@@ -33,9 +33,10 @@ import org.bson.types.ObjectId;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -172,15 +173,7 @@ public class MongoData implements Map<String, Object> {
 		List<?> mdbArray = doc.get(key, List.class);
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
-			if (o == null)
-				ret.add(null);
-			else if (klass == Instant.class)
-				//noinspection UseOfObsoleteDateTimeApi
-				ret.add(klass.cast(((Date) o).toInstant()));
-			else if (klass == MongoData.class)
-				ret.add(klass.cast(new MongoData((Document) o)));
-			else
-				ret.add(klass.cast(o));
+			ret.add(translateGet(o, klass));
 		}
 		return ret;
 	}
@@ -190,13 +183,7 @@ public class MongoData implements Map<String, Object> {
 		List<?> mdbArray = doc.get(key, List.class);
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
-			if (o == null) {
-				ret.add(null);
-			} else {
-				T t = generator.get();
-				t.readMongo(new MongoData((Document) o));
-				ret.add(t);
-			}
+			ret.add(translateGet(o, generator));
 		}
 		return ret;
 	}
@@ -206,11 +193,7 @@ public class MongoData implements Map<String, Object> {
 		List<?> mdbArray = doc.get(key, List.class);
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
-			if (o == null) {
-				ret.add(null);
-			} else {
-				ret.add(generator.apply(new MongoData((Document) o)));
-			}
+			ret.add(translateGet(o, generator));
 		}
 		return ret;
 	}
@@ -236,46 +219,82 @@ public class MongoData implements Map<String, Object> {
 	}
 	
 	@NotNull
-	public <T> Map<String, T> getMap(String key, Class<T> klass) {
-		return getMap(key, klass, Function.identity(), (k, v) -> v);
+	public <T, V> Map<T, V> getMap(String key, Class<T> keyClass, Class<V> valueClass) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueClass));
+		}
+		return ret;
 	}
 	
 	@NotNull
-	public <T extends MongoPersistable> Map<String, T> getMap(String key, Class<T> klass, Supplier<T> supplier) {
-		return getMap(key, MongoData.class, Function.identity(), (k, v) -> {
-			T ret = supplier.get();
-			ret.readMongo(v);
-			return ret;
-		});
+	public <T extends MongoPersistable, V> Map<T, V> getMap(String key, Supplier<T> keyGen, Class<V> valueClass) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueClass));
+		}
+		return ret;
 	}
 	
 	@NotNull
-	public <T, V> Map<String, V> getMap(String key, Class<T> klass, Function<T, V> valueParser) {
-		return getMap(key, klass, Function.identity(), valueParser);
+	public <T extends MongoPersistable, V> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Class<V> valueClass) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueClass));
+		}
+		return ret;
 	}
 	
 	@NotNull
-	public <K, T, V> Map<K, V> getMap(String key, Class<T> klass, Function<String, K> keyParser, Function<T, V> valueParser) {
-		return getMap(key, klass, keyParser, (k, v) -> valueParser.apply(v));
+	public <T, V extends MongoPersistable> Map<T, V> getMap(String key, Class<T> keyClass, Supplier<V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueGen));
+		}
+		return ret;
 	}
 	
 	@NotNull
-	public <K, T, V> Map<K, V> getMap(String key, Class<T> klass, Function<String, K> keyParser, BiFunction<K, T, V> valueParser) {
-		Document mdbMap = doc.get(key, Document.class);
-		Map<K, V> ret = new HashMap<>(mdbMap.size());
-		for (Entry<String, Object> e : mdbMap.entrySet()) {
-			K childKey = keyParser.apply(e.getKey());
-			Object o = e.getValue();
-			if (o == null) {
-				ret.put(childKey, null);
-			} else if (klass == Instant.class) {
-				//noinspection UseOfObsoleteDateTimeApi
-				ret.put(childKey, valueParser.apply(childKey, klass.cast(((Date) o).toInstant())));
-			} else if (MongoData.class.isAssignableFrom(klass)) {
-				ret.put(childKey, valueParser.apply(childKey, klass.cast(new MongoData((Document) o))));
-			} else {
-				ret.put(childKey, valueParser.apply(childKey, klass.cast(o)));
-			}
+	public <T, V extends MongoPersistable> Map<T, V> getMap(String key, Class<T> keyClass, Function<MongoData, V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueGen));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Supplier<T> keyGen, Supplier<V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Supplier<V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Supplier<T> keyGen, Function<MongoData, V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
+		}
+		return ret;
+	}
+	
+	@NotNull
+	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Function<MongoData, V> valueGen) {
+		Map<T, V> ret = new HashMap<>();
+		for (MongoData val : getArray(key, MongoData.class)) {
+			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
 		}
 		return ret;
 	}
@@ -394,36 +413,69 @@ public class MongoData implements Map<String, Object> {
 		}
 	}
 	
-	public void putMap(String key, Map<String, ?> data) {
-		MongoData doc = new MongoData();
-		for (Entry<String, ?> e : data.entrySet()) {
-			doc.doc.put(e.getKey(), translatePut(e.getValue()));
+	public void putMap(String key, Map<?, ?> data) {
+		List<MongoData> map = new ArrayList<>();
+		for (Entry<?, ?> e : data.entrySet()) {
+			MongoData val = new MongoData();
+			val.doc.put("key", translatePut(e.getKey()));
+			val.doc.put("val", translatePut(e.getValue()));
+			map.add(val);
 		}
-		putDocument(key, doc);
+		putArray(key, map);
 	}
 	
-	public <T, S> void putMap(String key, Map<T, S> data, Function<T, String> keyExtractor) {
-		MongoData doc = new MongoData();
-		for (Entry<T, S> e : data.entrySet()) {
-			doc.doc.put(keyExtractor.apply(e.getKey()), translatePut(e.getValue()));
+	public <T, V> void putMap(String key, Map<T, V> data, Function<T, ?> keyTransform, Function<V, ?> valTransform) {
+		List<MongoData> map = new ArrayList<>();
+		for (Entry<T, V> e : data.entrySet()) {
+			MongoData val = new MongoData();
+			val.doc.put("key", translatePut(keyTransform.apply(e.getKey())));
+			val.doc.put("val", translatePut(valTransform.apply(e.getValue())));
+			map.add(val);
 		}
-		putDocument(key, doc);
+		putArray(key, map);
 	}
 	
-	public <T, S> void putMap(String key, Map<T, S> data, Function<T, String> keyExtractor, Function<S, ?> valueExtractor) {
-		MongoData doc = new MongoData();
-		for (Entry<T, S> e : data.entrySet()) {
-			doc.doc.put(keyExtractor.apply(e.getKey()), translatePut(valueExtractor.apply(e.getValue())));
-		}
-		putDocument(key, doc);
+	private <T> T translateGet(Object input, Class<T> klass) {
+		if (input == null)
+			return null;
+		else if (klass == Instant.class)
+			//noinspection UseOfObsoleteDateTimeApi
+			return klass.cast(((Date) input).toInstant());
+		else if (klass == MongoData.class)
+			return klass.cast(new MongoData((Document) input));
+		else if (MongoPersistable.class.isAssignableFrom(klass)) {
+			try {
+				Constructor<T> smartConstructor = klass.getConstructor(MongoData.class);
+				return smartConstructor.newInstance(new MongoData((Document) input));
+			} catch (NoSuchMethodException e) {
+				try {
+					Constructor<T> defaultConstructor = klass.getConstructor();
+					T instance = defaultConstructor.newInstance();
+					((MongoPersistable) instance).readMongo(new MongoData((Document) input));
+					return instance;
+				} catch (NoSuchMethodException e1) {
+					throw new IllegalArgumentException("Unable to find suitable constructor for: " + klass.getSimpleName());
+				} catch (IllegalAccessException | InstantiationException | InvocationTargetException e1) {
+					throw new IllegalArgumentException("Unable to create new default instance of " + klass.getSimpleName(), e1);
+				}
+			} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+				throw new IllegalArgumentException("Unable to create new smart instance of " + klass.getSimpleName(), e);
+			}
+		} else
+			return klass.cast(input);
 	}
 	
-	public <T, S> void putMap(String key, Map<T, S> data, Function<T, String> keyExtractor, BiFunction<T, S, ?> valueExtractor) {
-		MongoData doc = new MongoData();
-		for (Entry<T, S> e : data.entrySet()) {
-			doc.doc.put(keyExtractor.apply(e.getKey()), translatePut(valueExtractor.apply(e.getKey(), e.getValue())));
-		}
-		putDocument(key, doc);
+	private <T extends MongoPersistable> T translateGet(Object input, Supplier<T> generator) {
+		if (input == null)
+			return null;
+		
+		T t = generator.get();
+		t.readMongo(new MongoData((Document) input));
+		return t;
+	}
+	
+	private <T extends MongoPersistable> T translateGet(Object input, Function<MongoData, T> generator) {
+		return input == null ? null : generator.apply(new MongoData((Document) input));
 	}
 	
 	@SuppressWarnings("UseOfObsoleteDateTimeApi")
