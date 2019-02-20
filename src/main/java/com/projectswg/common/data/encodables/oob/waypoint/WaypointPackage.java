@@ -167,7 +167,7 @@ public class WaypointPackage implements OutOfBandData, MongoPersistable {
 		data.getDocument("position", position);
 		terrain = Terrain.valueOf(data.getString("terrain", "GONE"));
 		name = data.getString("name", "New Waypoint");
-		color = WaypointColor.valueOf(data.getString("color", "BLUE"));
+		color = WaypointColor.valueOf(data.getInteger("color", WaypointColor.BLUE.getValue()));
 		active = data.getBoolean("active", true);
 	}
 	

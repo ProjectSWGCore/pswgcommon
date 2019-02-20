@@ -152,9 +152,13 @@ public class MongoData implements Map<String, Object> {
 	
 	@Nullable
 	public Instant getDate(String key) {
+		return getDate(key, null);
+	}
+	
+	public Instant getDate(String key, Instant def) {
 		@SuppressWarnings("UseOfObsoleteDateTimeApi") // forced to by MongoDB
 		Date d = doc.getDate(key);
-		return d == null ? null : d.toInstant();
+		return d == null ? def : d.toInstant();
 	}
 	
 	public byte [] getByteArray(String key) {
@@ -171,6 +175,8 @@ public class MongoData implements Map<String, Object> {
 	@NotNull
 	public <T> List<T> getArray(String key, Class<T> klass) {
 		List<?> mdbArray = doc.get(key, List.class);
+		if (mdbArray == null)
+			return new ArrayList<>();
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
 			ret.add(translateGet(o, klass));
@@ -181,6 +187,8 @@ public class MongoData implements Map<String, Object> {
 	@NotNull
 	public <T extends MongoPersistable> List<T> getArray(String key, Supplier<T> generator) {
 		List<?> mdbArray = doc.get(key, List.class);
+		if (mdbArray == null)
+			return new ArrayList<>();
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
 			ret.add(translateGet(o, generator));
@@ -191,6 +199,8 @@ public class MongoData implements Map<String, Object> {
 	@NotNull
 	public <T extends MongoPersistable> List<T> getArray(String key, Function<MongoData, T> generator) {
 		List<?> mdbArray = doc.get(key, List.class);
+		if (mdbArray == null)
+			return new ArrayList<>();
 		List<T> ret = new ArrayList<>(mdbArray.size());
 		for (Object o : mdbArray) {
 			ret.add(translateGet(o, generator));
@@ -216,6 +226,37 @@ public class MongoData implements Map<String, Object> {
 		if (doc != null)
 			dataInstance.readMongo(new MongoData(doc));
 		return dataInstance;
+	}
+	
+	/**
+	 * Attempts to parse the document at the specified key.  If the document exists, an instance of the specified class will be created to parse the document
+	 * @param key the key to look up
+	 * @param dataGenerator the data generator to use
+	 * @param <T> the parser type
+	 * @return the parsed data, or null if the value does not exist
+	 */
+	@Nullable
+	public <T extends MongoPersistable> T getDocument(String key, Supplier<T> dataGenerator) {
+		Document doc = this.doc.get(key, Document.class);
+		if (doc != null) {
+			T data = dataGenerator.get();
+			data.readMongo(new MongoData(doc));
+			return data;
+		}
+		return null;
+	}
+	
+	/**
+	 * Attempts to parse the document at the specified key.  If the document exists, the specified function will be called to parse the data
+	 * @param key the key to look up
+	 * @param dataParser the data parser to use
+	 * @param <T> the parser type
+	 * @return the parsed data, or null if the value does not exist
+	 */
+	@Nullable
+	public <T extends MongoPersistable> T getDocument(String key, Function<MongoData, T> dataParser) {
+		Document doc = this.doc.get(key, Document.class);
+		return doc == null ? null : dataParser.apply(new MongoData(doc));
 	}
 	
 	@NotNull

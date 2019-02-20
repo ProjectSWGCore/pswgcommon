@@ -30,6 +30,8 @@ import com.projectswg.common.data.encodables.player.Mail;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
+import java.time.Instant;
+
 public class ChatPersistentMessageToClient extends SWGPacket {
 	
 	public static final int CRC = getCrc("ChatPersistentMessageToClient");
@@ -63,7 +65,7 @@ public class ChatPersistentMessageToClient extends SWGPacket {
 		else
 			mail.decode(data);
 		mail.setStatus(data.getByte());
-		mail.setTimestamp(data.getInt());
+		mail.setTimestamp(Instant.ofEpochSecond(data.getInt()));
 	}
 	
 	@Override
@@ -81,7 +83,7 @@ public class ChatPersistentMessageToClient extends SWGPacket {
 		data.addBoolean(header);
 		data.addRawArray(mailData);
 		data.addByte(mail.getStatus());
-		data.addInt(mail.getTimestamp());
+		data.addInt((int) mail.getTimestamp().getEpochSecond());
 		return data;
 	}
 

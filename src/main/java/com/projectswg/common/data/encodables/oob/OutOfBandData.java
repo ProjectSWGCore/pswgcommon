@@ -26,10 +26,11 @@
  ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.persistable.Persistable;
 
-public interface OutOfBandData extends Encodable, Persistable {
+public interface OutOfBandData extends Encodable, Persistable, MongoPersistable {
 	
 	OutOfBandPackage.Type getOobType();
 	int getOobPosition();

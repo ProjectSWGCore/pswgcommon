@@ -26,6 +26,9 @@
  ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
+import com.projectswg.common.data.encodables.oob.OutOfBandPackage.Type;
 import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
 import com.projectswg.common.network.NetBufferStream;
 
@@ -60,6 +63,43 @@ public class OutOfBandFactory {
 				throw new IllegalStateException("Unknown type byte! Type: " + type);
 		}
 		oob.read(stream);
+		return oob;
+	}
+	
+	public static MongoData save(OutOfBandData oob) {
+		return save(oob, new MongoData());
+	}
+	
+	public static MongoData save(OutOfBandData oob, MongoData data) {
+		switch (oob.getOobType()) {
+			case STRING_ID:
+			case PROSE_PACKAGE:
+			case WAYPOINT:
+				data.putString("oobType", oob.getOobType().name());
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown OOB data!");
+		}
+		oob.saveMongo(data);
+		return data;
+	}
+	
+	public static OutOfBandData create(MongoData data) {
+		OutOfBandData oob;
+		switch (OutOfBandPackage.Type.valueOf(data.getString("oobType", OutOfBandPackage.Type.UNDEFINED.name()))) {
+			case STRING_ID:
+				oob = new StringId();
+				break;
+			case PROSE_PACKAGE:
+				oob = new ProsePackage();
+				break;
+			case WAYPOINT:
+				oob = new WaypointPackage();
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown OOB data: " + data.getString("oobType"));
+		}
+		oob.readMongo(data);
 		return oob;
 	}
 	

@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.projectswg.common.data.EnumLookup;
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.encoding.Encodable;
@@ -38,7 +40,7 @@ import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class OutOfBandPackage implements Encodable, Persistable {
+public class OutOfBandPackage implements Encodable, Persistable, MongoPersistable {
 	
 	private final List<OutOfBandData> packages;
 	
@@ -92,13 +94,24 @@ public class OutOfBandPackage implements Encodable, Persistable {
 	}
 	
 	@Override
+	public void read(NetBufferStream stream) {
+		stream.getList((i) -> packages.add(OutOfBandFactory.create(stream)));
+	}
+	
+	@Override
 	public void save(NetBufferStream stream) {
 		stream.addList(packages, (p) -> OutOfBandFactory.save(p, stream));
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		stream.getList((i) -> packages.add(OutOfBandFactory.create(stream)));
+	public void readMongo(MongoData data) {
+		packages.clear();
+		packages.addAll(data.getArray("packages", OutOfBandFactory::create));
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putArray("packages", packages, OutOfBandFactory::save);
 	}
 	
 	private void unpackOutOfBandData(NetBuffer data, Type type) {
