@@ -28,6 +28,7 @@ package com.projectswg.common.network.packets.swg.zone.spatial;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -43,20 +44,20 @@ public class AttributeListMessage extends SWGPacket {
 	private int serverRevision;
 	
 	public AttributeListMessage() {
-		this(0, new HashMap<>(), 0);
+		this(0, new LinkedHashMap<>(), 0);
 	}
 	
 	public AttributeListMessage(String staticItemName, Map <String, String> attributes, int serverRevision) {
 		this.objectId = 0;
 		this.staticItemName = staticItemName;
-		this.attributes = new HashMap<>(attributes);
+		this.attributes = new LinkedHashMap<>(attributes);
 		this.serverRevision = serverRevision;
 	}
 	
 	public AttributeListMessage(long objectId, Map <String, String> attributes, int serverRevision) {
 		this.objectId = objectId;
 		this.staticItemName = "";
-		this.attributes = new HashMap<>(attributes);
+		this.attributes = new LinkedHashMap<>(attributes);
 		this.serverRevision = serverRevision;
 	}
 	
