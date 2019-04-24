@@ -610,6 +610,10 @@ public class MongoData implements Map<String, Object> {
 		return data;
 	}
 	
+	public static <T extends MongoPersistable> T create(Document doc, Supplier<T> generator) {
+		return create(new MongoData(doc), generator);
+	}
+	
 	public static <T extends MongoPersistable> T create(MongoData data, Supplier<T> generator) {
 		T ret = generator.get();
 		ret.readMongo(data);

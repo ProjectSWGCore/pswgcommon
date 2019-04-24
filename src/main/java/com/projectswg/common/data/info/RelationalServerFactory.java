@@ -26,25 +26,20 @@
  ***********************************************************************************/
 package com.projectswg.common.data.info;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import me.joshlarson.jlcommon.log.Log;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import me.joshlarson.jlcommon.log.Log;
 
 public class RelationalServerFactory {
 	
 	private static final RelationalServerFactory INSTANCE = new RelationalServerFactory();
-	private static final AtomicReference<String> BASE_PATH = new AtomicReference<>("");
 	private static final Map <String, Object> FILE_LOAD_LOCKING = new HashMap<>();
+	private static final String BASE_PATH = "serverdata/";
 	
 	public static RelationalServerData getServerData(String file, String ... tables) {
 		return INSTANCE.getData(file, tables);
@@ -54,18 +49,14 @@ public class RelationalServerFactory {
 		return INSTANCE.getDatabase(file);
 	}
 	
-	public static void setBasePath(String basePath) {
-		BASE_PATH.set(basePath);
-	}
-	
 	private RelationalServerData getData(String file, String ... tables) {
 		if (!file.endsWith(".db"))
 			throw new IllegalArgumentException("File path for database must end in .db!");
 		file = file.replace('/', File.separatorChar);
 		final Object lock = getFileLocking(file);
 		synchronized (lock) {
-			File f = new File(BASE_PATH + file);
-			RelationalServerData data = new RelationalServerData(BASE_PATH + file);
+			File f = new File(BASE_PATH, file);
+			RelationalServerData data = new RelationalServerData(f.getPath());
 			if (loadServerData(data, f, tables))
 				return data;
 			return null;
@@ -90,8 +81,8 @@ public class RelationalServerFactory {
 			throw new IllegalArgumentException("File path for database must end in .db!");
 		final Object lock = getFileLocking(file);
 		synchronized (lock) {
-			File f = new File(BASE_PATH + file);
-			RelationalServerData data = new RelationalServerData(BASE_PATH + file);
+			File f = new File(BASE_PATH, file);
+			RelationalServerData data = new RelationalServerData(f.getPath());
 			try {
 				String [] commands = getCommandsFromSchema(f.getPath().substring(0, f.getPath().length()-3) + ".sql");
 				ParserData parserData = new ParserData();
