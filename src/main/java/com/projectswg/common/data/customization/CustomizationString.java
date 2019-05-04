@@ -192,18 +192,28 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 		
 		short variableCount = (short) codePoints[position++];
 		
+		if (variableCount == 0xFF) {
+			// SOE decided not to include a variable count for the Twi'lek lekku. No object has anywhere near 255 variables, so we'll be alright.
+			return;
+		}
+		
 		for (short i = 0; i < variableCount; i++) {
-			short variableId = (short) codePoints[position++];
-			String variableName = VAR_ID_TO_NAME.get(variableId);
-			
-			if (variableName == null) {	// Variable ID matched no variable name.
-				Log.w("Variable ID %d had no name associated", variableId);
-				position++;	// Skip the associated value
-				continue;
-			}
-			
+			short combinedVariableInfo = (short) codePoints[position++];
+			int variableSize = ((combinedVariableInfo & 0x80) != 0) ? 2 : 1;
+			short variableId = (short) (combinedVariableInfo & 0x7F);
+			int current = codePoints[position++];	// Read 8-bit value
 			int variable;
-			int current = codePoints[position++];
+			
+			switch (variableSize) {
+				case 2:
+					// Read 16-bit value
+					byte lowByte = (byte) current;
+					byte hiByte = (byte) codePoints[position++];
+					position++;	// Skip escape
+					
+					current = ((hiByte << 8) | lowByte) & 0xFF;
+					break;
+			}
 			
 			if (current == 0xFF) {	// This marks an escaped character to follow
 				int next = codePoints[position++];
@@ -223,6 +233,14 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 				}
 			} else {
 				variable = current;
+			}
+			
+			String variableName = VAR_ID_TO_NAME.get(variableId);
+			
+			if (variableName == null) {	// Variable ID matched no variable name.
+				Log.w("Variable ID %d had no name associated", variableId);
+				position++;	// Skip the associated value
+				continue;
 			}
 			
 			variables.put(variableName, variable);
