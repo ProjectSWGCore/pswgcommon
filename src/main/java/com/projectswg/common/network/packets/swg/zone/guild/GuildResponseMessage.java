@@ -56,7 +56,6 @@ public class GuildResponseMessage extends SWGPacket {
 		objectId = data.getLong();
 		guildName = data.getAscii();
 		memberTitle = data.getAscii();
-		data.getShort();	// TODO figure out
 	}
 	
 	@Override
