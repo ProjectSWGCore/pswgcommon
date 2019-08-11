@@ -1,44 +1,45 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
-import com.projectswg.common.debug.Log;
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class StringId implements OutOfBandData, Persistable {
+public class StringId implements OutOfBandData, Persistable, MongoPersistable {
 	
-	private String key = "";
-	private String file = "";
+	private String key;
+	private String file;
 	
 	public StringId() {
-		
+		this("", "");
 	}
 	
 	public StringId(String file, String key) {
@@ -49,6 +50,8 @@ public class StringId implements OutOfBandData, Persistable {
 	public StringId(String stf) {
 		if (!stf.contains(":")) {
 			Log.e("Invalid stf format! Expected a semi-colon for " + stf);
+			this.key = "";
+			this.file = "";
 			return;
 		}
 		
@@ -56,10 +59,8 @@ public class StringId implements OutOfBandData, Persistable {
 			stf = stf.substring(1);
 		
 		String[] split = stf.split(":", 2);
-		file = split[0];
-		
-		if (split.length == 2)
-			key = split[1];
+		this.file = split[0];
+		this.key = (split.length >= 2) ? split[1] : "";
 	}
 	
 	@Override
@@ -96,6 +97,18 @@ public class StringId implements OutOfBandData, Persistable {
 	}
 	
 	@Override
+	public void readMongo(MongoData data) {
+		file = data.getString("file");
+		key = data.getString("key");
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putString("file", file);
+		data.putString("key", key);
+	}
+	
+	@Override
 	public OutOfBandPackage.Type getOobType() {
 		return OutOfBandPackage.Type.STRING_ID;
 	}
@@ -109,16 +122,8 @@ public class StringId implements OutOfBandData, Persistable {
 		return key;
 	}
 	
-	public void setKey(String key) {
-		this.key = key;
-	}
-	
 	public String getFile() {
 		return file;
-	}
-	
-	public void setFile(String file) {
-		this.file = file;
 	}
 	
 	@Override

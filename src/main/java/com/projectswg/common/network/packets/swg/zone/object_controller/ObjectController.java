@@ -1,33 +1,35 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
-import com.projectswg.common.debug.Log;
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupCloseLotteryWindow;
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupOpenLotteryWindow;
+import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 import com.projectswg.common.network.packets.swg.zone.object_controller.combat.CombatAction;
@@ -87,7 +89,15 @@ public abstract class ObjectController extends SWGPacket {
 	
 	public void setUpdate(int update) { this.update = update; }
 	
-	public static final ObjectController decodeController(NetBuffer data) {
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", objectId,
+				"crc", "0x"+Integer.toHexString(controllerCrc)
+		);
+	}
+	
+	public static ObjectController decodeController(NetBuffer data) {
 		if (data.array().length < 14)
 			return null;
 		int pos = data.position();
@@ -104,10 +114,17 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x012E: return new PlayerEmote(data);
 			case 0x0131: return new PostureUpdate(data);
 			case 0x0134: return new CombatSpam(data);
+			case 0x013F: return new TeleportAck(data);
 			case 0x0146: return new ObjectMenuRequest(data);
+			case 0x0147: return new ObjectMenuResponse(data);
 			case 0x01BD: return new ShowFlyText(data);
 			case 0x01BF: return new DraftSlotsQueryResponse(data);
 			case 0x01DB: return new BiographyUpdate(data);
+			case 0x0229: return new BuffAddUpdate(data);
+			case 0x022A: return new BuffRemoveUpdate(data);
+			case 0x043D: return new GroupOpenLotteryWindow(data);
+			case 0x043E: return new GroupCloseLotteryWindow(data);
+			case 0x0440: return new GroupRequestLotteryItems(data);
 			case 0x0448: return new CommandTimer(data);
 			case 0x044D: return new ChangeRoleIconChoice(data);
 			case 0x04BC: return new ShowLootBox(data);

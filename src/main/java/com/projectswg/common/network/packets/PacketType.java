@@ -1,34 +1,36 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.network.packets;
 
 import com.projectswg.common.data.EnumLookup;
-import com.projectswg.common.debug.Log;
+import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
+import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
+import com.projectswg.common.network.packets.swg.zone.*;
+import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
 import com.projectswg.common.network.packets.swg.ServerUnixEpochTime;
 import com.projectswg.common.network.packets.swg.admin.AdminShutdownServer;
@@ -60,37 +62,6 @@ import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterR
 import com.projectswg.common.network.packets.swg.login.creation.DeleteCharacterResponse;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameRequest;
 import com.projectswg.common.network.packets.swg.login.creation.RandomNameResponse;
-import com.projectswg.common.network.packets.swg.zone.ClientOpenContainerMessage;
-import com.projectswg.common.network.packets.swg.zone.CmdSceneReady;
-import com.projectswg.common.network.packets.swg.zone.ConnectPlayerResponseMessage;
-import com.projectswg.common.network.packets.swg.zone.EnterTicketPurchaseModeMessage;
-import com.projectswg.common.network.packets.swg.zone.ExpertiseRequestMessage;
-import com.projectswg.common.network.packets.swg.zone.GalaxyLoopTimesResponse;
-import com.projectswg.common.network.packets.swg.zone.GameServerLagResponse;
-import com.projectswg.common.network.packets.swg.zone.HeartBeat;
-import com.projectswg.common.network.packets.swg.zone.LagRequest;
-import com.projectswg.common.network.packets.swg.zone.ObjectMenuSelect;
-import com.projectswg.common.network.packets.swg.zone.ParametersMessage;
-import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListRequest;
-import com.projectswg.common.network.packets.swg.zone.PlanetTravelPointListResponse;
-import com.projectswg.common.network.packets.swg.zone.PlayClientEffectObjectMessage;
-import com.projectswg.common.network.packets.swg.zone.PlayMusicMessage;
-import com.projectswg.common.network.packets.swg.zone.RequestGalaxyLoopTimes;
-import com.projectswg.common.network.packets.swg.zone.SceneCreateObjectByCrc;
-import com.projectswg.common.network.packets.swg.zone.SceneDestroyObject;
-import com.projectswg.common.network.packets.swg.zone.SceneEndBaselines;
-import com.projectswg.common.network.packets.swg.zone.ServerNowEpochTime;
-import com.projectswg.common.network.packets.swg.zone.ServerTimeMessage;
-import com.projectswg.common.network.packets.swg.zone.ServerWeatherMessage;
-import com.projectswg.common.network.packets.swg.zone.SetWaypointColor;
-import com.projectswg.common.network.packets.swg.zone.ShowBackpack;
-import com.projectswg.common.network.packets.swg.zone.ShowHelmet;
-import com.projectswg.common.network.packets.swg.zone.StopClientEffectObjectByLabelMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateContainmentMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdatePostureMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdatePvpStatusMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateTransformMessage;
-import com.projectswg.common.network.packets.swg.zone.UpdateTransformWithParentMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.auction.CancelLiveAuctionMessage;
@@ -187,6 +158,8 @@ public enum PacketType {
 	LAG_REQUEST									(LagRequest.CRC,			LagRequest.class),
 
 	// Login
+	HOLO_LOGIN_REQUEST							(HoloLoginRequestPacket.CRC,	HoloLoginRequestPacket.class),
+	HOLO_LOGIN_RESPONSE							(HoloLoginResponsePacket.CRC,	HoloLoginResponsePacket.class),
 	CLIENT_ID_MSG								(ClientIdMsg.CRC, 				ClientIdMsg.class),
 	ERROR_MESSAGE								(ErrorMessage.CRC, 				ErrorMessage.class),
 	ACCOUNT_FEATURE_BITS						(AccountFeatureBits.CRC, 		AccountFeatureBits.class),
@@ -244,6 +217,8 @@ public enum PacketType {
 	EXPERTISE_REQUEST_MESSAGE					(ExpertiseRequestMessage.CRC,		ExpertiseRequestMessage.class),
 	CHANGE_ROLE_ICON_CHOICE						(ChangeRoleIconChoice.CRC,			ChangeRoleIconChoice.class),
 	SHOW_LOOT_BOX								(ShowLootBox.CRC,					ShowLootBox.class),
+	CREATE_CLIENT_PATH_MESSAGE					(CreateClientPathMessage.CRC,		CreateClientPathMessage.class),
+	DESTROY_CLIENT_PATH_MESSAGE					(DestroyClientPathMessage.CRC,		DestroyClientPathMessage.class),
 	GUILD_REQUEST_MESSAGE						(GuildRequestMessage.CRC,			GuildRequestMessage.class),
 	GUILD_RESPONSE_MESSAGE						(GuildResponseMessage.CRC,			GuildResponseMessage.class),
 	
@@ -287,6 +262,7 @@ public enum PacketType {
 
 		// Scene
 		SCENE_END_BASELINES						(SceneEndBaselines.CRC, 				SceneEndBaselines.class),
+		SCENE_CREATE_OBJECT_BY_NAME				(SceneCreateObjectByName.CRC, 			SceneCreateObjectByName.class),
 		SCENE_CREATE_OBJECT_BY_CRC				(SceneCreateObjectByCrc.CRC, 			SceneCreateObjectByCrc.class),
 		SCENE_DESTROY_OBJECT					(SceneDestroyObject.CRC, 				SceneDestroyObject.class),
 		UPDATE_CONTAINMENT_MESSAGE				(UpdateContainmentMessage.CRC, 			UpdateContainmentMessage.class),

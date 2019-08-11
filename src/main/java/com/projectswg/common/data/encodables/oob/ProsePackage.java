@@ -1,40 +1,42 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob;
 
-import java.math.BigInteger;
-
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.debug.Log;
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.log.Log;
+import org.jetbrains.annotations.NotNull;
+
+import java.math.BigInteger;
+import java.util.Objects;
 
 public class ProsePackage implements OutOfBandData {
 	
@@ -91,15 +93,66 @@ public class ProsePackage implements OutOfBandData {
 	 * 
 	 * @param objects Key followed by the value. Can either be STF, TU, TT, TO, or DI.
 	 */
+	public ProsePackage(StringId stringId, Object ... objects) {
+		this(objects);
+		setStringId(stringId);
+	}
+	
+	/**
+	 * Creates a new ProsePackage with multiple defined parameters. The first Object must be the prose key, followed by the keys value, and so on. If you're only setting 1 parameter, you should use the ProsePackage(key, prose) constructor instead. <br>
+	 * <br>
+	 * Example: <br>
+	 * &nbsp&nbsp&nbsp&nbsp ProsePackage("StringId", new StringId("base_player", "prose_deposit_success"), "DI", 500)
+	 * 
+	 * @param objects Key followed by the value. Can either be STF, TU, TT, TO, or DI.
+	 */
 	public ProsePackage(Object ... objects) {
 		this();
 		int length = objects.length;
-		for (int i = 0; i < length - 1; i++) {
+		for (int i = 0; i < length - 1; i+=2) {
 			if (!(objects[i] instanceof String)) // Make sure that it's a key, chance of it being a customString though
 				continue;
 			
 			setProse((String) objects[i], objects[i + 1]);
 		}
+	}
+	
+	public final void setStringId(Object prose) {
+		if (prose instanceof StringId) {
+			base = (StringId) prose;
+		} else if (prose instanceof String) {
+			if (((String) prose).startsWith("@")) {
+				base = new StringId((String) prose);
+			} else {
+				Log.w("The base STF cannot be a custom string!");
+			}
+		} else {
+			Log.w("The base STF must be either a Stf or a String! Received class: " + prose.getClass().getName());
+		}
+	}
+	
+	public final void setTU(Object prose) {
+		setProse(actor, prose);
+	}
+	
+	public final void setTT(Object prose) {
+		setProse(target, prose);
+	}
+	
+	public final void setTO(Object prose) {
+		setProse(other, prose);
+	}
+	
+	public final void setDI(Integer prose) {
+		di = prose;
+	}
+	
+	public final void setDF(Float prose) {
+		df = prose;
+	}
+	
+	public final void setGrammarFlag(boolean useGrammar) {
+		grammarFlag = useGrammar;
 	}
 	
 	private void setProse(String key, Object prose) {
@@ -136,44 +189,6 @@ public class ProsePackage implements OutOfBandData {
 		}
 	}
 	
-	public void setStringId(Object prose) {
-		if (prose instanceof StringId) {
-			base = (StringId) prose;
-		} else if (prose instanceof String) {
-			if (((String) prose).startsWith("@")) {
-				base = new StringId((String) prose);
-			} else {
-				Log.w("The base STF cannot be a custom string!");
-			}
-		} else {
-			Log.w("The base STF must be either a Stf or a String! Received class: " + prose.getClass().getName());
-		}
-	}
-	
-	public void setTU(Object prose) {
-		setProse(actor, prose);
-	}
-	
-	public void setTT(Object prose) {
-		setProse(target, prose);
-	}
-	
-	public void setTO(Object prose) {
-		setProse(other, prose);
-	}
-	
-	public void setDI(Integer prose) {
-		di = prose;
-	}
-	
-	public void setDF(Float prose) {
-		df = prose;
-	}
-	
-	public void setGrammarFlag(boolean useGrammar) {
-		grammarFlag = useGrammar;
-	}
-	
 	private void setProse(Prose prose, Object obj) {
 		if (obj instanceof StringId) {
 			prose.setStringId((StringId) obj);
@@ -194,7 +209,7 @@ public class ProsePackage implements OutOfBandData {
 	
 	@Override
 	public byte[] encode() {
-		Assert.notNull(base, "There must be a StringId base!");
+		Objects.requireNonNull(base, "There must be a StringId base!");
 		NetBuffer data = NetBuffer.allocate(getLength());
 		data.addEncodable(base);
 		data.addEncodable(actor);
@@ -223,6 +238,18 @@ public class ProsePackage implements OutOfBandData {
 	}
 	
 	@Override
+	public void read(NetBufferStream stream) {
+		stream.getByte();
+		base.read(stream);
+		actor.read(stream);
+		target.read(stream);
+		other.read(stream);
+		grammarFlag = stream.getBoolean();
+		di = stream.getInt();
+		df = stream.getFloat();
+	}
+	
+	@Override
 	public void save(NetBufferStream stream) {
 		stream.addByte(0);
 		base.save(stream);
@@ -235,15 +262,25 @@ public class ProsePackage implements OutOfBandData {
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		base.read(stream);
-		actor.read(stream);
-		target.read(stream);
-		other.read(stream);
-		grammarFlag = stream.getBoolean();
-		di = stream.getInt();
-		df = stream.getFloat();
+	public void readMongo(MongoData data) {
+		data.getDocument("base", base);
+		data.getDocument("actor", actor);
+		data.getDocument("target", target);
+		data.getDocument("other", other);
+		di = data.getInteger("di", di);
+		df = data.getFloat("df", df);
+		grammarFlag = data.getBoolean("grammarFlag", grammarFlag);
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putDocument("base", base);
+		data.putDocument("actor", actor);
+		data.putDocument("target", target);
+		data.putDocument("other", other);
+		data.putInteger("di", di);
+		data.putFloat("df", df);
+		data.putBoolean("grammarFlag", grammarFlag);
 	}
 	
 	@Override
@@ -274,11 +311,11 @@ public class ProsePackage implements OutOfBandData {
 		return base.hashCode() * 3 + actor.hashCode() * 7 + target.hashCode() * 13 + other.hashCode() * 17 + (grammarFlag ? 1 : 0) + di * 19 + ((int) (df * 23));
 	}
 	
-	public static class Prose implements Encodable, Persistable {
+	public static class Prose implements Encodable, Persistable, MongoPersistable {
 		
 		private long objectId;
-		private StringId stringId;
-		private String text;
+		private @NotNull StringId stringId;
+		private @NotNull String text;
 		
 		public Prose() {
 			this.objectId = 0;
@@ -291,12 +328,12 @@ public class ProsePackage implements OutOfBandData {
 		}
 		
 		public void setStringId(StringId stringId) {
-			Assert.notNull(stringId, "StringId cannot be null!");
+			Objects.requireNonNull(stringId, "StringId cannot be null!");
 			this.stringId = stringId;
 		}
 		
 		public void setText(String text) {
-			Assert.notNull(text, "Text cannot be null!");
+			Objects.requireNonNull(text, "Text cannot be null!");
 			this.text = text;
 		}
 		
@@ -322,6 +359,14 @@ public class ProsePackage implements OutOfBandData {
 		}
 		
 		@Override
+		public void read(NetBufferStream stream) {
+			stream.getByte();
+			stringId.read(stream);
+			objectId = stream.getLong();
+			text = stream.getUnicode();
+		}
+		
+		@Override
 		public void save(NetBufferStream stream) {
 			stream.addByte(0);
 			stringId.save(stream);
@@ -330,11 +375,17 @@ public class ProsePackage implements OutOfBandData {
 		}
 		
 		@Override
-		public void read(NetBufferStream stream) {
-			stream.getByte();
-			stringId.read(stream);
-			objectId = stream.getLong();
-			text = stream.getUnicode();
+		public void readMongo(MongoData data) {
+			objectId = data.getLong("objectId", objectId);
+			data.getDocument("stringId", stringId);
+			text = data.getString("text", text);
+		}
+		
+		@Override
+		public void saveMongo(MongoData data) {
+			data.putLong("objectId", objectId);
+			data.putDocument("stringId", stringId);
+			data.putString("text", text);
 		}
 		
 		@Override

@@ -1,38 +1,40 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.location;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.utilities.Arguments;
 
-public class Quaternion implements Encodable, Persistable {
+public class Quaternion implements Encodable, Persistable, MongoPersistable {
 	
 	private final double [][] rotationMatrix;
 	private double x;
@@ -52,6 +54,45 @@ public class Quaternion implements Encodable, Persistable {
 		this.rotationMatrix = new double[3][3];
 		updateRotationMatrix();
 	}
+	
+	public Quaternion(double [][] matrix) {
+		Arguments.validate(matrix.length >= 3 && matrix[0].length >= 3, "Matrix must be at least 3x3!");
+		this.rotationMatrix = new double[3][3];
+		for (int i = 0; i < 3; i++) {
+			System.arraycopy(matrix, 0, this.rotationMatrix, 0, 3);
+		}
+		
+		// Optimization and thread safe
+		matrix = rotationMatrix;
+		
+		// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+		double tr = matrix[0][0] + matrix[1][1] + matrix[2][2];
+		if (tr > 0) {
+			double S = Math.sqrt(tr+1.0) * 2; // S=4*w
+			w = S / 4;
+			x = (matrix[2][1] - matrix[1][2]) / S;
+			y = (matrix[0][2] - matrix[2][0]) / S;
+			z = (matrix[1][0] - matrix[0][1]) / S;
+		} else if ((matrix[0][0] > matrix[1][1])&(matrix[0][0] > matrix[2][2])) {
+			double S = Math.sqrt(1.0 + matrix[0][0] - matrix[1][1] - matrix[2][2]) * 2; // S=4*x 
+			w = (matrix[2][1] - matrix[1][2]) / S;
+			x = S / 4;
+			y = (matrix[0][1] + matrix[1][0]) / S;
+			z = (matrix[0][2] + matrix[2][0]) / S;
+		} else if (matrix[1][1] > matrix[2][2]) {
+			double S = Math.sqrt(1.0 + matrix[1][1] - matrix[0][0] - matrix[2][2]) * 2; // S=4*qy
+			w = (matrix[0][2] - matrix[2][0]) / S;
+			x = (matrix[0][1] + matrix[1][0]) / S;
+			y = S / 4;
+			z = (matrix[1][2] + matrix[2][1]) / S;
+		} else {
+			double S = Math.sqrt(1.0 + matrix[2][2] - matrix[0][0] - matrix[1][1]) * 2; // S=4*qz
+			w = (matrix[1][0] - matrix[0][1]) / S;
+			x = (matrix[0][2] + matrix[2][0]) / S;
+			y = (matrix[1][2] + matrix[2][1]) / S;
+			z = S / 4;
+		}
+	}
 
 	public double getX() {
 		return x;
@@ -69,10 +110,18 @@ public class Quaternion implements Encodable, Persistable {
 		return w;
 	}
 	
-	public double getYaw() {
-		return Math.toDegrees(Math.atan2(y*y, w*w));
+	public double getHeading() {
+		double heading = Math.toDegrees(Math.atan2(2*y*w - 2*x*z , 1 - 2*y*y - 2*z*z));
+		return (heading >= 0) ? heading : heading + 360;
 	}
-
+	
+	public void getRotationMatrix(double [][] rotationMatrix) {
+		Arguments.validate(rotationMatrix.length >= 3 && rotationMatrix[0].length >= 3, "Matrix must be at least 3x3!");
+		for (int i = 0; i < 3; i++) {
+			System.arraycopy(this.rotationMatrix, 0, rotationMatrix, 0, 3);
+		}
+	}
+	
 	public void setX(double x) {
 		this.x = x;
 		updateRotationMatrix();
@@ -189,7 +238,23 @@ public class Quaternion implements Encodable, Persistable {
 		w = stream.getFloat();
 		updateRotationMatrix();
 	}
-
+	
+	@Override
+	public void readMongo(MongoData data) {
+		x = data.getDouble("x", 0);
+		y = data.getDouble("y", 0);
+		z = data.getDouble("z", 0);
+		w = data.getDouble("w", 1);
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putDouble("x", x);
+		data.putDouble("y", y);
+		data.putDouble("z", z);
+		data.putDouble("w", w);
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("Quaternion[%.3f, %.3f, %.3f, %.3f]", x, y, z, w);

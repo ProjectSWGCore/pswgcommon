@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2017 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -7,26 +7,27 @@
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
  *                                                                                 *
- * This file is part of Holocore.                                                  *
+ * This file is part of PSWGCommon.                                                *
  *                                                                                 *
  * --------------------------------------------------------------------------------*
  *                                                                                 *
- * Holocore is free software: you can redistribute it and/or modify                *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
  *                                                                                 *
- * Holocore is distributed in the hope that it will be useful,                     *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
  *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
- *                                                                                 *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
 package com.projectswg.common.data;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
@@ -34,7 +35,7 @@ import com.projectswg.common.persistable.Persistable;
 
 import java.nio.charset.StandardCharsets;
 
-public class CRC implements Encodable, Persistable {
+public class CRC implements Encodable, Persistable, MongoPersistable {
 	
 	private static final int CRC_TABLE[] = {
 		0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9, 0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
@@ -70,6 +71,8 @@ public class CRC implements Encodable, Persistable {
 		0x89B8FD09, 0x8D79E0BE, 0x803AC667, 0x84FBDBD0, 0x9ABC8BD5, 0x9E7D9662, 0x933EB0BB, 0x97FFAD0C,
 		0xAFB010B1, 0xAB710D06, 0xA6322BDF, 0xA2F33668, 0xBCB4666D, 0xB8757BDA, 0xB5365D03, 0xB1F740B4
 	};
+	
+	private static final CrcDatabase DATABASE = CrcDatabase.getInstance();
 	
 	private String str;
 	private int crc;
@@ -119,13 +122,23 @@ public class CRC implements Encodable, Persistable {
 	}
 	
 	@Override
+	public void read(NetBufferStream stream) {
+		crc = stream.getInt();
+	}
+	
+	@Override
 	public void save(NetBufferStream stream) {
 		stream.addInt(crc);
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		crc = stream.getInt();
+	public void readMongo(MongoData data) {
+		crc = data.getInteger("crc", 0);
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putInteger("crc", crc);
 	}
 	
 	@Override
@@ -144,7 +157,7 @@ public class CRC implements Encodable, Persistable {
 	}
 	
 	public static String getString(int crc) {
-		return CrcDatabase.getInstance().getString(crc);
+		return DATABASE.getString(crc);
 	}
 	
 	public static int getCrc(String input) {

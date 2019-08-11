@@ -1,32 +1,33 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.encodables.oob.waypoint;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.data.encodables.oob.OutOfBandData;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage.Type;
@@ -35,9 +36,9 @@ import com.projectswg.common.data.location.Terrain;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 
-public class WaypointPackage implements OutOfBandData  {
+public class WaypointPackage implements OutOfBandData, MongoPersistable {
 	
-	private final Point3D position;
+	private Point3D position;
 	
 	private long objectId;
 	private Terrain terrain;
@@ -96,6 +97,10 @@ public class WaypointPackage implements OutOfBandData  {
 	public void setTerrain(Terrain terrain) {
 		this.terrain = terrain;
 	}
+
+	public void setPosition(Point3D position) {
+		this.position = position;
+	}
 	
 	public void setCellId(long cellId) {
 		this.cellId = cellId;
@@ -143,7 +148,29 @@ public class WaypointPackage implements OutOfBandData  {
 	public int getLength() {
 		return 42 + name.length() * 2;
 	}
-
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putLong("objectId", objectId);
+		data.putLong("cellId", cellId);
+		data.putDocument("position", position);
+		data.putString("terrain", terrain.name());
+		data.putString("name", name);
+		data.putInteger("color", color.getValue());
+		data.putBoolean("active", active);
+	}
+	
+	@Override
+	public void readMongo(MongoData data) {
+		objectId = data.getLong("objectId", 0);
+		cellId = data.getLong("cellId", 0);
+		data.getDocument("position", position);
+		terrain = Terrain.valueOf(data.getString("terrain", "GONE"));
+		name = data.getString("name", "New Waypoint");
+		color = WaypointColor.valueOf(data.getInteger("color", WaypointColor.BLUE.getValue()));
+		active = data.getBoolean("active", true);
+	}
+	
 	@Override
 	public void save(NetBufferStream stream) {
 		stream.addByte(0);

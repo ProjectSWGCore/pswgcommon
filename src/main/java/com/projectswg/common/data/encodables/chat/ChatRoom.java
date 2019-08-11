@@ -1,33 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015 /// Project SWG /// www.projectswg.com
- *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.
- * Our goal is to create an emulator which will provide a server for players to
- * continue playing a game similar to the one they used to play. We are basing
- * it on the final publish of the game prior to end-game events.
- *
- * This file is part of Holocore.
- *
- * --------------------------------------------------------------------------------
- *
- * Holocore is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * Holocore is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>
- ******************************************************************************/
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.encodables.chat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.projectswg.common.encoding.CachedEncode;
 import com.projectswg.common.encoding.Encodable;
@@ -38,6 +40,10 @@ import com.projectswg.common.persistable.Persistable;
 public class ChatRoom implements Encodable, Persistable {
 	
 	private final CachedEncode cache;
+	private final Set<ChatAvatar> moderators;
+	private final Set<ChatAvatar> invited;
+	private final Set<ChatAvatar> banned;
+	private final Set<ChatAvatar> members;
 	
 	private int id;
 	private int type;
@@ -45,22 +51,22 @@ public class ChatRoom implements Encodable, Persistable {
 	private ChatAvatar owner;
 	private ChatAvatar creator;
 	private String title;
-	private List<ChatAvatar> moderators;
-	private List<ChatAvatar> invited;
 	private boolean moderated; // No one but moderators can talk
-	private List<ChatAvatar> banned;
-	// Members are only actually apart of a room when they're "in the room", so we don't need to save this info
-	// as each player will automatically re-join the room based on their joined channels list
-	private transient List<ChatAvatar> members;
 	
 	public ChatRoom() {
 		this.cache = new CachedEncode(this::encodeImpl);
-		owner = new ChatAvatar();
-		creator = new ChatAvatar();
-		moderators = new ArrayList<>();
-		invited = new ArrayList<>();
-		members = new ArrayList<>();
-		banned = new ArrayList<>();
+		this.moderators = ConcurrentHashMap.newKeySet();
+		this.invited = ConcurrentHashMap.newKeySet();
+		this.members = ConcurrentHashMap.newKeySet();
+		this.banned = ConcurrentHashMap.newKeySet();
+		
+		this.id = 0;
+		this.type = 0;
+		this.path = null;
+		this.owner = new ChatAvatar();
+		this.creator = new ChatAvatar();
+		this.title = null;
+		this.moderated = false;
 	}
 	
 	public int getId() {
@@ -118,11 +124,11 @@ public class ChatRoom implements Encodable, Persistable {
 	}
 	
 	public List<ChatAvatar> getModerators() {
-		return moderators;
+		return new ArrayList<>(moderators);
 	}
 	
 	public List<ChatAvatar> getInvited() {
-		return invited;
+		return new ArrayList<>(invited);
 	}
 	
 	public boolean isModerated() {
@@ -135,7 +141,7 @@ public class ChatRoom implements Encodable, Persistable {
 	}
 	
 	public List<ChatAvatar> getMembers() {
-		return members;
+		return new ArrayList<>(members);
 	}
 	
 	public boolean isPublic() {
@@ -148,7 +154,7 @@ public class ChatRoom implements Encodable, Persistable {
 	}
 	
 	public List<ChatAvatar> getBanned() {
-		return banned;
+		return new ArrayList<>(banned);
 	}
 	
 	public ChatResult canJoinRoom(ChatAvatar avatar, boolean ignoreInvitation) {
@@ -239,8 +245,10 @@ public class ChatRoom implements Encodable, Persistable {
 		owner = data.getEncodable(ChatAvatar.class);
 		creator = data.getEncodable(ChatAvatar.class);
 		title = data.getUnicode();
-		moderators = data.getList(ChatAvatar.class);
-		invited = data.getList(ChatAvatar.class);
+		moderators.clear();
+		moderators.addAll(data.getList(ChatAvatar.class));
+		invited.clear();
+		invited.addAll(data.getList(ChatAvatar.class));
 	}
 	
 	@Override

@@ -1,34 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015 /// Project SWG /// www.projectswg.com
- *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.
- * Our goal is to create an emulator which will provide a server for players to
- * continue playing a game similar to the one they used to play. We are basing
- * it on the final publish of the game prior to end-game events.
- *
- * This file is part of Holocore.
- *
- * --------------------------------------------------------------------------------
- *
- * Holocore is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * Holocore is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>
- ******************************************************************************/
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.swgfile.visitors;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.data.swgfile.ClientData;
@@ -58,6 +59,8 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 
 		int version = versionForm.getVersionFromTag();
 		switch(version) {
+			case 1:
+			case 2:
 			case 3:
 				readVersion3(iff);
 				break;
@@ -198,11 +201,15 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 		
 		private String name;
 		private String appearance;
+		private List<Integer> portalIndices;
 		private List<RenderData> renderDataList;
 		private RenderData renderData;
 		private boolean isSingleRenderData;
 		
 		public Cell(SWGFile iff) {
+			this.name = null;
+			this.appearance = null;
+			this.portalIndices = new ArrayList<>();
 			renderDataList = new ArrayList<>();
 			renderData = new RenderData();
 			isSingleRenderData = true;
@@ -220,11 +227,16 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 			int version = versionForm.getVersionFromTag();
 			switch(version) {
 				case 3: readVersion3(iff); break;
+				case 4:
 				case 5: readVersion5(iff); break;
 				default: System.err.println("Don't know how to handle version " + version + " CELL " + iff.getFileName());
 			}
 
 			iff.exitForm();
+		}
+		
+		public List<Integer> getPortals() {
+			return portalIndices;
 		}
 		
 		public RenderData getRenderData() {
@@ -249,7 +261,7 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 		
 		private void readVersion3(SWGFile iff) {
 			IffNode dataChunk = iff.enterChunk("DATA");
-			dataChunk.readInt(); // cellPortals
+			int portalCount = dataChunk.readInt();
 			dataChunk.readBoolean(); // canSeeParentCell
 			appearance = dataChunk.readString();
 			ClientData data = ClientFactory.getInfoFromFile(appearance);
@@ -261,11 +273,13 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 				renderDataList.addAll(((RenderableData) data).getAllRenderData());
 				isSingleRenderData = false;
 			}
+			
+			readPortals(iff, portalCount);
 		}
 		
 		private void readVersion5(SWGFile iff) {
 			IffNode dataChunk = iff.enterChunk("DATA");
-			dataChunk.readInt(); // cellPortals
+			int portalCount = dataChunk.readInt();
 			dataChunk.readBoolean(); // canSeeParentCell
 			name = dataChunk.readString();
 			appearance = dataChunk.readString();
@@ -277,6 +291,35 @@ public class PortalLayoutData extends ClientData implements RenderableData {
 				renderDataList.clear();
 				renderDataList.addAll(((RenderableData) data).getAllRenderData());
 				isSingleRenderData = false;
+			}
+			
+			readPortals(iff, portalCount);
+		}
+		
+		private void readPortals(SWGFile iff, int portalCount) {
+			for (int i = 0; i < portalCount; i++) {
+				iff.enterForm("PRTL");
+				IffNode chunk = iff.enterNextChunk();
+				int portalIndex;
+				switch (chunk.getVersionFromTag()) {
+					case 1:
+						portalIndex = chunk.readInt();
+						break;
+					case 2:
+					case 3:
+					case 4:
+						chunk.readByte(); // passable
+						portalIndex = chunk.readInt();
+						break;
+					case 5:
+					default:
+						chunk.readByte(); // disabled
+						chunk.readByte(); // passable
+						portalIndex = chunk.readInt();
+						break;
+				}
+				portalIndices.add(portalIndex);
+				iff.exitForm();
 			}
 		}
 		

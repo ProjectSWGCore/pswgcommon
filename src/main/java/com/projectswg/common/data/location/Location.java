@@ -1,38 +1,41 @@
 /***********************************************************************************
-* Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
-*                                                                                  *
-* ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
-* July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
-* Our goal is to create an emulator which will provide a server for players to     *
-* continue playing a game similar to the one they used to play. We are basing      *
-* it on the final publish of the game prior to end-game events.                    *
-*                                                                                  *
-* This file is part of Holocore.                                                   *
-*                                                                                  *
-* -------------------------------------------------------------------------------- *
-*                                                                                  *
-* Holocore is free software: you can redistribute it and/or modify                 *
-* it under the terms of the GNU Affero General Public License as                   *
-* published by the Free Software Foundation, either version 3 of the               *
-* License, or (at your option) any later version.                                  *
-*                                                                                  *
-* Holocore is distributed in the hope that it will be useful,                      *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
-* GNU Affero General Public License for more details.                              *
-*                                                                                  *
-* You should have received a copy of the GNU Affero General Public License         *
-* along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
-*                                                                                  *
-***********************************************************************************/
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.location;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
 
-public class Location implements Encodable, Persistable {
+public class Location implements Encodable, Persistable, MongoPersistable {
+	
+	private static final Location ZERO = new Location(0, 0, 0, Terrain.GONE);
 	
 	private final Point3D point;
 	private final Quaternion orientation;
@@ -126,7 +129,11 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public boolean isWithinFlatDistance(Point3D target, double radius) {
-		return square(getX() - target.getX()) + square(getZ() - target.getZ()) <= square(radius);
+		double mX = getX(), mZ = getZ();
+		double tX = target.getX(), tZ = target.getZ();
+		if (Math.abs(mX - tX) >= radius || Math.abs(mZ - tZ) >= radius)
+			return false;
+		return square(mX - tX) + square(mZ - tZ) <= square(radius);
 	}
 	
 	public double getSpeed(Location l, double deltaTime) {
@@ -135,7 +142,15 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	public double getYaw() {
-		return orientation.getYaw();
+		return orientation.getHeading();
+	}
+	
+	public double getHeadingTo(Location target) {
+		return (Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360;
+	}
+	
+	public double getHeadingTo(Point3D target) {
+		return (Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360;
 	}
 	
 	private static double square(double x) {
@@ -231,6 +246,21 @@ public class Location implements Encodable, Persistable {
 	}
 	
 	@Override
+	public void readMongo(MongoData data) {
+		data.getDocument("orientation", orientation);
+		data.getDocument("point", point);
+		terrain = data.containsKey("terrain") ? Terrain.valueOf(data.getString("terrain")) : null;
+	}
+	
+	@Override
+	public void saveMongo(MongoData data) {
+		data.putDocument("orientation", orientation);
+		data.putDocument("point", point);
+		if (terrain != null)
+			data.putString("terrain", terrain.name());
+	}
+	
+	@Override
 	public String toString() {
 		return String.format("Location[TRN=%s, %s %s]", terrain, point, orientation);
 	}
@@ -261,6 +291,10 @@ public class Location implements Encodable, Persistable {
 	
 	public static LocationBuilder builder(Location location) {
 		return new LocationBuilder(location);
+	}
+	
+	public static Location zero() {
+		return ZERO;
 	}
 	
 	public static class LocationBuilder {
@@ -314,7 +348,7 @@ public class Location implements Encodable, Persistable {
 		}
 		
 		public double getYaw() {
-			return orientation.getYaw();
+			return orientation.getHeading();
 		}
 		
 		public boolean isWithinDistance(Location l, double x, double y, double z) {

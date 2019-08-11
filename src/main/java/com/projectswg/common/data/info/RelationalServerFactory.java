@@ -1,51 +1,45 @@
-/************************************************************************************
- * Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
- *                                                                                  *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
- * Our goal is to create an emulator which will provide a server for players to     *
- * continue playing a game similar to the one they used to play. We are basing      *
- * it on the final publish of the game prior to end-game events.                    *
- *                                                                                  *
- * This file is part of Holocore.                                                   *
- *                                                                                  *
- * -------------------------------------------------------------------------------- *
- *                                                                                  *
- * Holocore is free software: you can redistribute it and/or modify                 *
- * it under the terms of the GNU Affero General Public License as                   *
- * published by the Free Software Foundation, either version 3 of the               *
- * License, or (at your option) any later version.                                  *
- *                                                                                  *
- * Holocore is distributed in the hope that it will be useful,                      *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
- * GNU Affero General Public License for more details.                              *
- *                                                                                  *
- * You should have received a copy of the GNU Affero General Public License         *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
- *                                                                                  *
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
 package com.projectswg.common.data.info;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import me.joshlarson.jlcommon.log.Log;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import com.projectswg.common.debug.Log;
 
 public class RelationalServerFactory {
 	
 	private static final RelationalServerFactory INSTANCE = new RelationalServerFactory();
-	private static final AtomicReference<String> BASE_PATH = new AtomicReference<>("");
 	private static final Map <String, Object> FILE_LOAD_LOCKING = new HashMap<>();
+	private static final String BASE_PATH = "serverdata/";
 	
 	public static RelationalServerData getServerData(String file, String ... tables) {
 		return INSTANCE.getData(file, tables);
@@ -55,18 +49,14 @@ public class RelationalServerFactory {
 		return INSTANCE.getDatabase(file);
 	}
 	
-	public static void setBasePath(String basePath) {
-		BASE_PATH.set(basePath);
-	}
-	
 	private RelationalServerData getData(String file, String ... tables) {
 		if (!file.endsWith(".db"))
 			throw new IllegalArgumentException("File path for database must end in .db!");
 		file = file.replace('/', File.separatorChar);
 		final Object lock = getFileLocking(file);
 		synchronized (lock) {
-			File f = new File(BASE_PATH + file);
-			RelationalServerData data = new RelationalServerData(BASE_PATH + file);
+			File f = new File(BASE_PATH, file);
+			RelationalServerData data = new RelationalServerData(f.getPath());
 			if (loadServerData(data, f, tables))
 				return data;
 			return null;
@@ -91,8 +81,8 @@ public class RelationalServerFactory {
 			throw new IllegalArgumentException("File path for database must end in .db!");
 		final Object lock = getFileLocking(file);
 		synchronized (lock) {
-			File f = new File(BASE_PATH + file);
-			RelationalServerData data = new RelationalServerData(BASE_PATH + file);
+			File f = new File(BASE_PATH, file);
+			RelationalServerData data = new RelationalServerData(f.getPath());
 			try {
 				String [] commands = getCommandsFromSchema(f.getPath().substring(0, f.getPath().length()-3) + ".sql");
 				ParserData parserData = new ParserData();

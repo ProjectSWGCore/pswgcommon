@@ -1,6 +1,31 @@
-package com.projectswg.common.process;
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 
-import com.projectswg.common.debug.Assert;
+package com.projectswg.common.process;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,19 +65,22 @@ public class JarProcessBuilder {
 	}
 	
 	public JarProcessBuilder setMinMemory(long minMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.minMemory = unit.getBytes(minMemory);
 		return this;
 	}
 	
 	public JarProcessBuilder setMaxMemory(long maxMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.maxMemory = unit.getBytes(maxMemory);
 		return this;
 	}
 	
 	public JarProcessBuilder setMemory(long minMemory, long maxMemory, MemoryUnit unit) {
-		Assert.test(unit == MemoryUnit.KILOBYTES || unit == MemoryUnit.MEGABYTES || unit == MemoryUnit.GIGABYTES, "Unsupported memory unit!");
+		if (unit != MemoryUnit.KILOBYTES && unit != MemoryUnit.MEGABYTES && unit != MemoryUnit.GIGABYTES)
+			throw new IllegalArgumentException("Unsupported memory unit!");
 		this.minMemory = unit.getBytes(minMemory);
 		this.maxMemory = unit.getBytes(maxMemory);
 		return this;

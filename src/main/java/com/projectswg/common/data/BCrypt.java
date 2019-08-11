@@ -1,46 +1,34 @@
-/************************************************************************************
- * Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
- *                                                                                  *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
- * Our goal is to create an emulator which will provide a server for players to     *
- * continue playing a game similar to the one they used to play. We are basing      *
- * it on the final publish of the game prior to end-game events.                    *
- *                                                                                  *
- * This file is part of Holocore.                                                   *
- *                                                                                  *
- * -------------------------------------------------------------------------------- *
- *                                                                                  *
- * Holocore is free software: you can redistribute it and/or modify                 *
- * it under the terms of the GNU Affero General Public License as                   *
- * published by the Free Software Foundation, either version 3 of the               *
- * License, or (at your option) any later version.                                  *
- *                                                                                  *
- * Holocore is distributed in the hope that it will be useful,                      *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
- * GNU Affero General Public License for more details.                              *
- *                                                                                  *
- * You should have received a copy of the GNU Affero General Public License         *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
- *                                                                                  *
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-// Copyright (c) 2006 Damien Miller <djm@mindrot.org>
-//
-// Permission to use, copy, modify, and distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-//
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
 package com.projectswg.common.data;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 /**
@@ -95,14 +83,14 @@ public class BCrypt {
 	private static final int BLOWFISH_NUM_ROUNDS = 16;
 
 	// Initial contents of key schedule
-	private static final int P_orig[] = {
+	private static final int[] P_orig = {
 		0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
 		0xa4093822, 0x299f31d0, 0x082efa98, 0xec4e6c89,
 		0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c,
 		0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917,
 		0x9216d5d9, 0x8979fb1b
 	};
-	private static final int S_orig[] = {
+	private static final int[] S_orig = {
 		0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7,
 		0xb8e1afed, 0x6a267e96, 0xba7c9045, 0xf12c7f99,
 		0x24a19947, 0xb3916cf7, 0x0801f2e2, 0x858efc16,
@@ -364,13 +352,13 @@ public class BCrypt {
 	// bcrypt IV: "OrpheanBeholderScryDoubt". The C implementation calls
 	// this "ciphertext", but it is really plaintext or an IV. We keep
 	// the name to make code comparison easier.
-	static private final int bf_crypt_ciphertext[] = {
+	static private final int[] bf_crypt_ciphertext = {
 		0x4f727068, 0x65616e42, 0x65686f6c,
 		0x64657253, 0x63727944, 0x6f756274
 	};
 
 	// Table for Base64 encoding
-	static private final char base64_code[] = {
+	static private final char[] base64_code = {
 		'.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 		'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
 		'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
@@ -380,7 +368,7 @@ public class BCrypt {
 	};
 
 	// Table for Base64 decoding
-	static private final byte index_64[] = {
+	static private final byte[] index_64 = {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -397,8 +385,8 @@ public class BCrypt {
 	};
 
 	// Expanded Blowfish key
-	private int P[];
-	private int S[];
+	private int[] P = null;
+	private int[] S = null;
 
 	/**
 	 * Encode a byte array using bcrypt's slightly-modified base64
@@ -410,10 +398,10 @@ public class BCrypt {
 	 * @return	base64-encoded string
 	 * @exception IllegalArgumentException if the length is invalid
 	 */
-	private static String encode_base64(byte d[], int len)
+	private static String encode_base64(byte[] d, int len)
 		throws IllegalArgumentException {
 		int off = 0;
-		StringBuffer rs = new StringBuffer();
+		StringBuilder rs = new StringBuilder();
 		int c1, c2;
 
 		if (len <= 0 || len > d.length)
@@ -459,20 +447,17 @@ public class BCrypt {
 	 * Decode a string encoded using bcrypt's base64 scheme to a
 	 * byte array. Note that this is *not* compatible with
 	 * the standard MIME-base64 encoding.
-	 * @param s	the string to decode
-	 * @param maxolen	the maximum number of bytes to decode
+	 * @param s    the string to decode
 	 * @return	an array containing the decoded bytes
 	 * @throws IllegalArgumentException if maxolen is invalid
 	 */
-	private static byte[] decode_base64(String s, int maxolen)
+	private static byte[] decode_base64(String s)
 		throws IllegalArgumentException {
-		StringBuffer rs = new StringBuffer();
+		StringBuilder rs = new StringBuilder();
 		int off = 0, slen = s.length(), olen = 0;
-		byte ret[];
+		final int maxolen = BCRYPT_SALT_LEN;
+		byte[] ret;
 		byte c1, c2, c3, c4, o;
-
-		if (maxolen <= 0)
-			throw new IllegalArgumentException ("Invalid maxolen");
 
 		while (off < slen - 1 && olen < maxolen) {
 			c1 = char64(s.charAt(off++));
@@ -511,7 +496,7 @@ public class BCrypt {
 	 * @param lr	an array containing the two 32-bit half blocks
 	 * @param off	the position in the array of the blocks
 	 */
-	private final void encipher(int lr[], int off) {
+	private void encipher(int[] lr, int off) {
 		int i, n, l = lr[off], r = lr[off + 1];
 
 		l ^= P[0];
@@ -541,7 +526,7 @@ public class BCrypt {
 	 * current offset into data
 	 * @return	the next word of material from data
 	 */
-	private static int streamtoword(byte data[], int offp[]) {
+	private static int streamtoword(byte[] data, int[] offp) {
 		int i;
 		int word = 0;
 		int off = offp[0];
@@ -559,18 +544,18 @@ public class BCrypt {
 	 * Initialise the Blowfish key schedule
 	 */
 	private void init_key() {
-		P = (int[])P_orig.clone();
-		S = (int[])S_orig.clone();
+		P = P_orig.clone();
+		S = S_orig.clone();
 	}
 
 	/**
 	 * Key the Blowfish cipher
 	 * @param key	an array containing the key
 	 */
-	private void key(byte key[]) {
+	private void key(byte[] key) {
 		int i;
-		int koffp[] = { 0 };
-		int lr[] = { 0, 0 };
+		int[] koffp = { 0 };
+		int[] lr = { 0, 0 };
 		int plen = P.length, slen = S.length;
 
 		for (i = 0; i < plen; i++)
@@ -596,10 +581,11 @@ public class BCrypt {
 	 * @param data	salt information
 	 * @param key	password information
 	 */
-	private void ekskey(byte data[], byte key[]) {
+	private void ekskey(byte[] data, byte[] key) {
 		int i;
-		int koffp[] = { 0 }, doffp[] = { 0 };
-		int lr[] = { 0, 0 };
+		int[] koffp = { 0 };
+		int[] doffp = { 0 };
+		int[] lr = { 0, 0 };
 		int plen = P.length, slen = S.length;
 
 		for (i = 0; i < plen; i++)
@@ -632,11 +618,10 @@ public class BCrypt {
 	 * @param cdata         the plaintext to encrypt
 	 * @return	an array containing the binary hashed password
 	 */
-	public byte[] crypt_raw(byte password[], byte salt[], int log_rounds,
-	    int cdata[]) {
+	public byte[] crypt_raw(byte[] password, byte[] salt, int log_rounds, int[] cdata) {
 		int rounds, i, j;
 		int clen = cdata.length;
-		byte ret[];
+		byte[] ret;
 
 		if (log_rounds < 4 || log_rounds > 30)
 			throw new IllegalArgumentException ("Bad number of rounds");
@@ -676,16 +661,19 @@ public class BCrypt {
 	public static String hashpw(String password, String salt) {
 		BCrypt B;
 		String real_salt;
-		byte passwordb[], saltb[], hashed[];
-		char minor = (char)0;
-		int rounds, off = 0;
-		StringBuffer rs = new StringBuffer();
+		byte[] passwordb;
+		byte[] saltb;
+		byte[] hashed;
+		char minor;
+		int rounds, off;
+		StringBuilder rs = new StringBuilder();
 
 		if (salt.charAt(0) != '$' || salt.charAt(1) != '2')
 			throw new IllegalArgumentException ("Invalid salt version");
-		if (salt.charAt(2) == '$')
+		if (salt.charAt(2) == '$') {
 			off = 3;
-		else {
+			minor = (char) 0;
+		} else {
 			minor = salt.charAt(2);
 			if (minor != 'a' || salt.charAt(3) != '$')
 				throw new IllegalArgumentException ("Invalid salt revision");
@@ -698,17 +686,12 @@ public class BCrypt {
 		rounds = Integer.parseInt(salt.substring(off, off + 2));
 
 		real_salt = salt.substring(off + 3, off + 25);
-		try {
-			passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes("UTF-8");
-		} catch (UnsupportedEncodingException uee) {
-			throw new AssertionError("UTF-8 is not supported");
-		}
-
-		saltb = decode_base64(real_salt, BCRYPT_SALT_LEN);
+		passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes(StandardCharsets.UTF_8);
+		
+		saltb = decode_base64(real_salt);
 
 		B = new BCrypt();
-		hashed = B.crypt_raw(passwordb, saltb, rounds,
-		    (int[])bf_crypt_ciphertext.clone());
+		hashed = B.crypt_raw(passwordb, saltb, rounds, bf_crypt_ciphertext.clone());
 
 		rs.append("$2");
 		if (minor >= 'a')
@@ -720,7 +703,7 @@ public class BCrypt {
 			throw new IllegalArgumentException(
 			    "rounds exceeds maximum (30)");
 		}
-		rs.append(Integer.toString(rounds));
+		rs.append(rounds);
 		rs.append("$");
 		rs.append(encode_base64(saltb, saltb.length));
 		rs.append(encode_base64(hashed,
@@ -737,8 +720,8 @@ public class BCrypt {
 	 * @return	an encoded salt value
 	 */
 	public static String gensalt(int log_rounds, SecureRandom random) {
-		StringBuffer rs = new StringBuffer();
-		byte rnd[] = new byte[BCRYPT_SALT_LEN];
+		StringBuilder rs = new StringBuilder();
+		byte[] rnd = new byte[BCRYPT_SALT_LEN];
 
 		random.nextBytes(rnd);
 
@@ -749,7 +732,7 @@ public class BCrypt {
 			throw new IllegalArgumentException(
 			    "log_rounds exceeds maximum (30)");
 		}
-		rs.append(Integer.toString(log_rounds));
+		rs.append(log_rounds);
 		rs.append("$");
 		rs.append(encode_base64(rnd, rnd.length));
 		return rs.toString();
@@ -784,15 +767,9 @@ public class BCrypt {
 	 * @return	true if the passwords match, false otherwise
 	 */
 	public static boolean checkpw(String plaintext, String hashed) {
-		byte hashed_bytes[];
-		byte try_bytes[];
-		try {
-			String try_pw = hashpw(plaintext, hashed);
-			hashed_bytes = hashed.getBytes("UTF-8");
-			try_bytes = try_pw.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException uee) {
-			return false;
-		}
+		String try_pw = hashpw(plaintext, hashed);
+		byte[] hashed_bytes = hashed.getBytes(StandardCharsets.UTF_8);
+		byte[] try_bytes = try_pw.getBytes(StandardCharsets.UTF_8);
 		if (hashed_bytes.length != try_bytes.length)
 			return false;
 		byte ret = 0;

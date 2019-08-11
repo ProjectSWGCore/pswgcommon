@@ -1,29 +1,28 @@
-/************************************************************************************
- * Copyright (c) 2015 /// Project SWG /// www.projectswg.com                        *
- *                                                                                  *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on           *
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies.  *
- * Our goal is to create an emulator which will provide a server for players to     *
- * continue playing a game similar to the one they used to play. We are basing      *
- * it on the final publish of the game prior to end-game events.                    *
- *                                                                                  *
- * This file is part of Holocore.                                                   *
- *                                                                                  *
- * -------------------------------------------------------------------------------- *
- *                                                                                  *
- * Holocore is free software: you can redistribute it and/or modify                 *
- * it under the terms of the GNU Affero General Public License as                   *
- * published by the Free Software Foundation, either version 3 of the               *
- * License, or (at your option) any later version.                                  *
- *                                                                                  *
- * Holocore is distributed in the hope that it will be useful,                      *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of                   *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                    *
- * GNU Affero General Public License for more details.                              *
- *                                                                                  *
- * You should have received a copy of the GNU Affero General Public License         *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.                *
- *                                                                                  *
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
 package com.projectswg.common.data;
 
@@ -37,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.projectswg.common.debug.Log;
+import me.joshlarson.jlcommon.log.Log;
 
 public class CrcDatabase {
 	
@@ -69,22 +68,18 @@ public class CrcDatabase {
 	}
 	
 	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("/crc_database.csv")) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		try (InputStream is = getClass().getResourceAsStream("/com/projectswg/common/data/crc_database.csv")) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				processLine(line);
+				int index = line.indexOf(',');
+				assert index > 0 : "invalid line in CRC csv";
+				int crc = Integer.parseInt(line.substring(0, index), 16);
+				crcTable.put(crc, line.substring(index+1).intern());
 			}
 		} catch (IOException e) {
 			Log.e(e);
 		}
-	}
-	
-	private void processLine(String line) {
-		int index = line.indexOf(',');
-		int crc = Integer.parseInt(line.substring(0, index), 16);
-		String str = line.substring(index+1).intern();
-		crcTable.put(crc, str);
 	}
 	
 	public static CrcDatabase getInstance() {

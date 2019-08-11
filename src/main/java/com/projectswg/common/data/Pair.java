@@ -1,9 +1,32 @@
+/***********************************************************************************
+ * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
+ * Our goal is to create an emulator which will provide a server for players to    *
+ * continue playing a game similar to the one they used to play. We are basing     *
+ * it on the final publish of the game prior to end-game events.                   *
+ *                                                                                 *
+ * This file is part of PSWGCommon.                                                *
+ *                                                                                 *
+ * --------------------------------------------------------------------------------*
+ *                                                                                 *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * it under the terms of the GNU Affero General Public License as                  *
+ * published by the Free Software Foundation, either version 3 of the              *
+ * License, or (at your option) any later version.                                 *
+ *                                                                                 *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ * GNU Affero General Public License for more details.                             *
+ *                                                                                 *
+ * You should have received a copy of the GNU Affero General Public License        *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
+
 package com.projectswg.common.data;
 
-import java.util.Objects;
-
-import com.projectswg.common.debug.Assert;
-import com.projectswg.common.debug.Log;
 import com.projectswg.common.encoding.CachedEncode;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.encoding.Encoder;
@@ -11,6 +34,9 @@ import com.projectswg.common.encoding.StringType;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.Persistable;
+import me.joshlarson.jlcommon.log.Log;
+
+import java.util.Objects;
 
 public class Pair<T, S> implements Encodable, Persistable {
 	
@@ -25,8 +51,10 @@ public class Pair<T, S> implements Encodable, Persistable {
 	
 	private Pair(T left, S right, Class<T> leftClass, Class<S> rightClass, StringType leftType, StringType rightType) {
 		// Final checks - has to be either one or the other. These ensure other assumptions in the class will succeed
-		Assert.test((leftType == null && !(left instanceof String) && !leftClass.equals(String.class)) ^ (leftType != null && (left instanceof String) && leftClass.equals(String.class)));
-		Assert.test((rightType == null && !(right instanceof String) && !rightClass.equals(String.class)) ^ (rightType != null && (right instanceof String) && rightClass.equals(String.class)));
+		if ((leftType == null && !(left instanceof String) && !leftClass.equals(String.class)) == (leftType != null && (left instanceof String) && leftClass.equals(String.class)))
+			throw new IllegalArgumentException("Invalid left arguments");
+		if ((rightType == null && !(right instanceof String) && !rightClass.equals(String.class)) == (rightType != null && (right instanceof String) && rightClass.equals(String.class)))
+			throw new IllegalArgumentException("Invalid right arguments");
 		this.leftClass = leftClass;
 		this.rightClass = rightClass;
 		this.leftType = leftType;
@@ -150,8 +178,10 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T, S> Pair<T, S> createPair(T left, S right, Class<T> leftClass, Class<S> rightClass) {
-		Assert.test(!(left instanceof String));
-		Assert.test(!(right instanceof String));
+		if (!(left instanceof String))
+			throw new IllegalArgumentException("Invalid left argument");
+		if (!(right instanceof String))
+			throw new IllegalArgumentException("Invalid right argument");
 		return new Pair<>(left, right, leftClass, rightClass, null, null);
 	}
 	
@@ -162,7 +192,8 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T> Pair<String, T> createPair(String left, T right, StringType type, Class<T> rightClass) {
-		Assert.test(!(right instanceof String));
+		if (!(right instanceof String))
+			throw new IllegalArgumentException("Invalid right argument");
 		return new Pair<>(left, right, String.class, rightClass, type, null);
 	}
 	
@@ -173,7 +204,8 @@ public class Pair<T, S> implements Encodable, Persistable {
 	}
 	
 	public static <T> Pair<T, String> createPair(T left, String right, Class<T> leftClass, StringType type) {
-		Assert.test(!(left instanceof String));
+		if (!(left instanceof String))
+			throw new IllegalArgumentException("Invalid left argument");
 		return new Pair<>(left, right, leftClass, String.class, null, type);
 	}
 	
