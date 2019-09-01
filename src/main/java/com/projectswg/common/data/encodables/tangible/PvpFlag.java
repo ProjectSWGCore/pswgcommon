@@ -29,15 +29,18 @@ package com.projectswg.common.data.encodables.tangible;
 import java.util.EnumSet;
 
 public enum PvpFlag {
-	ATTACKABLE		(1 << 0),
-	AGGRESSIVE		(1 << 1),
-	OVERT			(1 << 2),
-	TEF				(1 << 3),
-	PLAYER			(1 << 4),
-	ENEMY			(1 << 5),
-	GOING_OVERT		(1 << 6),
-	GOING_COVERT	(1 << 7),
-	DUEL			(1 << 8);
+	/** A target you can attack */
+	YOU_CAN_ATTACK	(0b000000001),
+	/** A target that can attack you */
+	CAN_ATTACK_YOU	(0b000000010),
+	OVERT			(0b000000100),
+	/** A target that has enemies */
+	TEF				(0b000001000),
+	PLAYER			(0b000010000),
+	ENEMY			(0b000100000),
+	GOING_OVERT		(0b001000000),
+	GOING_COVERT	(0b010000000),
+	CAN_HELP		(0b100000000);
 	
 	private int bitmask;
 	
