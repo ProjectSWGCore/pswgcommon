@@ -146,7 +146,7 @@ public class Location implements Encodable, Persistable, MongoPersistable {
 	}
 	
 	public double getHeadingTo(Location target) {
-		return (Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360;
+		return ((360 - Math.toDegrees(Math.atan2(target.getX()-getX(), target.getZ()-getZ())) + 360) % 360);
 	}
 	
 	public double getHeadingTo(Point3D target) {
