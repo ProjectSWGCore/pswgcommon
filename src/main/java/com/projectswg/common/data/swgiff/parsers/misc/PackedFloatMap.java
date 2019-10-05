@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2019 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -7,86 +7,76 @@
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
  *                                                                                 *
- * This file is part of PSWGCommon.                                                *
+ * This file is part of Holocore.                                                  *
  *                                                                                 *
  * --------------------------------------------------------------------------------*
  *                                                                                 *
- * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * Holocore is free software: you can redistribute it and/or modify                *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
  *                                                                                 *
- * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * Holocore is distributed in the hope that it will be useful,                     *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
  *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
-package com.projectswg.common.data.swgfile;
+package com.projectswg.common.data.swgiff.parsers.misc;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
+import com.projectswg.common.data.swgiff.IffChunk;
+import com.projectswg.common.data.swgiff.IffForm;
+import com.projectswg.common.data.swgiff.parsers.SWGParser;
 
-import me.joshlarson.jlcommon.log.Log;
-
-
-/**
- * Created by Waverunner on 6/9/2015
- */
-public abstract class DataFactory {
+public class PackedFloatMap implements SWGParser {
 	
-	protected ClientData readFile(String filename) {
-		return readFile(new File(getFolder() + filename));
+	private PackedIntegerMap map;
+	private double resolution;
+	
+	public PackedFloatMap() {
+		this.map = null;
+		this.resolution = 0;
 	}
 	
-	protected ClientData readFile(File file) {
-		if (!file.isFile()) {
-			return null;
-		}
-
-		SWGFile swgFile = new SWGFile();
-
-		try {
-			swgFile.read(file);
-		} catch (IOException e) {
-			if (!(e instanceof ClosedChannelException))
-				Log.e(e);
-			return null;
-		}
+	@Override
+	public void read(IffForm form) {
+		assert form.getTag().equals("PFPM");
+		assert form.getVersion() == 0;
 		
-		Log.d("Type: %s", swgFile.getType());
-		ClientData clientData = createDataObject(swgFile.getType());
-		if (clientData == null)
-			return null;
-
-		clientData.readIff(swgFile);
-		return clientData;
-	}
-
-	protected File writeFile(SWGFile swgFile, ClientData data) {
-		if (swgFile == null || data == null) {
-			Log.e("File or data objects cannot be null or empty!");
-			return null;
+		map = new PackedIntegerMap();
+		map.read(form.readForm("PIMP"));
+		
+		try (IffChunk chunk = form.readChunk("CNTL")) {
+			resolution = chunk.readFloat();
 		}
-
-		File save = new File(swgFile.getFileName());
-		data.writeIff(swgFile);
-		try {
-			swgFile.save(save);
-		} catch (IOException e) {
-			Log.e(e);
-		}
-
-		return save;
 	}
 	
-	protected abstract String getFolder();
-	protected abstract ClientData createDataObject(String type);
-	protected ClientData createDataObject(SWGFile swgFile) {
-		return createDataObject(swgFile.getType());
+	@Override
+	public IffForm write() {
+		if (map == null)
+			throw new IllegalStateException("packed integer map has not been initialized");
+		
+		IffForm pimp = map.write();
+		
+		IffChunk cntl = new IffChunk("CNTL");
+		cntl.writeFloat((float) resolution);
+		
+		return IffForm.of("PFPM", 0, pimp, cntl);
+	}
+	
+	public int getWidth() {
+		return map.getWidth();
+	}
+	
+	public int getHeight() {
+		return map.getHeight();
+	}
+	
+	public double getValue(int x, int y) {
+		PackedIntegerMap map = this.map;
+		return map == null ? 0.0 : map.getValue(x, y) * resolution;
 	}
 	
 }

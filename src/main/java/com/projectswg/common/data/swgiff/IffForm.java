@@ -176,6 +176,11 @@ public class IffForm extends IffNode {
 		printTree(this, 0);
 	}
 	
+	@Override
+	public String toString() {
+		return "IffForm["+tag+"]";
+	}
+	
 	private void printTree(IffNode node, int depth) {
 		for (int i = 0; i < depth; i++)
 			System.out.print("\t");

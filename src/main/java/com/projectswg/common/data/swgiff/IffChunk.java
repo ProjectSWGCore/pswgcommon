@@ -144,6 +144,13 @@ public class IffChunk extends IffNode {
 				.build();
 	}
 	
+	public byte [] readRemainingBytes() {
+		byte [] remaining = new byte[remaining()];
+		data.get(remaining);
+		assert !hasRemaining();
+		return remaining;
+	}
+	
 	public void writeBoolean(boolean b) {
 		writeByte((byte) (b ? 1 : 0));
 	}
@@ -228,6 +235,11 @@ public class IffChunk extends IffNode {
 		}
 	}
 	
+	public void writeRemainingBytes(byte [] data) {
+		ensureCapacity(data.length);
+		this.data.put(data);
+	}
+	
 	public void ensureCapacity(int additionalLength) {
 		if (data.remaining() >= additionalLength)
 			return;
@@ -242,4 +254,8 @@ public class IffChunk extends IffNode {
 		this.data = ByteBuffer.wrap(Arrays.copyOf(data.array(), limit));
 	}
 	
+	@Override
+	public String toString() {
+		return "IffChunk["+tag+"]";
+	}
 }
