@@ -26,23 +26,32 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.login;
 
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Vector;
-
 import com.projectswg.common.data.encodables.galaxy.Galaxy;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
+
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class LoginClusterStatus extends SWGPacket {
 	
 	public static final int CRC = getCrc("LoginClusterStatus");
 	
-	private Vector <Galaxy> galaxies;
+	private List<Galaxy> galaxies;
 	
 	public LoginClusterStatus() {
-		galaxies = new Vector<Galaxy>();
+		galaxies = new ArrayList<>();
+	}
+	
+	public LoginClusterStatus(List<Galaxy> galaxies) {
+		this.galaxies = new ArrayList<>(galaxies);
+	}
+	
+	public LoginClusterStatus(NetBuffer data) {
+		galaxies = new ArrayList<>();
+		decode(data);
 	}
 	
 	public void decode(NetBuffer data) {
@@ -96,7 +105,7 @@ public class LoginClusterStatus extends SWGPacket {
 		galaxies.add(g);
 	}
 	
-	public List <Galaxy> getGalaxies() {
+	public List<Galaxy> getGalaxies() {
 		return galaxies;
 	}
 	

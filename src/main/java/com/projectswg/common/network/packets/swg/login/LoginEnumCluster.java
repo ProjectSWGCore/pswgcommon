@@ -46,6 +46,11 @@ public class LoginEnumCluster extends SWGPacket {
 		galaxies = new Vector<Galaxy>();
 	}
 	
+	public LoginEnumCluster(List<Galaxy> galaxies, int maxCharacters) {
+		this.galaxies = new Vector<Galaxy>(galaxies);
+		this.maxCharacters = maxCharacters;
+	}
+	
 	public LoginEnumCluster(int maxCharacters) {
 		galaxies = new Vector<Galaxy>();
 		this.maxCharacters = maxCharacters;
