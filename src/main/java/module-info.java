@@ -12,6 +12,7 @@ module com.projectswg.common {
 	exports com.projectswg.common.data.customization;
 	exports com.projectswg.common.data.encodables.chat;
 	exports com.projectswg.common.data.encodables.galaxy;
+	exports com.projectswg.common.data.encodables.gcw;
 	exports com.projectswg.common.data.encodables.map;
 	exports com.projectswg.common.data.encodables.mongo;
 	exports com.projectswg.common.data.encodables.oob;

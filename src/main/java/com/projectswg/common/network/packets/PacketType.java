@@ -316,6 +316,11 @@ public enum PacketType {
 		UNACCEPT_TRANSACTION_MESSAGE			(UnAcceptTransactionMessage.CRC,			UnAcceptTransactionMessage.class),
 		VERIFY_TRADE_MESSAGE					(VerifyTradeMessage.CRC,					VerifyTradeMessage.class),
 	
+		// GCW
+		GCW_REGIONS_REQUEST_MESSAGE				(GcwRegionsReq.CRC,							GcwRegionsReq.class),
+		GCW_REGIONS_RESPONSE_MESSAGE			(GcwRegionsRsp.CRC,							GcwRegionsRsp.class),
+		GCW_GROUPS_RESPONSE_MESSAGE				(GcwGroupsRsp.CRC,							GcwGroupsRsp.class),
+	
 	UNKNOWN (0xFFFFFFFF, SWGPacket.class);
 	
 	private static final EnumLookup<Integer, PacketType> LOOKUP = new EnumLookup<>(PacketType.class, PacketType::getCrc);
