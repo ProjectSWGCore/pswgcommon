@@ -212,6 +212,7 @@ public enum PacketType {
 	PLAY_MUSIC_MESSAGE							(PlayMusicMessage.CRC,				PlayMusicMessage.class),
 	PLAY_CLIENT_EFFECT_OBJECT_MESSAGE			(PlayClientEffectObjectMessage.CRC, PlayClientEffectObjectMessage.class),
 	STOP_CLIENT_EFFECT_OBJECT_BY_LABEL			(StopClientEffectObjectByLabelMessage.CRC, 	StopClientEffectObjectByLabelMessage.class),
+	PLAY_CLIENT_EFFECT_LOC_MESSAGE				(PlayClientEffectLocMessage.CRC,	PlayClientEffectLocMessage.class),
 	EXPERTISE_REQUEST_MESSAGE					(ExpertiseRequestMessage.CRC,		ExpertiseRequestMessage.class),
 	CHANGE_ROLE_ICON_CHOICE						(ChangeRoleIconChoice.CRC,			ChangeRoleIconChoice.class),
 	SHOW_LOOT_BOX								(ShowLootBox.CRC,					ShowLootBox.class),
