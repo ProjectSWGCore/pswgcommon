@@ -112,6 +112,8 @@ import com.projectswg.common.network.packets.swg.zone.chat.ConGenericMessage;
 import com.projectswg.common.network.packets.swg.zone.chat.VoiceChatStatus;
 import com.projectswg.common.network.packets.swg.zone.combat.GrantCommandMessage;
 import com.projectswg.common.network.packets.swg.zone.deltas.DeltasMessage;
+import com.projectswg.common.network.packets.swg.zone.guild.GuildRequestMessage;
+import com.projectswg.common.network.packets.swg.zone.guild.GuildResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.insertion.ChatRoomList;
 import com.projectswg.common.network.packets.swg.zone.insertion.ChatServerStatus;
 import com.projectswg.common.network.packets.swg.zone.insertion.CmdStartScene;
@@ -218,6 +220,8 @@ public enum PacketType {
 	SHOW_LOOT_BOX								(ShowLootBox.CRC,					ShowLootBox.class),
 	CREATE_CLIENT_PATH_MESSAGE					(CreateClientPathMessage.CRC,		CreateClientPathMessage.class),
 	DESTROY_CLIENT_PATH_MESSAGE					(DestroyClientPathMessage.CRC,		DestroyClientPathMessage.class),
+	GUILD_REQUEST_MESSAGE						(GuildRequestMessage.CRC,			GuildRequestMessage.class),
+	GUILD_RESPONSE_MESSAGE						(GuildResponseMessage.CRC,			GuildResponseMessage.class),
 	
 		// Chat
 		CHAT_CREATE_ROOM						(ChatCreateRoom.CRC,				ChatCreateRoom.class),
