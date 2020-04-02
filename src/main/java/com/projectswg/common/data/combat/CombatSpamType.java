@@ -28,17 +28,33 @@ package com.projectswg.common.data.combat;
 
 import com.projectswg.common.data.EnumLookup;
 
-public enum CombatSpamFilterType {
-	ALL(0),
-	SELF(1),
-	GROUP(2),
-	NONE(3);
+/**
+ * Determines color for entries in the combat log client-side
+ */
+public enum CombatSpamType {
+	MISS(0),
+	HIT(1),
+	BLOCK(2),
+	EVADE(3),
+	REDIRECT(4),
+	COUNTER(5),
+	FUMBLE(6),
+	LIGHTSABER_BLOCK(7),
+	LIGHTSABER_COUNTER(8),
+	LIGHTSABER_COUNTER_TARGET(9),
+	GENERIC(10),
+	OUT_OF_RANGE(11),
+	POSTURE_CHANGE(12),
+	TETHERED(13),	// AI was forced to return to original location
+	MEDICAL(14),
+	BUFF(15),
+	DEBUFF(16);
 	
-	private static final EnumLookup<Integer, CombatSpamFilterType> LOOKUP = new EnumLookup<>(CombatSpamFilterType.class, CombatSpamFilterType::getNum);
+	private static final EnumLookup<Integer, CombatSpamType> LOOKUP = new EnumLookup<>(CombatSpamType.class, CombatSpamType::getNum);
 	
 	private int num;
 	
-	CombatSpamFilterType(int num) {
+	CombatSpamType(int num) {
 		this.num = num;
 	}
 	
@@ -46,7 +62,8 @@ public enum CombatSpamFilterType {
 		return num;
 	}
 	
-	public static CombatSpamFilterType getCombatSpamFilterType(int num) {
-		return LOOKUP.getEnum(num, NONE);
+	public static CombatSpamType getCombatSpamType(int num) {
+		return LOOKUP.getEnum(num, HIT);
 	}
+	
 }
