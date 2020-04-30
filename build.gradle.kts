@@ -21,6 +21,7 @@ sourceSets {
 		dependencies {
 			api(group="me.joshlarson", name="jlcommon", version="1.9.1")
 			api(group="org.bouncycastle", name="bcprov-jdk15on", version="1.60")
+			implementation(kotlin("stdlib"))
 			implementation(group="org.mongodb", name="mongodb-driver-sync", version="3.12.2")
 		}
 	}

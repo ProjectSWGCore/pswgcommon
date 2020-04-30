@@ -6,6 +6,7 @@ module com.projectswg.common {
 	requires org.mongodb.bson;
 	requires org.jetbrains.annotations;
 	requires org.bouncycastle.provider;
+	requires kotlin.stdlib;
 	
 	exports com.projectswg.common.data;
 	exports com.projectswg.common.data.combat;
