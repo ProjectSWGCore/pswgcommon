@@ -26,10 +26,8 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller.combat;
 
-import com.projectswg.common.data.combat.AttackInfo;
-import com.projectswg.common.data.combat.CombatSpamFilterType;
-import com.projectswg.common.data.combat.DamageType;
-import com.projectswg.common.data.combat.HitLocation;
+import com.projectswg.common.data.combat.*;
+import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.data.encodables.oob.StringId;
 import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.network.NetBuffer;
@@ -48,8 +46,8 @@ public class CombatSpam extends ObjectController {
 	private StringId weaponName;
 	private StringId attackName;
 	private AttackInfo info;
-	private String spamMessage;
-	private CombatSpamFilterType spamType;
+	private OutOfBandPackage spamMessage;
+	private CombatSpamType spamType;
 	
 	public CombatSpam(long objectId) {
 		super(objectId, CRC);
@@ -99,12 +97,12 @@ public class CombatSpam extends ObjectController {
 				info.setParry(data.getBoolean());
 			}
 		} else if (isMessageData(dataType)) {
-			spamMessage = data.getUnicode();
+			spamMessage = data.getEncodable(OutOfBandPackage.class);
 		}
 		info.setCritical(data.getBoolean());
 		info.setGlancing(data.getBoolean());
 		info.setProc(data.getBoolean());
-		spamType = CombatSpamFilterType.getCombatSpamFilterType(data.getInt());
+		spamType = CombatSpamType.getCombatSpamType(data.getInt());
 	}
 	
 	@Override
@@ -146,7 +144,7 @@ public class CombatSpam extends ObjectController {
 				data.addBoolean(info.isParry());
 			}
 		} else if (isMessageData(dataType)) {
-			data.addUnicode(spamMessage);
+			data.addEncodable(spamMessage);
 		}
 		data.addBoolean(info.isCritical());
 		data.addBoolean(info.isGlancing());
@@ -162,7 +160,7 @@ public class CombatSpam extends ObjectController {
 		else if (isAttackWeaponName(dataType))
 			size += 1 + attackName.getLength() + weaponName.getLength() + (info.isSuccess() ? 60 : 2);
 		else if (isMessageData(dataType))
-			size += 4 + spamMessage.length() * 2; // I have no idea what's in this struct
+			size += spamMessage.getLength();
 		return size;
 	}
 	
@@ -202,11 +200,11 @@ public class CombatSpam extends ObjectController {
 		return info;
 	}
 	
-	public String getSpamMessage() {
+	public OutOfBandPackage getSpamMessage() {
 		return spamMessage;
 	}
 	
-	public CombatSpamFilterType getSpamType() {
+	public CombatSpamType getSpamType() {
 		return spamType;
 	}
 	
@@ -246,11 +244,15 @@ public class CombatSpam extends ObjectController {
 		this.info = info;
 	}
 	
-	public void setSpamMessage(String spamMessage) {
+	public void setSpamMessage(OutOfBandPackage spamMessage) {
 		this.spamMessage = spamMessage;
 	}
 	
-	public void setSpamType(CombatSpamFilterType spamType) {
+	/**
+	 * Controls the color of the combat log entry shown in the client
+	 * @param spamType color to show this entry in
+	 */
+	public void setSpamType(CombatSpamType spamType) {
 		this.spamType = spamType;
 	}
 	
