@@ -210,6 +210,11 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public MongoData getDocument(String key) {
+		if (!doc.containsKey(key)) {
+			var mongoDoc = new Document();
+			doc.put(key, mongoDoc);
+			return new MongoData(mongoDoc);
+		}
 		return new MongoData(doc.get(key, Document.class));
 	}
 	
