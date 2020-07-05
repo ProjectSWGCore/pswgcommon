@@ -130,6 +130,7 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x04BC: return new ShowLootBox(data);
 			case 0x04C5: return new IntendedTarget(data);
 			case 0x00F5: return new MissionListRequest(data);
+			case 0x00F9: return new MissionAcceptRequest(data);
 			case 0x041C: return new JTLTerminalSharedMessage(data);
 			case 0x0115: return new SecureTrade(data);
 		}
