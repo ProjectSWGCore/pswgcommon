@@ -38,6 +38,7 @@ public class MissionListRequest extends ObjectController{
 	
 	public MissionListRequest(NetBuffer data) {
 		super(CRC);
+		decode(data);
 	}
 	
 	public long getTerminalId() {
