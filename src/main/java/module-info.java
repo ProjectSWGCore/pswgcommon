@@ -59,6 +59,7 @@ module com.projectswg.common {
 	exports com.projectswg.common.network.packets.swg.zone.crafting.resources;
 	exports com.projectswg.common.network.packets.swg.zone.crafting.surveying;
 	exports com.projectswg.common.network.packets.swg.zone.deltas;
+	exports com.projectswg.common.network.packets.swg.zone.guild;
 	exports com.projectswg.common.network.packets.swg.zone.harvesters;
 	exports com.projectswg.common.network.packets.swg.zone.insertion;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller;
