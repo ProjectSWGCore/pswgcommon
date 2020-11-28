@@ -47,13 +47,14 @@ public class SpatialChat extends ObjectController {
 		super(objectId, CRC);
 	}
 	
-	public SpatialChat(long objectId, long sourceId, long targetId, String text, short balloonType, short moodId) {
+	public SpatialChat(long objectId, long sourceId, long targetId, String text, short balloonType, short moodId, byte languageId) {
 		super(objectId, CRC);
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 		this.text = text;
 		this.balloonType = balloonType;
 		this.moodId = moodId;
+		this.languageId = languageId;
 	}
 	
 	public SpatialChat(long objectId, SpatialChat chat) {
