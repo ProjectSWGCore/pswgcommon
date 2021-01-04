@@ -43,6 +43,7 @@ import com.projectswg.common.persistable.Persistable;
 public class OutOfBandPackage implements Encodable, Persistable, MongoPersistable {
 	
 	private final List<OutOfBandData> packages;
+	private boolean conversation;
 	
 	public OutOfBandPackage() {
 		packages = new ArrayList<>();
@@ -57,6 +58,14 @@ public class OutOfBandPackage implements Encodable, Persistable, MongoPersistabl
 		return packages;
 	}
 	
+	public boolean isConversation() {
+		return conversation;
+	}
+	
+	public void setConversation(boolean conversation) {
+		this.conversation = conversation;
+	}
+	
 	@Override
 	public byte[] encode() {
 		if (packages.isEmpty())
@@ -65,6 +74,12 @@ public class OutOfBandPackage implements Encodable, Persistable, MongoPersistabl
 		int length = getLength();
 		NetBuffer data = NetBuffer.allocate(length);
 		data.addInt((length-4) / 2); // Client treats this like a unicode string, so it's half the actual size of the array
+		
+		if (isConversation()) {
+			// Unfortunately conversations specifically require this to be present. If not, texts aren't displayed properly.
+			data.addShort(0);
+		}
+		
 		for (OutOfBandData oob : packages) {
 			data.addRawArray(packOutOfBandData(oob));
 		}
@@ -87,6 +102,11 @@ public class OutOfBandPackage implements Encodable, Persistable, MongoPersistabl
 	@Override
 	public int getLength() {
 		int size = 4;
+		
+		if (isConversation()) {
+			size += Short.BYTES;
+		}
+		
 		for (OutOfBandData oob : packages) {
 			size += getOOBLength(oob);
 		}

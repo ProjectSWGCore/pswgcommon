@@ -26,6 +26,10 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.NpcConversationMessage;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.NpcConversationOptions;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.StartNpcConversation;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.StopNpcConversation;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupCloseLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupOpenLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
@@ -107,6 +111,10 @@ public abstract class ObjectController extends SWGPacket {
 		switch (crc) {
 			case 0x0071: return new DataTransform(data);
 			case 0x00CC: return new CombatAction(data);
+			case StartNpcConversation.CRC: return new StartNpcConversation(data);
+			case NpcConversationMessage.CRC: return new NpcConversationMessage(data);
+			case NpcConversationOptions.CRC: return new NpcConversationOptions(data);
+			case StopNpcConversation.CRC: return new StopNpcConversation(data);
 			case 0x00F1: return new DataTransformWithParent(data);
 			case 0x0116: return new CommandQueueEnqueue(data);
 			case 0x0117: return new CommandQueueDequeue(data);
