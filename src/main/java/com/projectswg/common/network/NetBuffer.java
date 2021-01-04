@@ -191,6 +191,18 @@ public class NetBuffer {
 		data.put(b);
 	}
 	
+	public void addByteSizedList(Collection<? extends Encodable> list) {
+		if (list == null) {
+			addByte(0);
+			return;
+		}
+		
+		addByte(list.size());
+		for (Encodable encodable : list) {
+			addEncodable(encodable);
+		}
+	}
+	
 	public void addList(Collection<? extends Encodable> list) {
 		if (list == null) {
 			addInt(0);
@@ -342,9 +354,7 @@ public class NetBuffer {
 		return null;
 	}
 	
-	public <T extends Encodable> List<T> getList(Class<T> type) {
-		int size = getInt();
-		
+	public <T extends Encodable> List<T> getList(Class<T> type, int size) {
 		if (size < 0) {
 			Log.e("Read list with size less than zero!");
 			return null;
@@ -367,6 +377,12 @@ public class NetBuffer {
 		if (size != list.size())
 			Log.e("Expected list size %d but only have %d elements in the list", size, list.size());
 		return list;
+	}
+	
+	public <T extends Encodable> List<T> getList(Class<T> type) {
+		int size = getInt();
+		
+		return getList(type, size);
 	}
 	
 	public List<String> getList(StringType type) {

@@ -311,6 +311,10 @@ public class ProsePackage implements OutOfBandData {
 		return base.hashCode() * 3 + actor.hashCode() * 7 + target.hashCode() * 13 + other.hashCode() * 17 + (grammarFlag ? 1 : 0) + di * 19 + ((int) (df * 23));
 	}
 	
+	public StringId getBase() {
+		return base;
+	}
+	
 	public static class Prose implements Encodable, Persistable, MongoPersistable {
 		
 		private long objectId;
