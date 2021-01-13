@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import me.joshlarson.jlcommon.log.Log;
 
@@ -53,7 +54,7 @@ public class CrcDatabase {
 	}
 	
 	public void saveStrings(OutputStream os) throws IOException {
-		for (Entry<Integer, String> e : crcTable.entrySet()) {
+		for (Entry<Integer, String> e : new TreeMap<>(crcTable).entrySet()) {
 			os.write((Integer.toString(e.getKey(), 16) + ',' + e.getValue() + '\n').getBytes(StandardCharsets.US_ASCII));
 		}
 		os.flush();
