@@ -66,6 +66,7 @@ module com.projectswg.common {
 	exports com.projectswg.common.network.packets.swg.zone.object_controller.combat;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller.conversation;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller.loot;
+	exports com.projectswg.common.network.packets.swg.zone.object_controller.quest;
 	exports com.projectswg.common.network.packets.swg.zone.resource;
 	exports com.projectswg.common.network.packets.swg.zone.server_ui;
 	exports com.projectswg.common.network.packets.swg.zone.spatial;

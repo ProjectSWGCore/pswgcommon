@@ -33,6 +33,8 @@ import com.projectswg.common.network.packets.swg.zone.object_controller.conversa
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupCloseLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupOpenLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
+import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestCompletedMessage;
+import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestTaskCounterMessage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -141,6 +143,8 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x00F9: return new MissionAcceptRequest(data);
 			case 0x041C: return new JTLTerminalSharedMessage(data);
 			case 0x0115: return new SecureTrade(data);
+			case QuestTaskCounterMessage.CRC: return new QuestTaskCounterMessage(data);
+			case QuestCompletedMessage.CRC: return new QuestCompletedMessage(data);
 		}
 		Log.w("Unknown object controller: %08X", crc);
 		return new GenericObjectController(crc, data);
