@@ -34,6 +34,7 @@ import com.projectswg.common.data.swgfile.ClientData;
 import com.projectswg.common.data.swgfile.IffNode;
 import com.projectswg.common.data.swgfile.SWGFile;
 import me.joshlarson.jlcommon.log.Log;
+import org.jetbrains.annotations.Nullable;
 
 public class DatatableData extends ClientData {
 	
@@ -199,22 +200,31 @@ public class DatatableData extends ClientData {
 		return table[row][column];
 	}
 	
+	@Nullable
 	public Object getCell(int row, String columnName) {
-		return getCell(row, nameToIndex.get(columnName).intValue());
+		if (nameToIndex.containsKey(columnName)) {
+			return getCell(row, nameToIndex.get(columnName));
+		}
+		
+		return null;
 	}
 	
+	@Nullable
 	public String getString(int row, String columnName) {
-		return (String) getCell(row, nameToIndex.get(columnName).intValue());
+		return (String) getCell(row, columnName);
 	}
 	
-	public float getFloat(int row, String columnName) {
-		return (float) getCell(row, nameToIndex.get(columnName).intValue());
+	@Nullable
+	public Float getFloat(int row, String columnName) {
+		return (Float) getCell(row, columnName);
 	}
 	
-	public int getInt(int row, String columnName) {
-		return (int) getCell(row, nameToIndex.get(columnName).intValue());
+	@Nullable
+	public Integer getInt(int row, String columnName) {
+		return (Integer) getCell(row, columnName);
 	}
 	
+	@Nullable
 	public String getColumnName(int column) {
 		if (column < 0 || column >= getColumnCount())
 			return null;
@@ -227,6 +237,7 @@ public class DatatableData extends ClientData {
 		return columnTypes[column];
 	}
 	
+	@Nullable
 	public int getColumnFromName(String columnName) {
 		Integer column = nameToIndex.get(columnName);
 		return column == null ? -1 : column;
