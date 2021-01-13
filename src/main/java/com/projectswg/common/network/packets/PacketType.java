@@ -222,6 +222,7 @@ public enum PacketType {
 	DESTROY_CLIENT_PATH_MESSAGE					(DestroyClientPathMessage.CRC,		DestroyClientPathMessage.class),
 	GUILD_REQUEST_MESSAGE						(GuildRequestMessage.CRC,			GuildRequestMessage.class),
 	GUILD_RESPONSE_MESSAGE						(GuildResponseMessage.CRC,			GuildResponseMessage.class),
+	COMM_PLAYER_MESSAGE							(CommPlayerMessage.CRC,				CommPlayerMessage.class),
 	
 		// Chat
 		CHAT_CREATE_ROOM						(ChatCreateRoom.CRC,				ChatCreateRoom.class),
