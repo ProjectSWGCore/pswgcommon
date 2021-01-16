@@ -225,6 +225,11 @@ public class DatatableData extends ClientData {
 	}
 	
 	@Nullable
+	public Boolean getBoolean(int row, String columnName) {
+		return (Boolean) getCell(row, columnName);
+	}
+	
+	@Nullable
 	public String getColumnName(int column) {
 		if (column < 0 || column >= getColumnCount())
 			return null;
