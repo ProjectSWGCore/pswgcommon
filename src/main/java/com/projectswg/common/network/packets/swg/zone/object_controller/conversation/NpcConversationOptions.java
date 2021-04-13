@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2021 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,29 +24,58 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.combat;
+package com.projectswg.common.network.packets.swg.zone.object_controller.conversation;
 
-import com.projectswg.common.data.EnumLookup;
+import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
+import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
 
-public enum CombatSpamFilterType {
-	ALL(0),
-	SELF(1),
-	GROUP(2),
-	NONE(3);
+import java.util.Collection;
+
+public class NpcConversationOptions extends ObjectController {
 	
-	private static final EnumLookup<Integer, CombatSpamFilterType> LOOKUP = new EnumLookup<>(CombatSpamFilterType.class, CombatSpamFilterType::getNum);
+	public static final int CRC = 0x00E0;
 	
-	private int num;
+	private Collection<OutOfBandPackage> playerReplies;
 	
-	CombatSpamFilterType(int num) {
-		this.num = num;
+	public NpcConversationOptions(long objectId, Collection<OutOfBandPackage> playerReplies) {
+		super(objectId, CRC);
+		this.playerReplies = playerReplies;
 	}
 	
-	public int getNum() {
-		return num;
+	public NpcConversationOptions(NetBuffer data) {
+		super(CRC);
+		decode(data);
 	}
 	
-	public static CombatSpamFilterType getCombatSpamFilterType(int num) {
-		return LOOKUP.getEnum(num, NONE);
+	@Override
+	public void decode(NetBuffer data) {
+		decodeHeader(data);
+		byte replyCount = data.getByte();
+		playerReplies = data.getList(OutOfBandPackage.class, replyCount);
 	}
+	
+	@Override
+	public NetBuffer encode() {
+		int length = 0;
+		
+		length += HEADER_LENGTH;
+		length += Byte.BYTES;
+		
+		for (OutOfBandPackage playerReply : playerReplies) {
+			length += playerReply.getLength();
+		}
+		
+		NetBuffer data = NetBuffer.allocate(length);
+		encodeHeader(data);
+		
+		data.addByteSizedList(playerReplies);
+		
+		return data;
+	}
+	
+	public Collection<OutOfBandPackage> getPlayerReplies() {
+		return playerReplies;
+	}
+	
 }

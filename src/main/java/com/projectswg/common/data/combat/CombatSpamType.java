@@ -24,67 +24,46 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data;
+package com.projectswg.common.data.combat;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import com.projectswg.common.data.EnumLookup;
 
-import me.joshlarson.jlcommon.log.Log;
-
-public class CrcDatabase {
+/**
+ * Determines color for entries in the combat log client-side
+ */
+public enum CombatSpamType {
+	MISS(0),
+	HIT(1),
+	BLOCK(2),
+	EVADE(3),
+	REDIRECT(4),
+	COUNTER(5),
+	FUMBLE(6),
+	LIGHTSABER_BLOCK(7),
+	LIGHTSABER_COUNTER(8),
+	LIGHTSABER_COUNTER_TARGET(9),
+	GENERIC(10),
+	OUT_OF_RANGE(11),
+	POSTURE_CHANGE(12),
+	TETHERED(13),	// AI was forced to return to original location
+	MEDICAL(14),
+	BUFF(15),
+	DEBUFF(16);
 	
-	private static final CrcDatabase INSTANCE = new CrcDatabase();
+	private static final EnumLookup<Integer, CombatSpamType> LOOKUP = new EnumLookup<>(CombatSpamType.class, CombatSpamType::getNum);
 	
-	static {
-		INSTANCE.loadStrings();
+	private int num;
+	
+	CombatSpamType(int num) {
+		this.num = num;
 	}
 	
-	private final Map<Integer, String> crcTable;
-	
-	private CrcDatabase() {
-		crcTable = new HashMap<>();
+	public int getNum() {
+		return num;
 	}
 	
-	public void saveStrings(OutputStream os) throws IOException {
-		for (Entry<Integer, String> e : new TreeMap<>(crcTable).entrySet()) {
-			os.write((Integer.toString(e.getKey(), 16) + ',' + e.getValue() + '\n').getBytes(StandardCharsets.US_ASCII));
-		}
-		os.flush();
-	}
-	
-	public void addCrc(String string) {
-		crcTable.put(CRC.getCrc(string), string);
-	}
-	
-	public String getString(int crc) {
-		return crcTable.get(crc);
-	}
-	
-	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("/com/projectswg/common/data/crc_database.csv")) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				int index = line.indexOf(',');
-				assert index > 0 : "invalid line in CRC csv";
-				int crc = Integer.parseInt(line.substring(0, index), 16);
-				crcTable.put(crc, line.substring(index+1).intern());
-			}
-		} catch (IOException e) {
-			Log.e(e);
-		}
-	}
-	
-	public static CrcDatabase getInstance() {
-		return INSTANCE;
+	public static CombatSpamType getCombatSpamType(int num) {
+		return LOOKUP.getEnum(num, HIT);
 	}
 	
 }

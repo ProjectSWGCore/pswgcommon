@@ -112,6 +112,8 @@ import com.projectswg.common.network.packets.swg.zone.chat.ConGenericMessage;
 import com.projectswg.common.network.packets.swg.zone.chat.VoiceChatStatus;
 import com.projectswg.common.network.packets.swg.zone.combat.GrantCommandMessage;
 import com.projectswg.common.network.packets.swg.zone.deltas.DeltasMessage;
+import com.projectswg.common.network.packets.swg.zone.guild.GuildRequestMessage;
+import com.projectswg.common.network.packets.swg.zone.guild.GuildResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.insertion.ChatRoomList;
 import com.projectswg.common.network.packets.swg.zone.insertion.ChatServerStatus;
 import com.projectswg.common.network.packets.swg.zone.insertion.CmdStartScene;
@@ -212,11 +214,15 @@ public enum PacketType {
 	PLAY_MUSIC_MESSAGE							(PlayMusicMessage.CRC,				PlayMusicMessage.class),
 	PLAY_CLIENT_EFFECT_OBJECT_MESSAGE			(PlayClientEffectObjectMessage.CRC, PlayClientEffectObjectMessage.class),
 	STOP_CLIENT_EFFECT_OBJECT_BY_LABEL			(StopClientEffectObjectByLabelMessage.CRC, 	StopClientEffectObjectByLabelMessage.class),
+	PLAY_CLIENT_EFFECT_LOC_MESSAGE				(PlayClientEffectLocMessage.CRC,	PlayClientEffectLocMessage.class),
 	EXPERTISE_REQUEST_MESSAGE					(ExpertiseRequestMessage.CRC,		ExpertiseRequestMessage.class),
 	CHANGE_ROLE_ICON_CHOICE						(ChangeRoleIconChoice.CRC,			ChangeRoleIconChoice.class),
 	SHOW_LOOT_BOX								(ShowLootBox.CRC,					ShowLootBox.class),
 	CREATE_CLIENT_PATH_MESSAGE					(CreateClientPathMessage.CRC,		CreateClientPathMessage.class),
 	DESTROY_CLIENT_PATH_MESSAGE					(DestroyClientPathMessage.CRC,		DestroyClientPathMessage.class),
+	GUILD_REQUEST_MESSAGE						(GuildRequestMessage.CRC,			GuildRequestMessage.class),
+	GUILD_RESPONSE_MESSAGE						(GuildResponseMessage.CRC,			GuildResponseMessage.class),
+	COMM_PLAYER_MESSAGE							(CommPlayerMessage.CRC,				CommPlayerMessage.class),
 	
 		// Chat
 		CHAT_CREATE_ROOM						(ChatCreateRoom.CRC,				ChatCreateRoom.class),
@@ -315,6 +321,11 @@ public enum PacketType {
 		TRADE_COMPLETE_MESSAGE					(TradeCompleteMessage.CRC,					TradeCompleteMessage.class),
 		UNACCEPT_TRANSACTION_MESSAGE			(UnAcceptTransactionMessage.CRC,			UnAcceptTransactionMessage.class),
 		VERIFY_TRADE_MESSAGE					(VerifyTradeMessage.CRC,					VerifyTradeMessage.class),
+	
+		// GCW
+		GCW_REGIONS_REQUEST_MESSAGE				(GcwRegionsReq.CRC,							GcwRegionsReq.class),
+		GCW_REGIONS_RESPONSE_MESSAGE			(GcwRegionsRsp.CRC,							GcwRegionsRsp.class),
+		GCW_GROUPS_RESPONSE_MESSAGE				(GcwGroupsRsp.CRC,							GcwGroupsRsp.class),
 	
 	UNKNOWN (0xFFFFFFFF, SWGPacket.class);
 	

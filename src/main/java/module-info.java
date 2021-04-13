@@ -6,12 +6,14 @@ module com.projectswg.common {
 	requires org.mongodb.bson;
 	requires org.jetbrains.annotations;
 	requires org.bouncycastle.provider;
+	requires kotlin.stdlib;
 	
 	exports com.projectswg.common.data;
 	exports com.projectswg.common.data.combat;
 	exports com.projectswg.common.data.customization;
 	exports com.projectswg.common.data.encodables.chat;
 	exports com.projectswg.common.data.encodables.galaxy;
+	exports com.projectswg.common.data.encodables.gcw;
 	exports com.projectswg.common.data.encodables.map;
 	exports com.projectswg.common.data.encodables.mongo;
 	exports com.projectswg.common.data.encodables.oob;
@@ -57,11 +59,14 @@ module com.projectswg.common {
 	exports com.projectswg.common.network.packets.swg.zone.crafting.resources;
 	exports com.projectswg.common.network.packets.swg.zone.crafting.surveying;
 	exports com.projectswg.common.network.packets.swg.zone.deltas;
+	exports com.projectswg.common.network.packets.swg.zone.guild;
 	exports com.projectswg.common.network.packets.swg.zone.harvesters;
 	exports com.projectswg.common.network.packets.swg.zone.insertion;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller.combat;
+	exports com.projectswg.common.network.packets.swg.zone.object_controller.conversation;
 	exports com.projectswg.common.network.packets.swg.zone.object_controller.loot;
+	exports com.projectswg.common.network.packets.swg.zone.object_controller.quest;
 	exports com.projectswg.common.network.packets.swg.zone.resource;
 	exports com.projectswg.common.network.packets.swg.zone.server_ui;
 	exports com.projectswg.common.network.packets.swg.zone.spatial;

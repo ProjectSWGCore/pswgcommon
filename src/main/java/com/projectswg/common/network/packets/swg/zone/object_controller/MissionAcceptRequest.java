@@ -24,67 +24,54 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+package com.projectswg.common.network.packets.swg.zone.object_controller;
 
-import me.joshlarson.jlcommon.log.Log;
+import com.projectswg.common.network.NetBuffer;
 
-public class CrcDatabase {
+public class MissionAcceptRequest extends ObjectController{
 	
-	private static final CrcDatabase INSTANCE = new CrcDatabase();
+	public static final int CRC = 0x00F9;
+
+	private long missionId;
+	private long terminalId;
 	
-	static {
-		INSTANCE.loadStrings();
+	public MissionAcceptRequest(NetBuffer data) {
+		super(CRC);
+		decode(data);
 	}
 	
-	private final Map<Integer, String> crcTable;
-	
-	private CrcDatabase() {
-		crcTable = new HashMap<>();
+	public long getTerminalId() {
+		return terminalId;
+	}
+
+	public void setTerminalId(long terminalId) {
+		this.terminalId = terminalId;
 	}
 	
-	public void saveStrings(OutputStream os) throws IOException {
-		for (Entry<Integer, String> e : new TreeMap<>(crcTable).entrySet()) {
-			os.write((Integer.toString(e.getKey(), 16) + ',' + e.getValue() + '\n').getBytes(StandardCharsets.US_ASCII));
-		}
-		os.flush();
+	public long getMissionId() {
+		return missionId;
 	}
 	
-	public void addCrc(String string) {
-		crcTable.put(CRC.getCrc(string), string);
+	public void setMissionId(long missionId) {
+		this.missionId = missionId;
 	}
 	
-	public String getString(int crc) {
-		return crcTable.get(crc);
+	@Override
+	public void decode(NetBuffer data) {
+		decodeHeader(data);
+		setMissionId(data.getLong());
+		setTerminalId(data.getLong());
+		data.getByte();
 	}
-	
-	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("/com/projectswg/common/data/crc_database.csv")) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				int index = line.indexOf(',');
-				assert index > 0 : "invalid line in CRC csv";
-				int crc = Integer.parseInt(line.substring(0, index), 16);
-				crcTable.put(crc, line.substring(index+1).intern());
-			}
-		} catch (IOException e) {
-			Log.e(e);
-		}
+
+	@Override
+	public NetBuffer encode() {
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 17);
+		encodeHeader(data);
+		data.addLong(getMissionId());
+		data.addLong(getTerminalId());
+		data.addByte(0);
+		return data;
 	}
-	
-	public static CrcDatabase getInstance() {
-		return INSTANCE;
-	}
-	
 }

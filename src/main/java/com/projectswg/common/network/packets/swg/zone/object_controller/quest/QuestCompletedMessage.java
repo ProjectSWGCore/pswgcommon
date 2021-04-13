@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2021 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,67 +24,42 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data;
+package com.projectswg.common.network.packets.swg.zone.object_controller.quest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import com.projectswg.common.data.CRC;
+import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
 
-import me.joshlarson.jlcommon.log.Log;
+public class QuestCompletedMessage extends ObjectController {
 
-public class CrcDatabase {
+	public static final int CRC = 0x04B8;
+
+	private CRC questCrc;
 	
-	private static final CrcDatabase INSTANCE = new CrcDatabase();
-	
-	static {
-		INSTANCE.loadStrings();
+	public QuestCompletedMessage(long objectId, CRC questCrc) {
+		super(objectId, CRC);
+		this.questCrc = questCrc;
 	}
 	
-	private final Map<Integer, String> crcTable;
-	
-	private CrcDatabase() {
-		crcTable = new HashMap<>();
+	public QuestCompletedMessage(NetBuffer data) {
+		super(CRC);
+		decode(data);
 	}
 	
-	public void saveStrings(OutputStream os) throws IOException {
-		for (Entry<Integer, String> e : new TreeMap<>(crcTable).entrySet()) {
-			os.write((Integer.toString(e.getKey(), 16) + ',' + e.getValue() + '\n').getBytes(StandardCharsets.US_ASCII));
-		}
-		os.flush();
+	@Override
+	public void decode(NetBuffer data) {
+		decodeHeader(data);
+		questCrc = data.getEncodable(CRC.class);
 	}
-	
-	public void addCrc(String string) {
-		crcTable.put(CRC.getCrc(string), string);
+
+	@Override
+	public NetBuffer encode() {
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + questCrc.getLength());
+		
+		encodeHeader(data);
+		data.addEncodable(questCrc);
+		
+		return data;
 	}
-	
-	public String getString(int crc) {
-		return crcTable.get(crc);
-	}
-	
-	private void loadStrings() {
-		try (InputStream is = getClass().getResourceAsStream("/com/projectswg/common/data/crc_database.csv")) {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				int index = line.indexOf(',');
-				assert index > 0 : "invalid line in CRC csv";
-				int crc = Integer.parseInt(line.substring(0, index), 16);
-				crcTable.put(crc, line.substring(index+1).intern());
-			}
-		} catch (IOException e) {
-			Log.e(e);
-		}
-	}
-	
-	public static CrcDatabase getInstance() {
-		return INSTANCE;
-	}
-	
 }
+

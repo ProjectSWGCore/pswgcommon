@@ -7,71 +7,58 @@
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
  *                                                                                 *
- * This file is part of PSWGCommon.                                                *
+ * This file is part of Holocore.                                                  *
  *                                                                                 *
  * --------------------------------------------------------------------------------*
  *                                                                                 *
- * PSWGCommon is free software: you can redistribute it and/or modify              *
+ * Holocore is free software: you can redistribute it and/or modify                *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
  *                                                                                 *
- * PSWGCommon is distributed in the hope that it will be useful,                   *
+ * Holocore is distributed in the hope that it will be useful,                     *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
  *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
+package com.projectswg.common.network.packets.swg.zone;
 
-package com.projectswg.common.network.packets.swg.zone.object_controller;
-
+import com.projectswg.common.data.encodables.gcw.GcwGroup;
 import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.packets.SWGPacket;
 
-public class MissionListRequest extends ObjectController{
+import java.util.Collection;
+
+/**
+ * Shows given locations as Galactic Civil War Contested Zones on the map of the planetary map
+ */
+public class GcwGroupsRsp extends SWGPacket {
 	
-	public static final int CRC = 0x00F5;
-
-	private long terminalId;
-	private byte tickCount;	
+	public static final int CRC = getCrc("GcwGroupsRsp");
 	
-	public MissionListRequest(NetBuffer data) {
-		super(CRC);
-		decode(data);
+	private final Collection<GcwGroup> groups;
+	
+	public GcwGroupsRsp(Collection<GcwGroup> groups) {
+		this.groups = groups;
 	}
 	
-	public long getTerminalId() {
-		return terminalId;
-	}
-
-	public void setTerminalId(long terminalId) {
-		this.terminalId = terminalId;
-	}
-
-	public byte getTickCount() {
-		return tickCount;
-	}
-
-	public void setTickCount(byte tickCount) {
-		this.tickCount = tickCount;
-	}
-
 	@Override
 	public void decode(NetBuffer data) {
-		decodeHeader(data);
-		data.getByte();
-		setTickCount(data.getByte());
-		setTerminalId(data.getLong());		
+		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 10);
-		encodeHeader(data);
-		data.addByte(0);
-		data.addByte(getTickCount());
-		data.addLong(getTerminalId());			
-		return data;
+		int regionsLength = groups.stream().mapToInt(GcwGroup::getLength).sum();
+		NetBuffer buffer = NetBuffer.allocate(Short.BYTES + Integer.BYTES + 4 + regionsLength);	// 4 is list size variable
+		
+		buffer.addShort(2);
+		buffer.addInt(CRC);
+		buffer.addList(groups);
+		
+		return buffer;
 	}
 }

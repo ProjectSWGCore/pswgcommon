@@ -28,11 +28,14 @@ package com.projectswg.common.network.packets.swg.zone.object_controller;
 
 import com.projectswg.common.network.NetBuffer;
 
+import java.util.EnumSet;
+
 
 public class CommandTimer extends ObjectController {
 	
 	public static final int CRC = 0x0448;
 	
+	private EnumSet<CommandTimerFlag> flags;
 	private int sequenceId;
 	private int commandNameCrc;
 	private int cooldownGroupCrc;
@@ -41,10 +44,12 @@ public class CommandTimer extends ObjectController {
 	
 	public CommandTimer(long objectId) {
 		super(objectId, CRC);
+		this.flags = EnumSet.noneOf(CommandTimerFlag.class);
 	}
 	
 	public CommandTimer(NetBuffer data) {
 		super(CRC);
+		this.flags = EnumSet.noneOf(CommandTimerFlag.class);
 		decode(data);
 	}
 	
@@ -55,7 +60,7 @@ public class CommandTimer extends ObjectController {
 	public NetBuffer encode() {
 		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 29);
 		encodeHeader(data);
-		data.addByte(4);	// 0 for no cooldown, 0x26 to add defaultTime (usually 0.25)
+		data.addByte(flagsToByte());	// 0 for no cooldown, 0x26 to add defaultTime (usually 0.25)
 		data.addInt(sequenceId);
 		data.addInt(0);	// Unknown
 		data.addInt(0);	// Unknown
@@ -64,6 +69,18 @@ public class CommandTimer extends ObjectController {
 		data.addFloat(cooldownMin);
 		data.addFloat(cooldownMax);
 		return data;
+	}
+	
+	public EnumSet<CommandTimerFlag> getFlags() {
+		return flags.clone();
+	}
+	
+	public void addFlag(CommandTimerFlag flag) {
+		this.flags.add(flag);
+	}
+	
+	public void clearFlag(CommandTimerFlag flag) {
+		this.flags.remove(flag);
 	}
 
 	public int getSequenceId() {
@@ -106,4 +123,51 @@ public class CommandTimer extends ObjectController {
 		this.cooldownMax = cooldownMax;
 	}
 	
+	@Override
+	protected String getPacketData() {
+		return createPacketInformation(
+				"objId", getObjectId(),
+				"sequence", sequenceId,
+				"name", com.projectswg.common.data.CRC.getString(commandNameCrc),
+				"cooldownGroup", com.projectswg.common.data.CRC.getString(cooldownGroupCrc),
+				"cooldownMin", cooldownMin,
+				"cooldownMax", cooldownMax
+		);
+	}
+	
+	private byte flagsToByte() {
+		int b = 0;
+		for (CommandTimerFlag flag : flags) {
+			b |= flag.getBitmask();
+		}
+		return (byte) b;
+	}
+	
+	public enum CommandTimerFlag {
+		WARMUP       (0x01), // 1
+		EXECUTE      (0x02), // 2
+		COOLDOWN     (0x04), // 4
+		FAILED       (0x08), // 8
+		FAILED_RETRY (0x10), // 16
+		COOLDOWN2    (0x20); // 32
+		
+		private final int bitmask;
+		
+		CommandTimerFlag(int bitmask) {
+			this.bitmask = bitmask;
+		}
+		
+		public int getBitmask() {
+			return bitmask;
+		}
+		
+		public static EnumSet<CommandTimerFlag> getFlags(int bits) {
+			EnumSet<CommandTimerFlag> states = EnumSet.noneOf(CommandTimerFlag.class);
+			for (CommandTimerFlag state : values()) {
+				if ((state.getBitmask() & bits) != 0)
+					states.add(state);
+			}
+			return states;
+		}
+	}
 }

@@ -210,6 +210,11 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public MongoData getDocument(String key) {
+		if (!doc.containsKey(key)) {
+			var mongoDoc = new Document();
+			doc.put(key, mongoDoc);
+			return new MongoData(mongoDoc);
+		}
 		return new MongoData(doc.get(key, Document.class));
 	}
 	
@@ -261,7 +266,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T, V> Map<T, V> getMap(String key, Class<T> keyClass, Class<V> valueClass) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueClass));
 		}
@@ -270,7 +275,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V> Map<T, V> getMap(String key, Supplier<T> keyGen, Class<V> valueClass) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueClass));
 		}
@@ -279,7 +284,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Class<V> valueClass) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueClass));
 		}
@@ -288,7 +293,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T, V extends MongoPersistable> Map<T, V> getMap(String key, Class<T> keyClass, Supplier<V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueGen));
 		}
@@ -297,7 +302,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T, V extends MongoPersistable> Map<T, V> getMap(String key, Class<T> keyClass, Function<MongoData, V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyClass), translateGet(val.get("val"), valueGen));
 		}
@@ -306,7 +311,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Supplier<T> keyGen, Supplier<V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
 		}
@@ -315,7 +320,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Supplier<V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
 		}
@@ -324,7 +329,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Supplier<T> keyGen, Function<MongoData, V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
 		}
@@ -333,7 +338,7 @@ public class MongoData implements Map<String, Object> {
 	
 	@NotNull
 	public <T extends MongoPersistable, V extends MongoPersistable> Map<T, V> getMap(String key, Function<MongoData, T> keyGen, Function<MongoData, V> valueGen) {
-		Map<T, V> ret = new HashMap<>();
+		Map<T, V> ret = new LinkedHashMap<>();
 		for (MongoData val : getArray(key, MongoData.class)) {
 			ret.put(translateGet(val.get("key"), keyGen), translateGet(val.get("val"), valueGen));
 		}

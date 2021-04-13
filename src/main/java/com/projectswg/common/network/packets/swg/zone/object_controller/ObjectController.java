@@ -26,9 +26,15 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.object_controller;
 
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.NpcConversationMessage;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.NpcConversationOptions;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.StartNpcConversation;
+import com.projectswg.common.network.packets.swg.zone.object_controller.conversation.StopNpcConversation;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupCloseLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupOpenLotteryWindow;
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
+import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestCompletedMessage;
+import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestTaskCounterMessage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -107,6 +113,10 @@ public abstract class ObjectController extends SWGPacket {
 		switch (crc) {
 			case 0x0071: return new DataTransform(data);
 			case 0x00CC: return new CombatAction(data);
+			case StartNpcConversation.CRC: return new StartNpcConversation(data);
+			case NpcConversationMessage.CRC: return new NpcConversationMessage(data);
+			case NpcConversationOptions.CRC: return new NpcConversationOptions(data);
+			case StopNpcConversation.CRC: return new StopNpcConversation(data);
 			case 0x00F1: return new DataTransformWithParent(data);
 			case 0x0116: return new CommandQueueEnqueue(data);
 			case 0x0117: return new CommandQueueDequeue(data);
@@ -130,8 +140,11 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x04BC: return new ShowLootBox(data);
 			case 0x04C5: return new IntendedTarget(data);
 			case 0x00F5: return new MissionListRequest(data);
+			case 0x00F9: return new MissionAcceptRequest(data);
 			case 0x041C: return new JTLTerminalSharedMessage(data);
 			case 0x0115: return new SecureTrade(data);
+			case QuestTaskCounterMessage.CRC: return new QuestTaskCounterMessage(data);
+			case QuestCompletedMessage.CRC: return new QuestCompletedMessage(data);
 		}
 		Log.w("Unknown object controller: %08X", crc);
 		return new GenericObjectController(crc, data);
