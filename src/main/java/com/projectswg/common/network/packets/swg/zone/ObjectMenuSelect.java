@@ -50,16 +50,16 @@ public class ObjectMenuSelect extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		objectId = data.getLong();
-		selection = data.getShort();
+		selection = data.getByte();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(16);
+		NetBuffer data = NetBuffer.allocate(15);
 		data.addShort(3);
 		data.addInt(CRC);
 		data.addLong(objectId);
-		data.addShort(selection);
+		data.addByte(selection);
 		return data;
 	}
 	
