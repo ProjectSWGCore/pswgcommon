@@ -43,9 +43,8 @@ public class DataTransformWithParent extends ObjectController {
 		super(objectId, CRC);
 	}
 	
-	public DataTransformWithParent(long objectId, int timestamp, int counter, long cellId, Location l, float speed) {
+	public DataTransformWithParent(long objectId, int counter, long cellId, Location l, float speed) {
 		super(objectId, CRC);
-		this.timestamp = timestamp;
 		this.counter = counter;
 		this.cellId = cellId;
 		this.l = l;
@@ -131,7 +130,6 @@ public class DataTransformWithParent extends ObjectController {
 		return createPacketInformation(
 				"objId", getObjectId(),
 				"cellId", cellId,
-				"timestamp", timestamp,
 				"counter", counter,
 				"location", l,
 				"speed", speed

@@ -48,12 +48,13 @@ public class DataTransform extends ObjectController {
 		speed = transform.getSpeed();
 	}
 	
-	public DataTransform(long objectId, int counter, Location l) {
+	public DataTransform(long objectId, int counter, Location l, float speed) {
 		super(objectId, CRC);
 		if (l == null)
 			l = new Location();
 		this.l = l;
 		this.updateCounter = counter;
+		this.speed = speed;
 	}
 	
 	public DataTransform(NetBuffer data) {
