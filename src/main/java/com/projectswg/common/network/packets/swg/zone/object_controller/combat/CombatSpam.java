@@ -29,7 +29,6 @@ package com.projectswg.common.network.packets.swg.zone.object_controller.combat;
 import com.projectswg.common.data.combat.*;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.data.encodables.oob.StringId;
-import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
 
@@ -39,9 +38,7 @@ public class CombatSpam extends ObjectController {
 	
 	private byte dataType;
 	private long attacker;
-	private Point3D attackerPosition;
 	private long defender;
-	private Point3D defenderPosition;
 	private long weapon;
 	private StringId weaponName;
 	private StringId attackName;
@@ -64,9 +61,7 @@ public class CombatSpam extends ObjectController {
 		info = new AttackInfo();
 		dataType = data.getByte();
 		attacker = data.getLong();
-		attackerPosition = data.getEncodable(Point3D.class);
 		defender = data.getLong();
-		defenderPosition = data.getEncodable(Point3D.class);
 		if (isAttackDataWeaponObject(dataType) || isAttackWeaponName(dataType)) {
 			if (isAttackDataWeaponObject(dataType))
 				weapon = data.getLong();
@@ -85,23 +80,10 @@ public class CombatSpam extends ObjectController {
 				info.setBlockedDamage(data.getInt());
 				info.setFinalDamage(data.getInt());
 				info.setHitLocation(HitLocation.getHitLocation(data.getInt()));
-				info.setCrushing(data.getBoolean());
-				info.setStrikethrough(data.getBoolean());
-				info.setStrikethroughAmount(data.getFloat());
-				info.setEvadeResult(data.getBoolean());
-				info.setEvadeAmount(data.getFloat());
-				info.setBlockResult(data.getBoolean());
-				info.setBlock(data.getInt());
-			} else {
-				info.setDodge(data.getBoolean());
-				info.setParry(data.getBoolean());
 			}
 		} else if (isMessageData(dataType)) {
 			spamMessage = data.getEncodable(OutOfBandPackage.class);
 		}
-		info.setCritical(data.getBoolean());
-		info.setGlancing(data.getBoolean());
-		info.setProc(data.getBoolean());
 		spamType = CombatSpamType.getCombatSpamType(data.getInt());
 	}
 	
@@ -159,16 +141,8 @@ public class CombatSpam extends ObjectController {
 		return attacker;
 	}
 	
-	public Point3D getAttackerPosition() {
-		return attackerPosition;
-	}
-	
 	public long getDefender() {
 		return defender;
-	}
-	
-	public Point3D getDefenderPosition() {
-		return defenderPosition;
 	}
 	
 	public long getWeapon() {
@@ -203,17 +177,10 @@ public class CombatSpam extends ObjectController {
 		this.attacker = attacker;
 	}
 	
-	public void setAttackerPosition(Point3D attackerPosition) {
-		this.attackerPosition = attackerPosition;
-	}
-	
 	public void setDefender(long defender) {
 		this.defender = defender;
 	}
 	
-	public void setDefenderPosition(Point3D defenderPosition) {
-		this.defenderPosition = defenderPosition;
-	}
 	
 	public void setWeapon(long weapon) {
 		this.weapon = weapon;
