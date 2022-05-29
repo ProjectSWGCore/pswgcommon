@@ -14,22 +14,23 @@ java {
 
 idea {
 	targetVersion = javaVersion
-    module {
-        inheritOutputDirs = true
-    }
+	module {
+		inheritOutputDirs = true
+	}
 }
 
 repositories {
-	jcenter()
+	maven("https://dev.joshlarson.me/maven2")
+	mavenCentral()
 }
 
 sourceSets {
 	main {
-        java.outputDir = File(java.outputDir.toString().replace("\\${File.separatorChar}java", ""))
+		java.outputDir = File(java.outputDir.toString().replace("\\${File.separatorChar}java", ""))
 		
 		dependencies {
-			implementation(group="org.jetbrains", name="annotations", version="20.1.0")
-			api(group="me.joshlarson", name="jlcommon", version="1.9.2")
+			api(group="org.jetbrains", name="annotations", version="20.1.0")
+			api(group="me.joshlarson", name="jlcommon", version="1.10.0")
 			api(group="org.bouncycastle", name="bcprov-jdk15on", version="1.60")
 			implementation(kotlin("stdlib"))
 			implementation(group="org.mongodb", name="mongodb-driver-sync", version="3.12.2")

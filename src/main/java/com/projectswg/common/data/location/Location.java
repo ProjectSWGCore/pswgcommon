@@ -488,7 +488,7 @@ public class Location implements Encodable, Persistable, MongoPersistable {
 		}
 		
 		public Location build() {
-			return new Location(new Point3D(point), new Quaternion(orientation), terrain);
+			return new Location(point, orientation, terrain);
 		}
 		
 	}
