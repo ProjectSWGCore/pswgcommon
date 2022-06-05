@@ -48,5 +48,5 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 	kotlinOptions {
 		jvmTarget = kotlinTargetJdk
 	}
-	destinationDir = sourceSets.main.get().java.outputDir
+	destinationDirectory.set(File(destinationDirectory.get().asFile.path.replace("kotlin", "java")))
 }
