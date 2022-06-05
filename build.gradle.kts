@@ -26,8 +26,6 @@ repositories {
 
 sourceSets {
 	main {
-		java.outputDir = File(java.outputDir.toString().replace("\\${File.separatorChar}java", ""))
-		
 		dependencies {
 			api(group="org.jetbrains", name="annotations", version="20.1.0")
 			api(group="me.joshlarson", name="jlcommon", version="1.10.0")
