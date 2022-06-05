@@ -38,8 +38,8 @@ sourceSets {
 	}
 	test {
 		dependencies {
-			implementation(kotlin("stdlib"))
-			implementation(group="junit", name="junit", version="4.12")
+			testImplementation(kotlin("stdlib"))
+			testImplementation(group="junit", name="junit", version="4.12")
 		}
 	}
 }
