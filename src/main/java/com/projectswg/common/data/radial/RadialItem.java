@@ -235,6 +235,7 @@ public enum RadialItem {
 	SERVER_MED_TOOL_DIAGNOSE									,
 	SERVER_MED_TOOL_TENDWOUND									,
 	SERVER_MED_TOOL_TENDDAMAGE									,
+	SERVER_PET_MOUNT											,
 	SERVER_PET_DISMOUNT											,
 	SERVER_PET_TRAIN_MOUNT										,
 	SERVER_VEHICLE_ENTER										,
