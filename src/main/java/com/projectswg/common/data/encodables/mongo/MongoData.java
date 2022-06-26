@@ -399,8 +399,11 @@ public class MongoData implements Map<String, Object> {
 	}
 	
 	public void putArray(String key, int [] array) {
-		assert !containsKey(key) : "key already exists";
-		doc.put(key, List.of(array));
+		List<Integer> list = new ArrayList<>();
+		for (int element : array) {
+			list.add(element);
+		}
+		putArray(key, list);
 	}
 	
 	public void putArray(String key, long [] array) {

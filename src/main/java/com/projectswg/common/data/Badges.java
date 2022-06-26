@@ -27,12 +27,15 @@
  ***********************************************************************************/
 package com.projectswg.common.data;
 
+import com.projectswg.common.data.encodables.mongo.MongoData;
+import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class Badges implements Persistable, Encodable {
+import java.util.Arrays;
+import java.util.List;
+
+public class Badges implements Encodable, MongoPersistable {
 	
 	private int bitmaskCount = 6;	// TODO determine programatically. Ceiling(Highest badge index % 32)
 	
@@ -106,27 +109,25 @@ public class Badges implements Persistable, Encodable {
 	}
 	
 	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		stream.addInt(bitmaskCount);
-		stream.addShort(bitmasks.length);
-		for(short i = 0; i < bitmasks.length; i++) {
-			stream.addInt(bitmasks[i]);
+	public void readMongo(MongoData data) {
+		boolean badgesHaveBeenSavedPreviously = data.containsKey("bitmaksCount");
+		
+		if (badgesHaveBeenSavedPreviously) {
+			bitmaskCount = data.getInteger("bitmaksCount");
+			List<Integer> bitmaskList = data.getArray("bitmasks", Integer.class);
+			bitmasks = bitmaskList.stream()
+					.mapToInt(Integer::intValue)
+					.toArray();
+			badgeCount = data.getInteger("badgeCount").shortValue();
+			explorationBadgeCount = data.getInteger("explorationBadgeCount").byteValue();
 		}
-		stream.addShort(badgeCount);
-		stream.addByte(explorationBadgeCount);
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		bitmaskCount = stream.getInt();
-		bitmasks = new int[stream.getShort()];
-		for (short i = 0; i < bitmasks.length; i++) {
-			bitmasks[i] = stream.getInt();
-		}
-		badgeCount = stream.getShort();
-		explorationBadgeCount = stream.getByte();
+	public void saveMongo(MongoData data) {
+		data.putInteger("bitmaksCount", bitmaskCount);
+		data.putArray("bitmasks", bitmasks);
+		data.putInteger("badgeCount", badgeCount);
+		data.putInteger("explorationBadgeCount", explorationBadgeCount);
 	}
-	
 }
