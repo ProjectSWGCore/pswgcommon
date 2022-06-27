@@ -35,12 +35,13 @@ public class CommandTimer extends ObjectController {
 	
 	public static final int CRC = 0x0448;
 	
-	private EnumSet<CommandTimerFlag> flags;
+	private final EnumSet<CommandTimerFlag> flags;
 	private int sequenceId;
 	private int commandNameCrc;
 	private int cooldownGroupCrc;
-	private float cooldownMin;
-	private float cooldownMax;
+	private float globalCooldownReductionTime;
+	private float globalCooldownTime;
+	private float cooldownGroupTime;
 	
 	public CommandTimer(long objectId) {
 		super(objectId, CRC);
@@ -58,16 +59,19 @@ public class CommandTimer extends ObjectController {
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 29);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 41);
 		encodeHeader(data);
 		data.addByte(flagsToByte());	// 0 for no cooldown, 0x26 to add defaultTime (usually 0.25)
 		data.addInt(sequenceId);
-		data.addInt(0);	// Unknown
-		data.addInt(0);	// Unknown
 		data.addInt(commandNameCrc);
 		data.addInt(cooldownGroupCrc);
-		data.addFloat(cooldownMin);
-		data.addFloat(cooldownMax);
+		data.addInt(0xFFFFFFFF);
+		data.addFloat(globalCooldownReductionTime);
+		data.addFloat(globalCooldownTime);
+		data.addInt(0);
+		data.addFloat(cooldownGroupTime);
+		data.addInt(0);
+		data.addInt(0);
 		return data;
 	}
 	
@@ -107,20 +111,24 @@ public class CommandTimer extends ObjectController {
 		this.cooldownGroupCrc = cooldownGroupCrc;
 	}
 
-	public float getCooldownMin() {
-		return cooldownMin;
+	public float getGlobalCooldownReductionTime() {
+		return globalCooldownReductionTime;
 	}
 
-	public void setCooldownMin(float cooldownMin) {
-		this.cooldownMin = cooldownMin;
+	public void setGlobalCooldownReductionTime(float globalCooldownReductionTime) {
+		this.globalCooldownReductionTime = globalCooldownReductionTime;
 	}
 
-	public float getCooldownMax() {
-		return cooldownMax;
+	public float getGlobalCooldownTime() {
+		return globalCooldownTime;
 	}
 
-	public void setCooldownMax(float cooldownMax) {
-		this.cooldownMax = cooldownMax;
+	public void setGlobalCooldownTime(float cooldownMax) {
+		this.globalCooldownTime = cooldownMax;
+	}
+	
+	public void setCooldownGroupTime(float cooldownGroupTime) {
+		this.cooldownGroupTime = cooldownGroupTime;
 	}
 	
 	@Override
@@ -130,8 +138,9 @@ public class CommandTimer extends ObjectController {
 				"sequence", sequenceId,
 				"name", com.projectswg.common.data.CRC.getString(commandNameCrc),
 				"cooldownGroup", com.projectswg.common.data.CRC.getString(cooldownGroupCrc),
-				"cooldownMin", cooldownMin,
-				"cooldownMax", cooldownMax
+				"globalCooldownReductionTime", globalCooldownReductionTime,
+				"globalCooldownTime", globalCooldownTime,
+				"cooldownGroupTime", cooldownGroupTime
 		);
 	}
 	
