@@ -117,8 +117,7 @@ public class CombatSpam extends ObjectController {
 			data.addEncodable(spamMessage);
 		}
 		
-		// TODO 0=white,1=green (red, maybe auto?). Anything else seems to be just white.
-		data.addInt(1);
+		data.addInt(spamType.getNum());
 		return data;
 	}
 	
