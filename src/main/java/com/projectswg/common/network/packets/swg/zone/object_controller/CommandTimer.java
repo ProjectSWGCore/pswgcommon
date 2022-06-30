@@ -36,6 +36,7 @@ public class CommandTimer extends ObjectController {
 	public static final int CRC = 0x0448;
 	
 	private final EnumSet<CommandTimerFlag> flags;
+	private float warmupTime = 0xFFFFFFFF;
 	private int sequenceId;
 	private int commandNameCrc;
 	private int cooldownGroupCrc;
@@ -65,7 +66,7 @@ public class CommandTimer extends ObjectController {
 		data.addInt(sequenceId);
 		data.addInt(commandNameCrc);
 		data.addInt(cooldownGroupCrc);
-		data.addInt(0xFFFFFFFF);
+		data.addFloat(warmupTime);
 		data.addFloat(globalCooldownReductionTime);
 		data.addFloat(globalCooldownTime);
 		data.addInt(0);
@@ -129,6 +130,14 @@ public class CommandTimer extends ObjectController {
 	
 	public void setCooldownGroupTime(float cooldownGroupTime) {
 		this.cooldownGroupTime = cooldownGroupTime;
+	}
+	
+	public float getWarmupTime() {
+		return warmupTime;
+	}
+	
+	public void setWarmupTime(float warmupTime) {
+		this.warmupTime = warmupTime;
 	}
 	
 	@Override
