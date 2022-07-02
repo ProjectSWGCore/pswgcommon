@@ -48,15 +48,13 @@ public class BiographyUpdate extends ObjectController {
 	
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		data.getInt();	// CU Object Controller spacer
 		targetId = data.getLong();
 		biography = data.getUnicode();
 	}
 	
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + Long.BYTES + 2 * Integer.BYTES + biography.length() * 2);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + Long.BYTES + Integer.BYTES + biography.length() * 2);
 		encodeHeader(data);
-		data.addInt(0);	// CU Object Controller spacer
 		data.addLong(targetId);
 		data.addUnicode(biography);
 		return data;
