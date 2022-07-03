@@ -26,12 +26,6 @@
  ***********************************************************************************/
 package com.projectswg.common.network.packets.swg.zone.spatial;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
@@ -39,22 +33,16 @@ public class AttributeListMessage extends SWGPacket {
 	public static final int CRC = getCrc("AttributeListMessage");
 	
 	private long objectId;
-	private Map <String, String> attributes;
+	private AttributeList attributeList;
 	private int serverRevision;
 
 	public AttributeListMessage() {
-		this(0, new LinkedHashMap<>(), 0);
+		this(0, new AttributeList(), 0);
 	}
 
-	public AttributeListMessage(Map <String, String> attributes, int serverRevision) {
-		this.objectId = 0;
-		this.attributes = new LinkedHashMap<>(attributes);
-		this.serverRevision = serverRevision;
-	}
-	
-	public AttributeListMessage(long objectId, Map <String, String> attributes, int serverRevision) {
+	public AttributeListMessage(long objectId, AttributeList attributeList, int serverRevision) {
 		this.objectId = objectId;
-		this.attributes = new LinkedHashMap<>(attributes);
+		this.attributeList = attributeList;
 		this.serverRevision = serverRevision;
 	}
 	
@@ -67,30 +55,18 @@ public class AttributeListMessage extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		objectId = data.getLong();
-		int count = data.getInt();
-		for (int i = 0; i < count; i++) {
-			String name = data.getAscii();
-			String attr = data.getUnicode();
-			attributes.put(name, attr);
-		}
+		attributeList = data.getEncodable(AttributeList.class);
 		serverRevision = data.getInt();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		int size = 0;
-		for (Entry <String, String> e : attributes.entrySet()) {
-			size += 6 + e.getKey().length() + (e.getValue().length() * 2);
-		}
-		NetBuffer data = NetBuffer.allocate(22 + size);
+		int size = attributeList.getLength();
+		NetBuffer data = NetBuffer.allocate(18 + size);
 		data.addShort(3);
 		data.addInt(CRC);
 		data.addLong(objectId);
-		data.addInt(attributes.size());
-		for (Entry <String, String> e : attributes.entrySet()) {
-			data.addAscii(e.getKey());
-			data.addUnicode(e.getValue());
-		}
+		data.addEncodable(attributeList);
 		data.addInt(serverRevision);
 		return data;
 	}
@@ -99,8 +75,8 @@ public class AttributeListMessage extends SWGPacket {
 		return objectId;
 	}
 
-	public Map<String, String> getAttributes() {
-		return Collections.unmodifiableMap(attributes);
+	public AttributeList getAttributeList() {
+		return attributeList;
 	}
 
 	public int getServerRevision() {
@@ -111,8 +87,8 @@ public class AttributeListMessage extends SWGPacket {
 		this.objectId = objectId;
 	}
 
-	public void setAttributes(Map<String, String> attributes) {
-		this.attributes = new HashMap<>(attributes);
+	public void setAttributes(AttributeList attributeList) {
+		this.attributeList = attributeList;
 	}
 
 	public void setServerRevision(int serverRevision) {
