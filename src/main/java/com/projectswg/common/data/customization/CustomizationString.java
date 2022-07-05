@@ -31,7 +31,6 @@ import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 import me.joshlarson.jlcommon.log.Log;
 
 import java.io.*;
@@ -49,7 +48,7 @@ import java.util.function.BiConsumer;
  * on objects. This can be lightsaber color, vehicle speed,
  * facial hair style...
  */
-public class CustomizationString implements Encodable, Persistable, MongoPersistable {
+public class CustomizationString implements Encodable, MongoPersistable {
 	
 	private static final Map<String, Short> VAR_NAME_TO_ID = new HashMap<>();
 	private static final Map<Short, String> VAR_ID_TO_NAME = new HashMap<>();
@@ -107,21 +106,6 @@ public class CustomizationString implements Encodable, Persistable, MongoPersist
 	 */
 	int valuesToEscape() {
 		return (int) variables.values().stream().filter(CustomizationString::isReserved).count();
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		stream.addMap(variables, (entry) -> {
-			stream.addAscii(entry.getKey());
-			stream.addInt(entry.getValue());
-		});
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		stream.getList((i) -> variables.put(stream.getAscii(), stream.getInt()));
 	}
 	
 	@Override

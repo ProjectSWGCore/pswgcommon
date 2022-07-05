@@ -27,44 +27,9 @@
 package com.projectswg.common.data.encodables.oob;
 
 import com.projectswg.common.data.encodables.mongo.MongoData;
-import com.projectswg.common.data.encodables.mongo.MongoPersistable;
-import com.projectswg.common.data.encodables.oob.OutOfBandPackage.Type;
 import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
-import com.projectswg.common.network.NetBufferStream;
 
 public class OutOfBandFactory {
-	
-	public static void save(OutOfBandData oob, NetBufferStream stream) {
-		if (oob instanceof StringId)
-			stream.addByte(1);
-		else if (oob instanceof ProsePackage)
-			stream.addByte(2);
-		else if (oob instanceof WaypointPackage) {
-			stream.addByte(4);
-		} else
-			throw new IllegalArgumentException("Unknown OOB data!");
-		oob.save(stream);
-	}
-	
-	public static OutOfBandData create(NetBufferStream stream) {
-		OutOfBandData oob;
-		byte type = stream.getByte();
-		switch (type) {
-			case 1:
-				oob = new StringId();
-				break;
-			case 2:
-				oob = new ProsePackage();
-				break;
-			case 4:
-				oob = new WaypointPackage();
-				break;
-			default:
-				throw new IllegalStateException("Unknown type byte! Type: " + type);
-		}
-		oob.read(stream);
-		return oob;
-	}
 	
 	public static MongoData save(OutOfBandData oob) {
 		return save(oob, new MongoData());

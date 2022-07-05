@@ -37,10 +37,8 @@ import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class OutOfBandPackage implements Encodable, Persistable, MongoPersistable {
+public class OutOfBandPackage implements Encodable, MongoPersistable {
 	
 	private final List<OutOfBandData> packages;
 	private boolean conversation;
@@ -111,16 +109,6 @@ public class OutOfBandPackage implements Encodable, Persistable, MongoPersistabl
 			size += getOOBLength(oob);
 		}
 		return size;
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		stream.getList((i) -> packages.add(OutOfBandFactory.create(stream)));
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addList(packages, (p) -> OutOfBandFactory.save(p, stream));
 	}
 	
 	@Override

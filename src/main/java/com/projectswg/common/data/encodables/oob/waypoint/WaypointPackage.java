@@ -34,7 +34,6 @@ import com.projectswg.common.data.encodables.oob.OutOfBandPackage.Type;
 import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.data.location.Terrain;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
 
 public class WaypointPackage implements OutOfBandData, MongoPersistable {
 	
@@ -169,30 +168,6 @@ public class WaypointPackage implements OutOfBandData, MongoPersistable {
 		name = data.getString("name", "New Waypoint");
 		color = WaypointColor.valueOf(data.getInteger("color", WaypointColor.BLUE.getValue()));
 		active = data.getBoolean("active", true);
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		stream.addLong(objectId);
-		stream.addLong(cellId);
-		position.save(stream);
-		stream.addAscii(terrain.name());
-		stream.addUnicode(name);
-		stream.addInt(color.getValue());
-		stream.addBoolean(active);
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		objectId = stream.getLong();
-		cellId = stream.getLong();
-		position.read(stream);
-		terrain = Terrain.valueOf(stream.getAscii());
-		name = stream.getUnicode();
-		color = WaypointColor.valueOf(stream.getInt());
-		active = stream.getBoolean();
 	}
 	
 	@Override

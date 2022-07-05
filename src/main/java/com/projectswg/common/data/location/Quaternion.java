@@ -30,11 +30,9 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 import me.joshlarson.jlcommon.utilities.Arguments;
 
-public class Quaternion implements Encodable, Persistable, MongoPersistable {
+public class Quaternion implements Encodable, MongoPersistable {
 	
 	private final double [][] rotationMatrix;
 	private double x;
@@ -220,23 +218,6 @@ public class Quaternion implements Encodable, Persistable, MongoPersistable {
 	@Override
 	public int getLength() {
 		return 16;
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addFloat((float) x);
-		stream.addFloat((float) y);
-		stream.addFloat((float) z);
-		stream.addFloat((float) w);
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		x = stream.getFloat();
-		y = stream.getFloat();
-		z = stream.getFloat();
-		w = stream.getFloat();
-		updateRotationMatrix();
 	}
 	
 	@Override

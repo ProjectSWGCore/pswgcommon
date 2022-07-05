@@ -30,8 +30,6 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 import me.joshlarson.jlcommon.log.Log;
 import org.jetbrains.annotations.NotNull;
 
@@ -238,30 +236,6 @@ public class ProsePackage implements OutOfBandData {
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		base.read(stream);
-		actor.read(stream);
-		target.read(stream);
-		other.read(stream);
-		grammarFlag = stream.getBoolean();
-		di = stream.getInt();
-		df = stream.getFloat();
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		base.save(stream);
-		actor.save(stream);
-		target.save(stream);
-		other.save(stream);
-		stream.addBoolean(grammarFlag);
-		stream.addInt(di);
-		stream.addFloat(df);
-	}
-	
-	@Override
 	public void readMongo(MongoData data) {
 		data.getDocument("base", base);
 		data.getDocument("actor", actor);
@@ -315,7 +289,7 @@ public class ProsePackage implements OutOfBandData {
 		return base;
 	}
 	
-	public static class Prose implements Encodable, Persistable, MongoPersistable {
+	public static class Prose implements Encodable, MongoPersistable {
 		
 		private long objectId;
 		private @NotNull StringId stringId;
@@ -360,22 +334,6 @@ public class ProsePackage implements OutOfBandData {
 		@Override
 		public int getLength() {
 			return 12 + stringId.getLength() + text.length()*2;
-		}
-		
-		@Override
-		public void read(NetBufferStream stream) {
-			stream.getByte();
-			stringId.read(stream);
-			objectId = stream.getLong();
-			text = stream.getUnicode();
-		}
-		
-		@Override
-		public void save(NetBufferStream stream) {
-			stream.addByte(0);
-			stringId.save(stream);
-			stream.addLong(objectId);
-			stream.addUnicode(text);
 		}
 		
 		@Override

@@ -30,10 +30,8 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class Point3D implements Encodable, Persistable, MongoPersistable {
+public class Point3D implements Encodable, MongoPersistable {
 	
 	private double x;
 	private double y;
@@ -189,20 +187,6 @@ public class Point3D implements Encodable, Persistable, MongoPersistable {
 	@Override
 	public int getLength() {
 		return 12;
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addFloat((float) x);
-		stream.addFloat((float) y);
-		stream.addFloat((float) z);
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		x = stream.getFloat();
-		y = stream.getFloat();
-		z = stream.getFloat();
 	}
 	
 	@Override

@@ -30,10 +30,8 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class Location implements Encodable, Persistable, MongoPersistable {
+public class Location implements Encodable, MongoPersistable {
 	
 	private static final Location ZERO = new Location(0, 0, 0, Terrain.GONE);
 	
@@ -224,25 +222,6 @@ public class Location implements Encodable, Persistable, MongoPersistable {
 	@Override
 	public int getLength() {
 		return 28;
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		orientation.save(stream);
-		point.save(stream);
-		stream.addBoolean(terrain != null);
-		if (terrain != null)
-			stream.addAscii(terrain.name());
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		orientation.read(stream);
-		point.read(stream);
-		if (stream.getBoolean())
-			terrain = Terrain.valueOf(stream.getAscii());
 	}
 	
 	@Override

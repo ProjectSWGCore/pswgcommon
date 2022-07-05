@@ -31,13 +31,11 @@ import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
 import java.time.Instant;
 import java.util.function.Supplier;
 
-public class Mail implements Encodable, Persistable, MongoPersistable {
+public class Mail implements Encodable, MongoPersistable {
 	
 	private int id;
 	private byte status;
@@ -149,37 +147,6 @@ public class Mail implements Encodable, Persistable, MongoPersistable {
 	}
 	
 	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		status = stream.getByte();
-		id = stream.getInt();
-		timestamp = Instant.ofEpochSecond(stream.getInt());
-		receiverId = stream.getLong();
-		sender = stream.getUnicode();
-		subject = stream.getUnicode();
-		message = stream.getUnicode();
-		if (stream.getBoolean()) {
-			outOfBandPackage = new OutOfBandPackage();
-			outOfBandPackage.read(stream);
-		}
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		stream.addByte(status);
-		stream.addInt(id);
-		stream.addInt((int) timestamp.getEpochSecond());
-		stream.addLong(receiverId);
-		stream.addUnicode(sender);
-		stream.addUnicode(subject);
-		stream.addUnicode(message);
-		stream.addBoolean(outOfBandPackage != null);
-		if (outOfBandPackage != null)
-			outOfBandPackage.save(stream);
-	}
-	
-	@Override
 	public final void readMongo(MongoData data) {
 		id = data.getInteger("id", id);
 		timestamp = data.getDate("timestamp", timestamp);
@@ -232,13 +199,4 @@ public class Mail implements Encodable, Persistable, MongoPersistable {
 		data.getInt();
 	}
 	
-	public static Mail create(NetBufferStream stream) {
-		Mail m = new Mail("", "", "", 0);
-		m.read(stream);
-		return m;
-	}
-	
-	public static void saveMail(Mail m, NetBufferStream stream) {
-		m.save(stream);
-	}
 }

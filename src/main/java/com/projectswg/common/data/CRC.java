@@ -30,12 +30,10 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
 import java.nio.charset.StandardCharsets;
 
-public class CRC implements Encodable, Persistable, MongoPersistable {
+public class CRC implements Encodable, MongoPersistable {
 	
 	private static final int CRC_TABLE[] = {
 		0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9, 0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
@@ -119,16 +117,6 @@ public class CRC implements Encodable, Persistable, MongoPersistable {
 	@Override
 	public int getLength() {
 		return 4;
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		crc = stream.getInt();
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addInt(crc);
 	}
 	
 	@Override

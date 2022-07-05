@@ -30,10 +30,8 @@ import com.projectswg.common.data.encodables.mongo.MongoData;
 import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class StringId implements OutOfBandData, Persistable, MongoPersistable {
+public class StringId implements OutOfBandData, MongoPersistable {
 	
 	private String key;
 	private String file;
@@ -82,18 +80,6 @@ public class StringId implements OutOfBandData, Persistable, MongoPersistable {
 	@Override
 	public int getLength() {
 		return 8 + key.length() + file.length();
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addAscii(file);
-		stream.addAscii(key);
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		file = stream.getAscii();
-		key = stream.getAscii();
 	}
 	
 	@Override
