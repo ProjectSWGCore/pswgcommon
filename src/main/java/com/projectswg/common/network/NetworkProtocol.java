@@ -35,7 +35,7 @@ import java.io.IOException;
 
 public class NetworkProtocol {
 	
-	public static final String VERSION = "2018-02-04";
+	public static final String VERSION = "20220620-15:00";
 	
 	public static NetBuffer encode(SWGPacket p) {
 		NetBuffer encoded = p.encode();
