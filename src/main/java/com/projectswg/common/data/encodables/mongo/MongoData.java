@@ -535,8 +535,10 @@ public class MongoData implements Map<String, Object> {
 			return input;
 		} else if (input instanceof MongoData) {
 			return ((MongoData) input).toDocument();
-		} else if (input instanceof Float || input instanceof Double) {
+		} else if (input instanceof Double) {
 			return ((Number) input).doubleValue();
+		} else if (input instanceof Float) {
+			return ((Number) input).floatValue();
 		} else if (input instanceof Number) {
 			return ((Number) input).intValue();
 		} else if (input instanceof MongoPersistable) {
