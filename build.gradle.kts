@@ -36,8 +36,8 @@ sourceSets {
 	}
 	test {
 		dependencies {
-			testImplementation(kotlin("stdlib"))
-			testImplementation(group="junit", name="junit", version="4.12")
+			testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version="5.8.1")
+			testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version="5.8.1")
 		}
 	}
 }
@@ -47,4 +47,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 		jvmTarget = kotlinTargetJdk
 	}
 	destinationDirectory.set(File(destinationDirectory.get().asFile.path.replace("kotlin", "java")))
+}
+
+tasks.withType<Test>().configureEach {
+	useJUnitPlatform()
 }
