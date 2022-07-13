@@ -351,6 +351,8 @@ public enum PacketType {
 		GCW_REGIONS_REQUEST_MESSAGE				(GcwRegionsReq.CRC,							GcwRegionsReq.class),
 		GCW_REGIONS_RESPONSE_MESSAGE			(GcwRegionsRsp.CRC,							GcwRegionsRsp.class),
 		GCW_GROUPS_RESPONSE_MESSAGE				(GcwGroupsRsp.CRC,							GcwGroupsRsp.class),
+	
+		EXECUTE_CONSOLE_COMMAND					(ExecuteConsoleCommand.Companion.getCrc(),	ExecuteConsoleCommand.class),
 
 	UNKNOWN (0xFFFFFFFF, SWGPacket.class);
 	
