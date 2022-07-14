@@ -57,7 +57,7 @@ public class Mail implements Encodable, MongoPersistable {
 		this.subject = "";
 		this.message = "";
 		this.receiverId = 0;
-		this.outOfBandPackage = null;
+		this.outOfBandPackage = new OutOfBandPackage();
 		this.timestamp = Instant.now();
 		readMongo(data);
 	}
@@ -69,7 +69,7 @@ public class Mail implements Encodable, MongoPersistable {
 		this.subject = subject;
 		this.message = message;
 		this.receiverId = receiverId;
-		this.outOfBandPackage = null;
+		this.outOfBandPackage = new OutOfBandPackage();
 		this.timestamp = Instant.now();
 	}
 
