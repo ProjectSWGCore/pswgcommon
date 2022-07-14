@@ -35,17 +35,17 @@ public class PlayClientEffectObjectMessage extends SWGPacket {
 	private String effectFile;
 	private String effectLocation;
 	private long objectId;
-	private String commandString;
+	private String label;
 	
 	public PlayClientEffectObjectMessage() {
 		
 	}
 	
-	public PlayClientEffectObjectMessage(String effectFile, String effectLocation, long objectId, String commandString) {
+	public PlayClientEffectObjectMessage(String effectFile, String effectLocation, long objectId, String label) {
 		this.effectFile = effectFile;
 		this.effectLocation = effectLocation;
 		this.objectId = objectId;
-		this.commandString = commandString;
+		this.label = label;
 	}
 	
 	@Override
@@ -55,18 +55,18 @@ public class PlayClientEffectObjectMessage extends SWGPacket {
 		effectFile = data.getAscii();
 		effectLocation = data.getAscii();
 		objectId = data.getLong();
-		commandString = data.getAscii();
+		label = data.getAscii();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(20 + effectFile.length() + effectLocation.length() + commandString.length());
+		NetBuffer data = NetBuffer.allocate(20 + effectFile.length() + effectLocation.length() + label.length());
 		data.addShort(4);
 		data.addInt(CRC);
 		data.addAscii(effectFile);
 		data.addAscii(effectLocation);
 		data.addLong(objectId);
-		data.addAscii(commandString);
+		data.addAscii(label);
 		return data;
 	}
 }

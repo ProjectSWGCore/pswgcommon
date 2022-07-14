@@ -36,17 +36,17 @@ public class PlayClientEffectObjectTransformMessage extends SWGPacket {
 	private long objectId;
 	private String effectFile;
 	private Location location;
-	private String commandString;
+	private String label;
 
 	public PlayClientEffectObjectTransformMessage() {
 
 	}
 
-	public PlayClientEffectObjectTransformMessage(long objectId, String effectFile, Location location, String commandString) {
+	public PlayClientEffectObjectTransformMessage(long objectId, String effectFile, Location location, String label) {
 		this.objectId = objectId;
 		this.effectFile = effectFile;
 		this.location = location;
-		this.commandString = commandString;
+		this.label = label;
 	}
 	
 	@Override
@@ -57,18 +57,18 @@ public class PlayClientEffectObjectTransformMessage extends SWGPacket {
 		effectFile = data.getAscii();
 		location = data.getEncodable(Location.class);
 		objectId = data.getLong();
-		commandString = data.getAscii();
+		label = data.getAscii();
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(46 + effectFile.length() + commandString.length());
+		NetBuffer data = NetBuffer.allocate(46 + effectFile.length() + label.length());
 		data.addShort(5);
 		data.addInt(CRC);
 		data.addAscii(effectFile);
 		data.addEncodable(location);
 		data.addLong(objectId);
-		data.addAscii(commandString);
+		data.addAscii(label);
 		return data;
 	}
 }
