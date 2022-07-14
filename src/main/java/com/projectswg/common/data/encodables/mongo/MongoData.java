@@ -39,7 +39,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class MongoData implements Map<String, Object> {
 	
@@ -611,7 +610,8 @@ public class MongoData implements Map<String, Object> {
 	@NotNull
 	@Override
 	public Set<Entry<String, Object>> entrySet() {
-		return doc.entrySet().stream().map(e -> Map.entry(e.getKey(), e.getValue())).collect(Collectors.toSet());
+		Map<String, Object> copy = new HashMap<>(doc);
+		return copy.entrySet();
 	}
 	
 	public static MongoData store(MongoPersistable obj) {
