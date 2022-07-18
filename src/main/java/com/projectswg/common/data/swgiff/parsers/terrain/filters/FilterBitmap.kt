@@ -5,6 +5,7 @@ import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.terrain.TerrainInfoLookup
 import com.projectswg.common.data.swgiff.parsers.terrain.bitmap.TargaBitmap
+import kotlin.math.min
 
 class FilterBitmap : FilterLayer() {
 	
@@ -19,57 +20,39 @@ class FilterBitmap : FilterLayer() {
 			bitmap = terrainInfo.bitmaps[bitmapId]?.bitmap
 		
 		val bitmap = bitmap ?: return 1f  // Didnt find bitmap for filter
-		val width = bitmap.width.toFloat()
-		val height = bitmap.height.toFloat()
-		val v44 = width.toLong()
-		var arg6 = width
-		var transformedX = (x - rectangle.minX) * width / (rectangle.maxX - rectangle.minX)
-		var transformedZ = (z - rectangle.minZ) * height / (rectangle.maxZ - rectangle.minZ)
-		if (transformedX > width - 1) {
-			transformedX = width - 1
+		val width = bitmap.width
+		val height = bitmap.height
+		val transformedX = (x - rectangle.minX) * width / (rectangle.maxX - rectangle.minX)
+		val transformedZ = (z - rectangle.minZ) * height / (rectangle.maxZ - rectangle.minZ)
+		val bitmapZ0 = transformedZ.toInt()
+		val bitmapX0 = transformedX.toInt()
+		val bitmapX1 = bitmapX0 + 1
+		val bitmapZ1 = bitmapZ0 + 1
+		if (bitmapX0 < 0 || bitmapX1 >= width || bitmapZ0 < 0 || bitmapZ1 >= height)
+			return 1f
+		
+		val topLeft = (bitmap.getData(bitmapZ0 * width + bitmapX0).toInt() and 0xFF).toFloat()
+		val topRight = (bitmap.getData(bitmapZ0 * width + bitmapX1).toInt() and 0xFF).toFloat()
+		val bottomRight = bitmap.getData(bitmapZ1 * width + bitmapX0).toInt() and 0xFF
+		val bottomLeft = bitmap.getData(bitmapZ1 * width + bitmapX1).toInt() and 0xFF
+		
+		val pX = transformedX - bitmapX0
+		val pZ = transformedZ - bitmapZ0
+		val mapResult = (gain + (
+				pZ * (1f - pX) * bottomRight +
+				pZ * pX * bottomLeft +
+				(1f - pZ) * (1f - pX) * topLeft +
+				(1f - pZ) * pX * topRight) / 255).clamp(0f, 1f)
+		
+		if (mapResult !in min..max)
+			return 0f
+		val v35 = ((max - min) * featherAmount * 0.5).toFloat()
+		return if (mapResult >= min + v35) {
+			if (mapResult <= max - v35) mapResult else mapResult * (max - mapResult) / v35
+		} else {
+			mapResult * (mapResult - min) / v35
+			//result = 0;
 		}
-		if (transformedZ > height - 1) {
-			transformedZ = height - 1
-		}
-		val v41 = transformedZ.toInt()
-		val v39 = transformedX + 1
-		val v43 = transformedX.toInt()
-		val v42 = transformedX
-		val v40 = transformedZ
-		var arg1 = (transformedZ.toInt() + 1).toFloat()
-		var v25 = (v44 * (height - v41 - 1)).toInt()
-		val v26 = (v39 * v44 / arg6).toInt()
-		var v27 = (v43 * v44 / arg6).toInt()
-		val v28 = (bitmap.getData(v27 + v25).toInt() and 0xFF).toFloat()
-		//byte mapValue = v28;
-		var arg2 = (bitmap.getData(v26 + v25).toInt() and 0xFF).toFloat()
-		val v29 = (v44 * (height - arg1 - 1)).toInt()
-		v25 = bitmap.getData(v29 + v27).toInt() and 0xFF
-		v27 = bitmap.getData(v26 + v29).toInt() and 0xFF
-		arg6 = v25.toFloat()
-		arg1 = v27.toFloat()
-		val v30 = v42 - v43.toDouble()
-		val v31 = v40 - v41.toDouble()
-		var mapResult = (v31 * (1.0 - v30) * arg6 * 0.003921568859368563 + v31 * v30 * arg1 * 0.003921568859368563 + (1.0 - v31) * (1.0 - v30) * v28 * 0.003921568859368563 + (1.0 - v31) * v30 * arg2 * 0.003921568859368563).toFloat()
-		mapResult += gain
-		if (mapResult >= 1.0) mapResult = 0.9999899864196777.toFloat()
-		if (mapResult < 0) mapResult = 0f
-		val v32 = featherAmount
-		val v33 = max
-		arg6 = min
-		arg2 = v32
-		arg1 = v33
-		var result = 0f
-		if (mapResult > arg6 && mapResult < arg1) {
-			val v35 = ((arg1 - arg6) * arg2 * 0.5).toFloat()
-			result = if (mapResult >= arg6 + v35) {
-				if (mapResult <= arg1 - v35) mapResult else mapResult * (arg1 - mapResult) / v35
-			} else {
-				mapResult * (mapResult - arg6) / v35
-				//result = 0;
-			}
-		}
-		return result
 	}
 	
 	override fun read(form: IffForm) {

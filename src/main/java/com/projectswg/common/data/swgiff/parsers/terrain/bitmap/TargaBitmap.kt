@@ -72,10 +72,7 @@ class TargaBitmap {
 	fun getData(offset: Int): Byte {
 		if (offset < 0 || offset >= width * height)
 			throw ArrayIndexOutOfBoundsException(offset)
-		val smaller = min(width, height)
-		val y = offset / smaller
-		val x = offset % smaller
-		return pixelData[(smaller - y - 1) * smaller + x]
+		return pixelData[offset]
 	}
 	
 	private fun InputStream.readByte(): Byte {
