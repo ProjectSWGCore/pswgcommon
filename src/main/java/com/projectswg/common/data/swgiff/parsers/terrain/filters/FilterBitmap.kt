@@ -40,12 +40,12 @@ class FilterBitmap : FilterLayer() {
 		var v25 = (v44 * (height - v41 - 1)).toInt()
 		val v26 = (v39 * v44 / arg6).toInt()
 		var v27 = (v43 * v44 / arg6).toInt()
-		val v28 = (bitmap.getData(v27 + v25).code and 0xFF).toFloat()
+		val v28 = (bitmap.getData(v27 + v25).toInt() and 0xFF).toFloat()
 		//byte mapValue = v28;
-		var arg2 = (bitmap.getData(v26 + v25).code and 0xFF).toFloat()
+		var arg2 = (bitmap.getData(v26 + v25).toInt() and 0xFF).toFloat()
 		val v29 = (v44 * (height - arg1 - 1)).toInt()
-		v25 = bitmap.getData(v29 + v27).code and 0xFF
-		v27 = bitmap.getData(v26 + v29).code and 0xFF
+		v25 = bitmap.getData(v29 + v27).toInt() and 0xFF
+		v27 = bitmap.getData(v26 + v29).toInt() and 0xFF
 		arg6 = v25.toFloat()
 		arg1 = v27.toFloat()
 		val v30 = v42 - v43.toDouble()
