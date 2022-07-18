@@ -1,6 +1,7 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.boundaries
 
 import com.projectswg.common.data.location.Point2f
+import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import kotlin.math.max
@@ -13,7 +14,7 @@ class BoundaryPolyLine : BoundaryLayer() {
 	private var lineWidth = 0f
 	
 	override fun isContained(x: Float, z: Float): Boolean {
-		return x in minX-lineWidth..maxX+lineWidth && z in minZ-lineWidth..maxZ+lineWidth
+		return extent.isWithin(x, z)
 	}
 	
 	override fun process(x: Float, z: Float): Float {
@@ -39,11 +40,6 @@ class BoundaryPolyLine : BoundaryLayer() {
 		assert(form.tag == "BPLN")
 		
 		form.readChunk("DATA").use { chunk ->
-			minX = Float.MAX_VALUE
-			maxX = -Float.MAX_VALUE
-			minZ = Float.MAX_VALUE
-			maxZ = -Float.MAX_VALUE
-			
 			val sizeTemp: Int
 			if (form.version == 0) {
 				featherType = chunk.readInt()
@@ -55,6 +51,10 @@ class BoundaryPolyLine : BoundaryLayer() {
 				sizeTemp = chunk.readInt()
 			}
 			
+			var minX = Float.MAX_VALUE
+			var maxX = -Float.MAX_VALUE
+			var minZ = Float.MAX_VALUE
+			var maxZ = -Float.MAX_VALUE
 			for (j in 0 until sizeTemp) {
 				val tempX = chunk.readFloat()
 				val tempZ = chunk.readFloat()
@@ -65,6 +65,7 @@ class BoundaryPolyLine : BoundaryLayer() {
 				maxX = max(maxX, tempX)
 				maxZ = max(maxZ, tempZ)
 			}
+			extent = Rectangle2f(minX-lineWidth, minZ-lineWidth, maxX+lineWidth, maxZ+lineWidth)
 			
 			if (form.version != 0) {
 				featherType = chunk.readInt()

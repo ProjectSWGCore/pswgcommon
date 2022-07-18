@@ -5,8 +5,20 @@ import kotlin.math.min
 
 data class Rectangle2f(var minX: Float, var minZ: Float, var maxX: Float, var maxZ: Float) {
 	
+	fun isWithin(x: Float, z: Float, extendedRegion: Float = 0f): Boolean {
+		if (x < minX - extendedRegion)
+			return false
+		if (x > maxX + extendedRegion)
+			return false
+		if (z < minZ - extendedRegion)
+			return false
+		if (z > maxZ + extendedRegion)
+			return false
+		return true
+	}
+	
 	fun isWithin(p: Point2f, extendedRegion: Float = 0f): Boolean {
-		return p.x in minX-extendedRegion..maxX+extendedRegion && p.z in minZ-extendedRegion..maxZ+extendedRegion
+		return isWithin(p.x, p.z, extendedRegion)
 	}
 	
 	fun expand(other: Rectangle2f) {

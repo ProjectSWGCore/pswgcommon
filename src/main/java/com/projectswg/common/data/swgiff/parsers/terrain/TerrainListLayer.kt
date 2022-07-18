@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain
 
+import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
 import com.projectswg.common.data.swgiff.parsers.terrain.affectors.AffectorHeightLayer
@@ -17,10 +18,14 @@ class TerrainListLayer : TerrainLayer(), SWGParser {
 	var invertFilters = false
 	var expanded = false
 	var notes = ""
+	var extent = Rectangle2f(0f, 0f, 0f, 0f)
 	
 	fun hasAffectors(): Boolean {
-		for (affector in heights) {
-			if (affector.isEnabled)
+		if (heights.isNotEmpty())
+			return true
+		
+		for (boundary in boundaries) {
+			if (boundary.hasWater)
 				return true
 		}
 		
@@ -53,15 +58,9 @@ class TerrainListLayer : TerrainLayer(), SWGParser {
 				notes = chunk.readString()
 		}
 		
-		form.readAllForms {
-			it.use {
-				val layer = SWGParser.parse<TerrainLayer>(it)
-				when (layer) {
-					is BoundaryLayer -> boundaries.add(layer)
-					is FilterLayer -> filters.add(layer)
-					is AffectorHeightLayer -> heights.add(layer)
-					is TerrainListLayer -> children.add(layer)
-				}
+		form.readAllForms { childForm ->
+			childForm.use {
+				addLayer(SWGParser.parse(childForm) ?: return@use)
 			}
 		}
 	}
@@ -72,6 +71,23 @@ class TerrainListLayer : TerrainLayer(), SWGParser {
 	
 	override fun toString(): String {
 		return "TerrainListLayer[boundaries=${boundaries.size} filters=0 heights=${heights.size} children=${children.size}]"
+	}
+	
+	fun addLayer(layer: TerrainLayer) {
+		if (!layer.isEnabled)
+			return
+		when (layer) {
+			is BoundaryLayer -> {
+				boundaries.add(layer)
+				recalculateExtent()
+			}
+			is FilterLayer -> filters.add(layer)
+			is AffectorHeightLayer -> heights.add(layer)
+			is TerrainListLayer -> {
+				if (layer.hasAffectors())
+					children.add(layer)
+			}
+		}
 	}
 	
 	fun printTree(indent: Int=0) {
@@ -93,6 +109,14 @@ class TerrainListLayer : TerrainLayer(), SWGParser {
 		}
 		for (child in children)
 			child.printTree(indent+1)
+	}
+	
+	private fun recalculateExtent() {
+		val rectangle = Rectangle2f(Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
+		for (boundary in boundaries) {
+			rectangle.expand(boundary.extent)
+		}
+		this.extent = rectangle
 	}
 	
 }

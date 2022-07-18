@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.boundaries
 
+import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import kotlin.math.min
@@ -10,6 +11,8 @@ class BoundaryRectangle : BoundaryLayer() {
 		private set
 	var useWaterHeight = false
 		private set
+	override val hasWater
+		get() = useWaterHeight
 	private var useGlobalWaterTable = false
 	private var shaderSize = 0f
 	private var shaderName = ""
@@ -17,12 +20,16 @@ class BoundaryRectangle : BoundaryLayer() {
 		private set
 	
 	override fun isContained(x: Float, z: Float): Boolean {
-		return x in minX..maxX && z in minZ..maxZ
+		return extent.isWithin(x, z)
 	}
 	
 	override fun process(x: Float, z: Float): Float {
 		if (!isContained(x, z))
 			return 0f
+		val minX = extent.minX
+		val minZ = extent.minZ
+		val maxX = extent.maxX
+		val maxZ = extent.maxZ
 		
 		val feather = min(maxX - minX, maxZ - minZ) * featherAmount / 2f
 		
@@ -41,10 +48,10 @@ class BoundaryRectangle : BoundaryLayer() {
 			if (form.version == 1)
 				chunk.readFloat()
 			
-			minX = chunk.readFloat()
-			minZ = chunk.readFloat()
-			maxX = chunk.readFloat()
-			maxZ = chunk.readFloat()
+			var minX = chunk.readFloat()
+			var minZ = chunk.readFloat()
+			var maxX = chunk.readFloat()
+			var maxZ = chunk.readFloat()
 			
 			var temp: Float
 			if (minX > maxX) {
@@ -57,6 +64,7 @@ class BoundaryRectangle : BoundaryLayer() {
 				minZ = maxZ
 				maxZ = temp
 			}
+			extent = Rectangle2f(minX, minZ, maxX, maxZ)
 			
 			if (form.version >= 2) {
 				featherType = chunk.readInt()
@@ -77,10 +85,10 @@ class BoundaryRectangle : BoundaryLayer() {
 	
 	override fun write(): IffForm {
 		val data = IffChunk("DATA")
-		data.writeFloat(minX)
-		data.writeFloat(minZ)
-		data.writeFloat(maxX)
-		data.writeFloat(maxZ)
+		data.writeFloat(extent.minX)
+		data.writeFloat(extent.minZ)
+		data.writeFloat(extent.maxX)
+		data.writeFloat(extent.maxZ)
 		
 		data.writeInt(featherType)
 		data.writeFloat(featherAmount)
@@ -96,7 +104,7 @@ class BoundaryRectangle : BoundaryLayer() {
 	}
 	
 	override fun toString(): String {
-		return "BoundaryRectangle[min=($minX, $minZ) max=($maxX, $maxZ) water=l:$useWaterHeight/g:$useGlobalWaterTable/$waterHeight]"
+		return "BoundaryRectangle[$extent water=l:$useWaterHeight/g:$useGlobalWaterTable/$waterHeight]"
 	}
 	
 }

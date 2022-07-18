@@ -1,6 +1,7 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.boundaries
 
 import com.projectswg.common.data.location.Point2f
+import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import kotlin.math.*
@@ -11,6 +12,8 @@ class BoundaryPolygon : BoundaryLayer() {
 		private set
 	var useWaterHeight = false
 		private set
+	override val hasWater
+		get() = useWaterHeight
 	
 	private var vertices = ArrayList<Point2f>()
 	private var waterShaderSize = 0f
@@ -19,7 +22,7 @@ class BoundaryPolygon : BoundaryLayer() {
 		private set
 	
 	override fun isContained(x: Float, z: Float): Boolean {
-		if (x !in minX..maxX || z !in minZ..maxZ)
+		if (!extent.isWithin(x, z))
 			return false
 		
 		var j = vertices.size - 1
@@ -56,11 +59,6 @@ class BoundaryPolygon : BoundaryLayer() {
 		assert(form.tag == "BPOL")
 		
 		form.readChunk("DATA").use { chunk ->
-			minX = Float.MAX_VALUE
-			minZ = Float.MAX_VALUE
-			maxX = -Float.MAX_VALUE
-			maxZ = -Float.MAX_VALUE
-			
 			if (form.version == 0)
 				chunk.readFloat()
 			
@@ -90,6 +88,11 @@ class BoundaryPolygon : BoundaryLayer() {
 	}
 	
 	private fun readVertices(chunk: IffChunk) {
+		var minX = Float.MAX_VALUE
+		var minZ = Float.MAX_VALUE
+		var maxX = -Float.MAX_VALUE
+		var maxZ = -Float.MAX_VALUE
+		
 		val sizeTemp = chunk.readInt()
 		for (j in 0 until sizeTemp) {
 			val tempX = chunk.readFloat()
@@ -101,6 +104,8 @@ class BoundaryPolygon : BoundaryLayer() {
 			maxX = max(maxX, tempX)
 			maxZ = max(maxZ, tempZ)
 		}
+		
+		extent = Rectangle2f(minX, minZ, maxX, maxZ)
 	}
 	
 	override fun write(): IffForm {

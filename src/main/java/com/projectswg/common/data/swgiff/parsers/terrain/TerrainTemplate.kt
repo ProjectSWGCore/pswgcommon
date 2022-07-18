@@ -113,7 +113,7 @@ class TerrainTemplate : SWGParser {
 					layer.use {
 						val terrainListLayer = TerrainListLayer()
 						terrainListLayer.read(layer)
-						topTerrainLayer.children.add(terrainListLayer)
+						topTerrainLayer.addLayer(terrainListLayer)
 					}
 				}
 			}
@@ -252,35 +252,20 @@ class TerrainTemplate : SWGParser {
 	}
 	
 	private fun getLayerHeight(layer: TerrainListLayer, x: Float, z: Float, height: HeightInformation) {
-		if (!layer.isEnabled || !layer.hasAffectors())
-			return
+		var transformValue = if (layer.boundaries.isEmpty()) 1f else 0f
 		
-		var transformValue = 0.0f
-		var hasBoundaries = false
-		
-		val rectangle = Rectangle2f(Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
+		val rectangle = layer.extent
 		for (boundary in layer.boundaries) {
-			if (!boundary.isEnabled)
-				continue
-			hasBoundaries = true
 			if (!boundary.isContained(x, z))
 				continue
 			
-			val boundaryResult = boundary.process(x, z)
-			rectangle.expand(boundary.extent)
-			
-			transformValue = max(transformValue, calculateFeathering(boundaryResult, boundary.featherType))
+			transformValue = max(transformValue, calculateFeathering(boundary.process(x, z), boundary.featherType))
 		}
-		
-		if (!hasBoundaries)
-			transformValue = 1.0f
 		
 		if (layer.invertBoundaries)
 			transformValue = 1.0f - transformValue
 		
 		for (filter in layer.filters) {
-			if (!filter.isEnabled)
-				continue
 			transformValue = min(transformValue, calculateFeathering(filter.process(x, z, transformValue, height.height, rectangle, lookupInformation), filter.featherType))
 			if (transformValue == 0f)
 				break
@@ -293,15 +278,14 @@ class TerrainTemplate : SWGParser {
 		
 		if (transformValue > 0f) {
 			for (affector in layer.heights) {
-				if (!affector.isEnabled)
-					continue
-				
 				height.height = affector.process(x, z, transformValue * height.transformValue, height.height, lookupInformation)
 			}
 		}
 		
 		val onlySubLayers = layer.boundaries.isEmpty() && layer.filters.isEmpty() && layer.heights.isEmpty()
-		val returnHeight = HeightInformation(if (onlySubLayers) height.transformValue else transformValue * height.transformValue, height.height)
+		if (onlySubLayers)
+			transformValue = 1f
+		val returnHeight = HeightInformation(transformValue * height.transformValue, height.height)
 		for (child in layer.children) {
 			getLayerHeight(child, x, z, returnHeight)
 		}

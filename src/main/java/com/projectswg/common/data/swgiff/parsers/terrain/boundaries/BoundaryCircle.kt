@@ -7,9 +7,6 @@ import com.projectswg.common.data.swgiff.parsers.SWGParser
 
 class BoundaryCircle : BoundaryLayer(), SWGParser {
 	
-	override val extent: Rectangle2f
-		get() = Rectangle2f(x - radius, z - radius, x + radius, z + radius)
-	
 	private var x = 0f
 	private var z = 0f
 	private var radius = 0f
@@ -51,6 +48,7 @@ class BoundaryCircle : BoundaryLayer(), SWGParser {
 			z = chunk.readFloat()
 			radius = chunk.readFloat()
 			radiusSquared = radius * radius
+			extent = Rectangle2f(x - radius, z - radius, x + radius, z + radius)
 			
 			if (form.version == 2) {
 				featherType = chunk.readInt()
