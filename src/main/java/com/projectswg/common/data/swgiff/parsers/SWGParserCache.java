@@ -47,6 +47,7 @@ class SWGParserCache {
 		try {
 			return SWGParser.parse(IffForm.read(file));
 		} catch (IOException e) {
+			e.printStackTrace();
 			return null;
 		}
 	}
