@@ -5,8 +5,6 @@ import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.terrain.TerrainInfoLookup
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.sin
 
 class FilterSlope : FilterLayer() {

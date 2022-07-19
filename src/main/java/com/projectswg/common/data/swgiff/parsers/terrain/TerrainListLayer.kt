@@ -90,27 +90,6 @@ class TerrainListLayer : TerrainLayer(), SWGParser {
 		}
 	}
 	
-	fun printTree(indent: Int=0) {
-		if (!isEnabled || !hasAffectors())
-			return
-		
-		val indentStr = "\t".repeat(indent)
-		for (layer in boundaries) {
-			if (layer.isEnabled)
-				println("$indentStr$layer")
-		}
-		for (layer in filters) {
-			if (layer.isEnabled)
-				println("$indentStr$layer")
-		}
-		for (layer in heights) {
-			if (layer.isEnabled)
-				println("$indentStr$layer")
-		}
-		for (child in children)
-			child.printTree(indent+1)
-	}
-	
 	private fun recalculateExtent() {
 		val rectangle = Rectangle2f(Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
 		for (boundary in boundaries) {

@@ -2,8 +2,6 @@ package com.projectswg.common.data.swgiff.parsers.terrain.bitmap
 
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.*
 
 class BitmapGroup : SWGParser {
