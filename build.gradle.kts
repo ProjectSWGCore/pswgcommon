@@ -37,6 +37,7 @@ sourceSets {
 	test {
 		dependencies {
 			testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version="5.8.1")
+			testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version="5.8.1")
 			testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version="5.8.1")
 		}
 	}
