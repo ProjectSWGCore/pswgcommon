@@ -21,8 +21,8 @@ class BoundaryPolygon : BoundaryLayer() {
 	var waterType = 0
 		private set
 	
-	override fun isContained(x: Float, z: Float): Boolean {
-		if (!extent.isWithin(x, z))
+	override fun isContained(p: Point2f): Boolean {
+		if (!extent.isWithin(p))
 			return false
 		
 		var j = vertices.size - 1
@@ -32,20 +32,19 @@ class BoundaryPolygon : BoundaryLayer() {
 			val v2 = vertices[j]
 			j = i
 			
-			if ((((v1.z <= z) && (z < v2.z)) || ((v2.z <= z) && (z < v1.z))) && x < (v2.x - v1.x) * (z - v1.z) / (v2.z - v1.z) + v1.x)
+			if ((((v1.z <= p.z) && (p.z < v2.z)) || ((v2.z <= p.z) && (p.z < v1.z))) && p.x < (v2.x - v1.x) * (p.z - v1.z) / (v2.z - v1.z) + v1.x)
 				crossings++
 		}
 		return crossings % 2 == 1
 	}
 	
-	override fun process(x: Float, z: Float): Float {
-		if (!isContained(x, z))
+	override fun process(p: Point2f): Float {
+		if (!isContained(p))
 			return 0.0f
 		
 		if (featherAmount == 0f)
 			return 1.0f
 		
-		val p = Point2f(x, z)
 		val closestPoint = p.getClosestPointOnPolygon(vertices)
 		val closestDistance = p.squaredDistanceTo(closestPoint)
 		

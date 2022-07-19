@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.filters
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
@@ -10,7 +11,7 @@ class FilterHeight : FilterLayer() {
 	private var minHeight = 0f
 	private var maxHeight = 0f
 	
-	override fun process(x: Float, z: Float, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
 		if (baseValue <= minHeight || baseValue >= maxHeight)
 			return 0f
 		

@@ -13,15 +13,14 @@ class BoundaryPolyLine : BoundaryLayer() {
 	private var vertices = ArrayList<Point2f>()
 	private var lineWidth = 0f
 	
-	override fun isContained(x: Float, z: Float): Boolean {
-		return extent.isWithin(x, z)
+	override fun isContained(p: Point2f): Boolean {
+		return extent.isWithin(p)
 	}
 	
-	override fun process(x: Float, z: Float): Float {
-		if (!isContained(x, z))
+	override fun process(p: Point2f): Float {
+		if (!isContained(p))
 			return 0.0f
 		
-		val p = Point2f(x, z)
 		val closestPoint = p.getClosestPointOnPolygon(vertices, closed=false)
 		val closestDistance = p.squaredDistanceTo(closestPoint)
 		

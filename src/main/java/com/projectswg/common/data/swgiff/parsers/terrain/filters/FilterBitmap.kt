@@ -1,11 +1,11 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.filters
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.terrain.TerrainInfoLookup
 import com.projectswg.common.data.swgiff.parsers.terrain.bitmap.TargaBitmap
-import kotlin.math.min
 
 class FilterBitmap : FilterLayer() {
 	
@@ -15,15 +15,15 @@ class FilterBitmap : FilterLayer() {
 	private var gain = 0f
 	private var bitmap: TargaBitmap? = null
 	
-	override fun process(x: Float, z: Float, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
 		if (bitmap == null)
 			bitmap = terrainInfo.bitmaps[bitmapId]?.bitmap
 		
 		val bitmap = bitmap ?: return 1f  // Didnt find bitmap for filter
 		val width = bitmap.width
 		val height = bitmap.height
-		val transformedX = (x - rectangle.minX) * width / (rectangle.maxX - rectangle.minX)
-		val transformedZ = (z - rectangle.minZ) * height / (rectangle.maxZ - rectangle.minZ)
+		val transformedX = (p.x - rectangle.minX) * width / (rectangle.maxX - rectangle.minX)
+		val transformedZ = (p.z - rectangle.minZ) * height / (rectangle.maxZ - rectangle.minZ)
 		val bitmapZ0 = transformedZ.toInt()
 		val bitmapX0 = transformedX.toInt()
 		val bitmapX1 = bitmapX0 + 1

@@ -23,37 +23,35 @@ class AffectorHeightRoad : AffectorHeightLayer(), SWGParser {
 	private var hasFixedHeights = false
 	private var extent = Rectangle2f(Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
 	
-	override fun process(x: Float, z: Float, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
 		if (transformAmount <= 0)
 			return baseValue
 		
-		val p = Point2f(x, z)
 		if (!extent.isWithin(p, width))
 			return baseValue
 		
 		val halfWidth = width / 2f
 		val halfWidthSquared = halfWidth*halfWidth
 		val closestLine = p.getClosestLineOnPolygon(vertices, closed=false)
-		val startIndex = vertices.indexOf(closestLine.p2)
-		val matchPoint = p.getClosestPointOnPolygon(if (startIndex < segments.size) segments[startIndex] else segments[0], closed=false)
 		
 		if (closestLine.squaredDistance >= halfWidthSquared)
 			return baseValue
 		
 		if (hasFixedHeights)
-			return getRampedHeight(x, z, baseValue)
+			return getRampedHeight(p, closestLine, baseValue)
 		
+		val startIndex = vertices.indexOf(closestLine.p2)
+		val matchPoint = p.getClosestPointOnPolygon(if (startIndex < segments.size) segments[startIndex] else segments[0], closed=false)
 		val t = sqrt(closestLine.squaredDistance) / halfWidth
+		
 		if (t <= (1 - featheringAmount))
 			return matchPoint.y.toFloat()
 		
 		return matchPoint.y.toFloat() + (baseValue - matchPoint.y.toFloat()) * t
 	}
 	
-	private fun getRampedHeight(x: Float, y: Float, baseValue: Float): Float {
-		val p = Point2f(x, y)
+	private fun getRampedHeight(p: Point2f, closestLine: Point2f.ClosestLine2f, baseValue: Float): Float {
 		val widthSquared = width*width / 4f
-		val closestLine = p.getClosestLineOnPolygon(vertices, closed=false)
 		
 		if (closestLine.squaredDistance >= widthSquared)
 			return baseValue

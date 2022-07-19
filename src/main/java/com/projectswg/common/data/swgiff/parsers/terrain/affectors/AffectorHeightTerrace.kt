@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.affectors
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
@@ -10,7 +11,7 @@ class AffectorHeightTerrace : AffectorHeightLayer(), SWGParser {
 	private var fraction = 0f
 	private var height = 0f
 	
-	override fun process(x: Float, z: Float, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
 		if (transformAmount <= 0f || height <= 0f)
 			return baseValue
 		

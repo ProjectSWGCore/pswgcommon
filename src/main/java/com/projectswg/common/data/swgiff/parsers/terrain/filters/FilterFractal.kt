@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.filters
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
@@ -12,9 +13,9 @@ class FilterFractal : FilterLayer() {
 	var max = 0f
 	var step = 0f
 	
-	override fun process(x: Float, z: Float, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformValue: Float, baseValue: Float, rectangle: Rectangle2f, terrainInfo: TerrainInfoLookup): Float {
 		val fractal = terrainInfo.fractals[fractalId] ?: return 0f
-		val noiseResult = fractal.getNoise(x, z) * step
+		val noiseResult = fractal.getNoise(p.x, p.z) * step
 		
 		if (noiseResult !in min..max)
 			return 0f
@@ -24,7 +25,7 @@ class FilterFractal : FilterLayer() {
 			return (noiseResult - min) / feather
 		if (noiseResult > max - feather)
 			return (max - noiseResult) / feather
-		return 1f;
+		return 1f
 	}
 	
 	override fun read(form: IffForm) {

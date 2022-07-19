@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.boundaries
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
@@ -19,12 +20,12 @@ class BoundaryRectangle : BoundaryLayer() {
 	var waterType = 0
 		private set
 	
-	override fun isContained(x: Float, z: Float): Boolean {
-		return extent.isWithin(x, z)
+	override fun isContained(p: Point2f): Boolean {
+		return extent.isWithin(p)
 	}
 	
-	override fun process(x: Float, z: Float): Float {
-		if (!isContained(x, z))
+	override fun process(p: Point2f): Float {
+		if (!isContained(p))
 			return 0f
 		val minX = extent.minX
 		val minZ = extent.minZ
@@ -33,11 +34,10 @@ class BoundaryRectangle : BoundaryLayer() {
 		
 		val feather = min(maxX - minX, maxZ - minZ) * featherAmount / 2f
 		
-		if (x in minX+feather..maxX-feather && z in minZ+feather..maxZ-feather)
+		if (p.x in minX+feather..maxX-feather && p.z in minZ+feather..maxZ-feather)
 			return 1f
 		
-		
-		return min(feather, min(x - minX, min(maxX - x, min(z - minZ, maxZ - z)))) / feather
+		return min(feather, min(p.x - minX, min(maxX - p.x, min(p.z - minZ, maxZ - p.z)))) / feather
 	}
 	
 	override fun read(form: IffForm) {

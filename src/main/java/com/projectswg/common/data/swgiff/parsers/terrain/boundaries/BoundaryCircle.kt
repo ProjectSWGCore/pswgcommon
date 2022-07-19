@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.boundaries
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.location.Rectangle2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
@@ -12,19 +13,19 @@ class BoundaryCircle : BoundaryLayer(), SWGParser {
 	private var radius = 0f
 	private var radiusSquared = 0f
 	
-	override fun isContained(x: Float, z: Float): Boolean {
-		val rX = x - this.x
-		val rZ = z - this.z
+	override fun isContained(p: Point2f): Boolean {
+		val rX = p.x - this.x
+		val rZ = p.z - this.z
 		
 		return rX*rX + rZ*rZ <= radius*radius
 	}
 	
-	override fun process(x: Float, z: Float): Float {
-		if (!isContained(x, z))
+	override fun process(p: Point2f): Float {
+		if (!isContained(p))
 			return 0f
 		
-		val distanceX = x - this.x
-		val distanceZ = z - this.z
+		val distanceX = p.x - this.x
+		val distanceZ = p.z - this.z
 		val distanceSquared = distanceX*distanceX + distanceZ*distanceZ
 		if (distanceSquared >= radiusSquared)
 			return 0f

@@ -1,6 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain
 
-import com.projectswg.common.data.location.Rectangle2f
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
@@ -176,7 +176,7 @@ class TerrainTemplate : SWGParser {
 		var height = -Float.MAX_VALUE
 		if (useGlobalWaterTable)
 			height = globalWaterTableHeight
-		height = max(height, getWaterHeightRecursive(x, z, topTerrainLayer))
+		height = max(height, getWaterHeightRecursive(Point2f(x, z), topTerrainLayer))
 		
 		return if (height == -Float.MAX_VALUE) Float.NaN else height
 	}
@@ -246,27 +246,28 @@ class TerrainTemplate : SWGParser {
 	}
 	
 	private fun getHeightAt(x: Float, z: Float): HeightInformation {
+		val p = Point2f(x, z)
 		val height = HeightInformation(1f, 0f)
-		getLayerHeight(topTerrainLayer, x, z, height)
+		getLayerHeight(topTerrainLayer, p, height)
 		return height
 	}
 	
-	private fun getLayerHeight(layer: TerrainListLayer, x: Float, z: Float, height: HeightInformation) {
+	private fun getLayerHeight(layer: TerrainListLayer, p: Point2f, height: HeightInformation) {
 		var transformValue = if (layer.boundaries.isEmpty()) 1f else 0f
 		
 		val rectangle = layer.extent
 		for (boundary in layer.boundaries) {
-			if (!boundary.isContained(x, z))
+			if (!boundary.isContained(p))
 				continue
 			
-			transformValue = max(transformValue, calculateFeathering(boundary.process(x, z), boundary.featherType))
+			transformValue = max(transformValue, calculateFeathering(boundary.process(p), boundary.featherType))
 		}
 		
 		if (layer.invertBoundaries)
 			transformValue = 1.0f - transformValue
 		
 		for (filter in layer.filters) {
-			transformValue = min(transformValue, calculateFeathering(filter.process(x, z, transformValue, height.height, rectangle, lookupInformation), filter.featherType))
+			transformValue = min(transformValue, calculateFeathering(filter.process(p, transformValue, height.height, rectangle, lookupInformation), filter.featherType))
 			if (transformValue == 0f)
 				break
 		}
@@ -278,7 +279,7 @@ class TerrainTemplate : SWGParser {
 		
 		if (transformValue > 0f) {
 			for (affector in layer.heights) {
-				height.height = affector.process(x, z, transformValue * height.transformValue, height.height, lookupInformation)
+				height.height = affector.process(p, transformValue * height.transformValue, height.height, lookupInformation)
 			}
 		}
 		
@@ -287,7 +288,7 @@ class TerrainTemplate : SWGParser {
 			transformValue = 1f
 		val returnHeight = HeightInformation(transformValue * height.transformValue, height.height)
 		for (child in layer.children) {
-			getLayerHeight(child, x, z, returnHeight)
+			getLayerHeight(child, p, returnHeight)
 		}
 		height.height = returnHeight.height
 	}
@@ -302,17 +303,17 @@ class TerrainTemplate : SWGParser {
 		}
 	}
 	
-	private fun getWaterHeightRecursive(x: Float, z: Float, layer: TerrainListLayer): Float {
+	private fun getWaterHeightRecursive(p: Point2f, layer: TerrainListLayer): Float {
 		var waterHeight = -Float.MAX_VALUE
 		for (boundary in layer.boundaries) {
-			if (boundary is BoundaryPolygon && boundary.useWaterHeight && boundary.isContained(x, z)) {
+			if (boundary is BoundaryPolygon && boundary.useWaterHeight && boundary.isContained(p)) {
 				waterHeight = max(waterHeight, boundary.waterHeight)
-			} else if (boundary is BoundaryRectangle && boundary.useWaterHeight && boundary.isContained(x, z)) {
+			} else if (boundary is BoundaryRectangle && boundary.useWaterHeight && boundary.isContained(p)) {
 				waterHeight = max(waterHeight, boundary.waterHeight)
 			}
 		}
 		for (child in layer.children) {
-			waterHeight = max(waterHeight, getWaterHeightRecursive(x, z, child))
+			waterHeight = max(waterHeight, getWaterHeightRecursive(p, child))
 		}
 		return waterHeight
 	}

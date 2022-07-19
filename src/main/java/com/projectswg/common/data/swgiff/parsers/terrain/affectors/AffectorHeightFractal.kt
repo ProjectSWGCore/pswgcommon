@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.affectors
 
+import com.projectswg.common.data.location.Point2f
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
@@ -11,11 +12,11 @@ class AffectorHeightFractal : AffectorHeightLayer(), SWGParser {
 	private var transformType = 0
 	private var height = 0f
 	
-	override fun process(x: Float, z: Float, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
+	override fun process(p: Point2f, transformAmount: Float, baseValue: Float, terrainInfo: TerrainInfoLookup): Float {
 		if (transformAmount == 0f)
 			return baseValue
 		val fractal = terrainInfo.fractals[fractalId] ?: return 0f
-		val noiseResult = fractal.getNoise(x, z) * height
+		val noiseResult = fractal.getNoise(p.x, p.z) * height
 		
 		return when (transformType) {
 			1 -> baseValue + transformAmount * noiseResult
