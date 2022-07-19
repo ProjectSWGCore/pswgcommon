@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
-import java.net.URISyntaxException
 
 class TestTerrainEngine {
 	
@@ -24,21 +23,20 @@ class TestTerrainEngine {
 	inner class HeightCoordinateReading {
 		private var engine: TerrainTemplate? = null
 		@BeforeEach
-		@Throws(URISyntaxException::class)
 		fun setup() {
 			engine = createEngine("endor.trn")
 		}
 		
 		@Test
 		fun testCanReadHeightCoordinateAtEndorSmugglerOutpostBetweenHilltops() {
-			val actual = engine!!.getTerrainHeight(-935.0f, 1555.0f).height
+			val actual = engine?.getTerrainHeight(-935.0f, 1555.0f)?.height ?: return
 			val expected = 76.00f
 			assertEquals(expected, actual, 0.01f, "Unexpected height coordinate")
 		}
 		
 		@Test
 		fun testCanReadHeightAtEndorSmugglerOutpostSmallHilltop() {
-			val actual = engine!!.getTerrainHeight(-1010.0f, 1525.0f).height
+			val actual = engine?.getTerrainHeight(-1010.0f, 1525.0f)?.height ?: return
 			val expected = 74.69f
 			assertEquals(expected, actual, 0.01f, "Unexpected height coordinate")
 		}
@@ -50,20 +48,19 @@ class TestTerrainEngine {
 		private var engine: TerrainTemplate? = null
 		
 		@BeforeEach
-		@Throws(URISyntaxException::class)
 		fun setup() {
 			engine = createEngine("corellia.trn")
 		}
 		
 		@Test
 		fun testCanDetectWaterPositive() {
-			val water = engine!!.isWater(6700.0f, 2700.0f)
+			val water = engine?.isWater(6700.0f, 2700.0f) ?: return
 			Assertions.assertTrue(water, "The ocean on Corellia should be considered water")
 		}
 		
 		@Test
 		fun testCanDetectWaterNegative() {
-			val water = engine!!.isWater(-6600.0f, 2100.0f)
+			val water = engine?.isWater(-6600.0f, 2100.0f) ?: return
 			Assertions.assertFalse(water, "The land on Corellia should not be considered water")
 		}
 	}
