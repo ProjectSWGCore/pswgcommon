@@ -163,13 +163,14 @@ class TerrainTemplate : SWGParser {
 		return IffForm.of("PTAT", version, data, terrainGeneratorForm)
 	}
 	
-	fun getHeight(x: Float, z: Float): Float {
+	fun getHeight(x: Float, z: Float): TerrainInformation {
 		val waterHeight = getWaterHeight(x, z)
 		val terrainHeight = getTerrainHeight(x, z)
 		
-		if (waterHeight.isNaN())
+		if (waterHeight.isNaN() || terrainHeight.height >= waterHeight)
 			return terrainHeight
-		return max(waterHeight, terrainHeight)
+		
+		return TerrainInformation(waterHeight, 0f, 1f, 0f)
 	}
 	
 	fun getWaterHeight(x: Float, z: Float): Float {
@@ -187,10 +188,10 @@ class TerrainTemplate : SWGParser {
 		if (waterHeight.isNaN())
 			return false
 		
-		return getTerrainHeight(x, z) <= waterHeight
+		return getTerrainHeight(x, z).height <= waterHeight
 	}
 	
-	fun getTerrainHeight(x: Float, z: Float): Float {
+	fun getTerrainHeight(x: Float, z: Float): TerrainInformation {
 		// can be cached
 		val tileSize = chunkWidth / (2*numberOfTilesPerChunk)
 		val halfMap = mapWidth / 2
@@ -241,8 +242,9 @@ class TerrainTemplate : SWGParser {
 		val cy = planeInfo[5] * planeInfo[6] - planeInfo[3] * planeInfo[8]
 		val cz = planeInfo[3] * planeInfo[7] - planeInfo[4] * planeInfo[6]
 		val planeOffset = planeInfo[0] * cx + planeInfo[1] * cy + planeInfo[2] * cz
+		val height = (planeOffset - cx * x - cz * z) / cy
 		
-		return (planeOffset - cx * x - cz * z) / cy
+		return TerrainInformation(height, cx, cy, cz)
 	}
 	
 	private fun getHeightAt(x: Float, z: Float): HeightInformation {
@@ -318,6 +320,7 @@ class TerrainTemplate : SWGParser {
 		return waterHeight
 	}
 	
-	class HeightInformation(var transformValue: Float, var height: Float)
+	data class TerrainInformation(val height: Float, val normalX: Float, val normalY: Float, val normalZ: Float)
+	private class HeightInformation(var transformValue: Float, var height: Float)
 	
 }
