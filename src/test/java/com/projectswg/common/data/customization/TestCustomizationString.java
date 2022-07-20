@@ -27,8 +27,9 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCustomizationString {
 	
@@ -37,8 +38,8 @@ public class TestCustomizationString {
 		CustomizationString string = new CustomizationString();
 		String key = "test";
 		
-		Assert.assertNull(string.put(key, 0));	// Nothing should be replaced because string's empty
-		Assert.assertEquals((Integer) 0, string.put(key, 1));	// Same key, so the variable we put earlier should be replaced
+		assertNull(string.put(key, 0));	// Nothing should be replaced because string's empty
+		assertEquals((Integer) 0, string.put(key, 1));	// Same key, so the variable we put earlier should be replaced
 	}
 	
 	@Test
@@ -48,7 +49,7 @@ public class TestCustomizationString {
 		
 		string.put(key, 0);
 		
-		Assert.assertEquals((Integer) 0, string.remove(key));	// Same key, so the variable we put earlier should be returned
+		assertEquals((Integer) 0, string.remove(key));	// Same key, so the variable we put earlier should be returned
 	}
 	
 	@Test
@@ -56,25 +57,25 @@ public class TestCustomizationString {
 		CustomizationString string = new CustomizationString();
 		String key = "test";
 		
-		Assert.assertTrue(string.isEmpty());
+		assertTrue(string.isEmpty());
 		string.put(key, 0);
-		Assert.assertFalse(string.isEmpty());
+		assertFalse(string.isEmpty());
 		string.remove(key);
-		Assert.assertTrue(string.isEmpty());
+		assertTrue(string.isEmpty());
 	}
 	
 	@Test
 	public void testGetLength() {
 		CustomizationString string = new CustomizationString();
-		Assert.assertEquals(Short.BYTES, string.getLength());	// Should be an empty array at this point
+		assertEquals(Short.BYTES, string.getLength());	// Should be an empty array at this point
 		
 		string.put("first", 7);
 		int expected = Short.BYTES + 7;
-		Assert.assertEquals(expected, string.getLength());
+		assertEquals(expected, string.getLength());
 		
 		string.put("second", 0xFF);
 		expected += 4;	// Two escape characters, an ID and a value
-		Assert.assertEquals(expected, string.getLength());
+		assertEquals(expected, string.getLength());
 	}
 	
 }

@@ -73,7 +73,7 @@ public class DataTransform extends ObjectController {
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 40);
+		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 4 + l.getLength() + 4);
 		encodeHeader(data);
 		data.addInt(updateCounter);
 		data.addEncodable(l);

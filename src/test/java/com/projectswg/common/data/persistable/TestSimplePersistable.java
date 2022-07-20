@@ -30,8 +30,9 @@ import com.projectswg.common.network.NetBufferStream;
 import com.projectswg.common.persistable.InputPersistenceStream;
 import com.projectswg.common.persistable.OutputPersistenceStream;
 import com.projectswg.common.persistable.Persistable;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
 
@@ -41,7 +42,7 @@ public class TestSimplePersistable {
 	public void testInputPersistenceStream() throws IOException {
 		InputPersistenceStream is = new InputPersistenceStream(new ByteArrayInputStream(createBuffer()));
 		PersistableObject po = is.read(PersistableObject::create);
-		Assert.assertEquals(13, po.getSomeInt());
+		assertEquals(13, po.getSomeInt());
 		is.close();
 	}
 	
@@ -51,7 +52,7 @@ public class TestSimplePersistable {
 		OutputPersistenceStream os = new OutputPersistenceStream(baos);
 		PersistableObject po = new PersistableObject(13);
 		os.write(po);
-		Assert.assertArrayEquals(createBuffer(), baos.toByteArray());
+		assertArrayEquals(createBuffer(), baos.toByteArray());
 		os.close();
 	}
 	
@@ -65,7 +66,7 @@ public class TestSimplePersistable {
 		InputPersistenceStream is = new InputPersistenceStream(new FileInputStream(tmp));
 		PersistableObject recreated = is.read(PersistableObject::create);
 		is.close();
-		Assert.assertEquals(original.getSomeInt(), recreated.getSomeInt());
+		assertEquals(original.getSomeInt(), recreated.getSomeInt());
 	}
 	
 	@Test
@@ -78,9 +79,9 @@ public class TestSimplePersistable {
 		os.write(original);
 		os.close();
 		InputPersistenceStream is = new InputPersistenceStream(new FileInputStream(tmp));
-		Assert.assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
-		Assert.assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
-		Assert.assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
+		assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
+		assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
+		assertEquals(original.getSomeInt(), is.read(PersistableObject::create).getSomeInt());
 		is.close();
 	}
 	private byte [] createBuffer() {

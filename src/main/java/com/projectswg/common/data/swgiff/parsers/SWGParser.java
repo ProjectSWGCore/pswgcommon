@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public interface SWGParser {
 	
-	void read(IffForm form);
+	void read(@NotNull IffForm form);
 	IffForm write();
 	
 	static <T extends SWGParser> T parse(String file) {

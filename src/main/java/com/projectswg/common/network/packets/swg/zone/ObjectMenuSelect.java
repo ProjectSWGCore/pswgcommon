@@ -50,7 +50,7 @@ public class ObjectMenuSelect extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		objectId = data.getLong();
-		selection = data.getByte();
+		selection = (short) (data.getByte() & 0xFF);	// Unsigned byte
 	}
 	
 	@Override

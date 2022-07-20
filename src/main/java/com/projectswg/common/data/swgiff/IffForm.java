@@ -161,6 +161,17 @@ public class IffForm extends IffNode {
 		return false;
 	}
 	
+	public int readAllForms(Consumer<IffForm> processor) {
+		int count = 0;
+		for (IffNode child : children) {
+			if (child.isForm() && !child.isRead()) {
+				processor.accept((IffForm) child);
+				count++;
+			}
+		}
+		return count;
+	}
+	
 	public int readAllForms(String tag, Consumer<IffForm> processor) {
 		int count = 0;
 		for (IffNode child : children) {

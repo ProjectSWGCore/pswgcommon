@@ -1,8 +1,9 @@
 package com.projectswg.common.data.swgiff;
 
+import java.io.Closeable;
 import java.util.regex.Pattern;
 
-public abstract class IffNode implements AutoCloseable {
+public abstract class IffNode implements AutoCloseable, Closeable {
 	
 	private static final Pattern VERSION_PATTERN = Pattern.compile("\\d{4}");
 	

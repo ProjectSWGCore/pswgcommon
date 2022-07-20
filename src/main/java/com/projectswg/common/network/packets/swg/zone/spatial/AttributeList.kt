@@ -40,8 +40,8 @@ class AttributeList : Encodable {
 		map[attribute] = formattedValue + suffix
 	}
 	
-	override fun decode(data: NetBuffer?) {
-		val size = data!!.int
+	override fun decode(data: NetBuffer) {
+		val size = data.int
 		
 		for (i in 0..size) {
 			map[data.ascii] = data.unicode
@@ -60,13 +60,14 @@ class AttributeList : Encodable {
 		return data.array()
 	}
 
-	override fun getLength(): Int {
-		var size = 4
-		for (entry in map) {
-			size += 2 + entry.key.length
-			size += 4 + entry.value.length * 2
+	override val length: Int
+		get() {
+			var size = 4
+			for (entry in map) {
+				size += 2 + entry.key.length
+				size += 4 + entry.value.length * 2
+			}
+
+			return size
 		}
-		
-		return size
-	}
 }

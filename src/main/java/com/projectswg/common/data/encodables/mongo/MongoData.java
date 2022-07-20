@@ -39,7 +39,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class MongoData implements Map<String, Object> {
 	
@@ -535,8 +534,10 @@ public class MongoData implements Map<String, Object> {
 			return input;
 		} else if (input instanceof MongoData) {
 			return ((MongoData) input).toDocument();
-		} else if (input instanceof Float || input instanceof Double) {
+		} else if (input instanceof Double) {
 			return ((Number) input).doubleValue();
+		} else if (input instanceof Float) {
+			return ((Number) input).floatValue();
 		} else if (input instanceof Number) {
 			return ((Number) input).intValue();
 		} else if (input instanceof MongoPersistable) {
@@ -609,7 +610,8 @@ public class MongoData implements Map<String, Object> {
 	@NotNull
 	@Override
 	public Set<Entry<String, Object>> entrySet() {
-		return doc.entrySet().stream().map(e -> Map.entry(e.getKey(), e.getValue())).collect(Collectors.toSet());
+		Map<String, Object> copy = new HashMap<>(doc);
+		return copy.entrySet();
 	}
 	
 	public static MongoData store(MongoPersistable obj) {
