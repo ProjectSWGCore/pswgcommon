@@ -1,7 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers;
 
 import com.projectswg.common.data.swgiff.IffForm;
-import me.joshlarson.jlcommon.log.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,10 +23,8 @@ public interface SWGParser {
 	@Nullable
 	static <T extends SWGParser> T parse(IffForm form) {
 		SWGParser parser = SWGParserFactory.createParser(form.getTag());
-		if (parser == null) {
-			Log.w("Unknown FORM for SWGParser: %s", form.getTag());
+		if (parser == null)
 			return null;
-		}
 		parser.read(form);
 		{
 			@SuppressWarnings("unchecked")
