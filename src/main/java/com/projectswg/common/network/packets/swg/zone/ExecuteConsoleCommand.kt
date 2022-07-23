@@ -17,8 +17,7 @@ class ExecuteConsoleCommand : SWGPacket() {
 		commands += "/$command"
 	}
 
-	override fun decode(data: NetBuffer?) {
-		data ?: return
+	override fun decode(data: NetBuffer) {
 		if (!super.checkDecode(data, crc)) {
 			return
 		}

@@ -32,6 +32,7 @@ import java.net.SocketAddress;
 import com.projectswg.common.data.CRC;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class SWGPacket {
 	
@@ -76,7 +77,7 @@ public abstract class SWGPacket {
 		return false;
 	}
 	
-	public abstract void decode(NetBuffer data);
+	public abstract void decode(@NotNull NetBuffer data);
 	public abstract NetBuffer encode();
 	
 	protected void packetAssert(boolean condition, String constraint) {
