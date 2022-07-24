@@ -11,3 +11,6 @@ build
 .gradle
 gradle
 gradlew*
+
+# Holocore
+clientdata
