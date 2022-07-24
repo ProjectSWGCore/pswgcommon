@@ -30,6 +30,7 @@ import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
 import com.projectswg.common.network.packets.swg.zone.*;
+import com.projectswg.common.network.packets.swg.zone.structures.EnterStructurePlacementModeMessage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
 import com.projectswg.common.network.packets.swg.ServerUnixEpochTime;
@@ -234,6 +235,7 @@ public enum PacketType {
 	GALAXY_LOOP_TIMES_RESPONSE					(GalaxyLoopTimesResponse.CRC, 		GalaxyLoopTimesResponse.class),
 	PARAMETERS_MESSAGE							(ParametersMessage.CRC, 			ParametersMessage.class),
 	DELTA										(DeltasMessage.CRC, 				DeltasMessage.class),
+	CHARACTER_SHEET_RESPONSE_MESSAGE			(CharacterSheetResponseMessage.Companion.getCRC(), CharacterSheetResponseMessage.class),
 	SERVER_TIME_MESSAGE							(ServerTimeMessage.CRC, 			ServerTimeMessage.class),
 	SET_WAYPOINT_COLOR							(SetWaypointColor.CRC, 				SetWaypointColor.class),
 	SERVER_WEATHER_MESSAGE						(ServerWeatherMessage.CRC, 			ServerWeatherMessage.class),
@@ -296,6 +298,7 @@ public enum PacketType {
 		UPDATE_CELL_PERMISSIONS_MESSAGE			(UpdateCellPermissionMessage.CRC, 		UpdateCellPermissionMessage.class),
 		GET_MAP_LOCATIONS_MESSAGE				(GetMapLocationsMessage.CRC, 			GetMapLocationsMessage.class),
 		GET_MAP_LOCATIONS_RESPONSE_MESSAGE		(GetMapLocationsResponseMessage.CRC, 	GetMapLocationsResponseMessage.class),
+		ENTER_STRUCTURE_PLACEMENT_MODE_MESSAGE	(EnterStructurePlacementModeMessage.Companion.getCRC(), EnterStructurePlacementModeMessage.class),
 
 		// Spatial
 		UPDATE_POSTURE_MESSAGE					(UpdatePostureMessage.CRC, 					UpdatePostureMessage.class),

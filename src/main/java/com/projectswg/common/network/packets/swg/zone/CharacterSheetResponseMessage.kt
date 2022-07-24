@@ -25,35 +25,76 @@
  * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
  ***********************************************************************************/
 
-package com.projectswg.common.network.packets.swg.zone.structures
+package com.projectswg.common.network.packets.swg.zone
 
+import com.projectswg.common.data.location.Point3D
 import com.projectswg.common.network.NetBuffer
 import com.projectswg.common.network.packets.SWGPacket
 
-data class EnterStructurePlacementModeMessage(
-	var deedId: Long = 0,
-	var template: String = ""
+data class CharacterSheetResponseMessage(
+	var bornDate: Int = 0,
+	var played: Int = 0,
+	var bindLocation: Point3D = Point3D(),
+	var bindPlanet: String = "",
+	var bankLocation: Point3D = Point3D(),
+	var bankPlanet: String = "",
+	var residenceLocation: Point3D = Point3D(),
+	var residencePlanet: String = "",
+	var spouseName: String = "",
+	var lotsUsed: Int = 0,
+	var factionCrc: Int = 0,
+	var factionStatus: Int = 0
 ) : SWGPacket() {
 	
 	override fun decode(data: NetBuffer) {
 		if (!super.checkDecode(data, CRC))
 			return
-		deedId = data.long
-		template = data.ascii
+		bornDate = data.int
+		played = data.int
+		bindLocation.decode(data)
+		bindPlanet = data.ascii
+		bankLocation.decode(data)
+		bankPlanet = data.ascii
+		residenceLocation.decode(data)
+		residencePlanet = data.ascii
+		spouseName = data.unicode
+		lotsUsed = data.int
+		factionCrc = data.int
+		factionStatus = data.int
 	}
 	
 	override fun encode(): NetBuffer {
-		val data = NetBuffer.allocate(6 + 8 + 2 + template.length)
-		data.addShort(2)
+		val data = NetBuffer.allocate(72 +
+				bindPlanet.length + bankPlanet.length +
+				residencePlanet.length + spouseName.length * 2)
+		
+		data.addShort(13)
 		data.addInt(CRC)
-		data.addLong(deedId)
-		data.addAscii(template)
+		data.addInt(bornDate)
+		data.addInt(played)
+		data.addFloat(bindLocation.x.toFloat())
+		data.addFloat(bindLocation.y.toFloat())
+		data.addFloat(bindLocation.z.toFloat())
+		data.addAscii(bindPlanet)
+		data.addFloat(bankLocation.x.toFloat())
+		data.addFloat(bankLocation.y.toFloat())
+		data.addFloat(bankLocation.z.toFloat())
+		data.addAscii(bankPlanet)
+		data.addFloat(residenceLocation.x.toFloat())
+		data.addFloat(residenceLocation.y.toFloat())
+		data.addFloat(residenceLocation.z.toFloat())
+		data.addAscii(residencePlanet)
+		data.addUnicode(spouseName)
+		data.addInt(lotsUsed)
+		data.addInt(factionCrc)
+		data.addInt(factionStatus)
 		return data
 	}
 	
 	companion object {
 		
-		val CRC = getCrc("EnterStructurePlacementModeMessage")
+		val CRC = getCrc("CharacterSheetResponseMessage")
 		
 	}
+	
 }
