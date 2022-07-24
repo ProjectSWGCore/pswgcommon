@@ -27,9 +27,11 @@
 
 package com.projectswg.common.data.encodables.mongo;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface MongoPersistable {
 	
-	void readMongo(MongoData data);
-	void saveMongo(MongoData data);
+	void readMongo(@NotNull MongoData data);
+	void saveMongo(@NotNull MongoData data);
 	
 }
