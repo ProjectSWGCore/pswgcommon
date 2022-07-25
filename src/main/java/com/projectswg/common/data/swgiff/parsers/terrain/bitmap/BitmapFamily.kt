@@ -3,7 +3,6 @@ package com.projectswg.common.data.swgiff.parsers.terrain.bitmap
 import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.SWGParser
-import me.joshlarson.jlcommon.log.Log
 import java.io.IOException
 
 class BitmapFamily : SWGParser {
@@ -21,7 +20,6 @@ class BitmapFamily : SWGParser {
 					bitmap.readFile(value)
 					this.bitmap = bitmap
 				} catch (e: IOException) {
-					Log.e("Failed to load height bitmap: %s", value)
 					this.bitmap = null
 				}
 			}

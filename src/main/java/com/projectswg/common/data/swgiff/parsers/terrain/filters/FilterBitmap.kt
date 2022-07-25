@@ -6,6 +6,7 @@ import com.projectswg.common.data.swgiff.IffChunk
 import com.projectswg.common.data.swgiff.IffForm
 import com.projectswg.common.data.swgiff.parsers.terrain.TerrainInfoLookup
 import com.projectswg.common.data.swgiff.parsers.terrain.bitmap.TargaBitmap
+import me.joshlarson.jlcommon.log.Log
 
 class FilterBitmap : FilterLayer() {
 	
@@ -19,7 +20,12 @@ class FilterBitmap : FilterLayer() {
 		if (bitmap == null)
 			bitmap = terrainInfo.bitmaps[bitmapId]?.bitmap
 		
-		val bitmap = bitmap ?: return 1f  // Didnt find bitmap for filter
+		val bitmap = bitmap
+		if (bitmap == null) {
+			Log.e("Failed to find required terrain height bitmap: $bitmapId: ${terrainInfo.bitmaps[bitmapId]?.file}")
+			return 1f
+		}
+		
 		val width = bitmap.width
 		val height = bitmap.height
 		val transformedX = (p.x - rectangle.minX) * width / (rectangle.maxX - rectangle.minX)
