@@ -45,8 +45,8 @@ class TerrainTemplate : SWGParser {
 	var farRadialSeed = 0
 	var legacyMap = true
 	
-	private val fractalGroup = FractalGroup()
-	private val bitmapGroup = BitmapGroup()
+	val fractalGroup = FractalGroup()
+	val bitmapGroup = BitmapGroup()
 	private val lookupInformation = TerrainInfoLookup(fractalGroup.fractals, bitmapGroup.bitmaps)
 	private val topTerrainLayer = TerrainListLayer()
 	
@@ -158,9 +158,22 @@ class TerrainTemplate : SWGParser {
 		
 		val version = if (legacyMap) 14 else 15
 		
-		val terrainGeneratorForm = IffForm.of("TGEN", 0)
+		val children = ArrayList<IffForm>()
+		children.add(fractalGroup.write())
+		children.add(bitmapGroup.write())
+		val layerChildren = ArrayList<IffForm>();
+		for (child in topTerrainLayer.children) {
+			layerChildren.add(child.write())
+		}
+		children.add(IffForm.of("LYRS", layerChildren));
+		
+		val terrainGeneratorForm = IffForm.of("TGEN", 0, children)
 		
 		return IffForm.of("PTAT", version, data, terrainGeneratorForm)
+	}
+	
+	fun isBitmapReferenced(bitmapId: Int): Boolean {
+		return topTerrainLayer.isBitmapReferenced(bitmapId)
 	}
 	
 	fun getHeight(x: Float, z: Float): TerrainInformation {

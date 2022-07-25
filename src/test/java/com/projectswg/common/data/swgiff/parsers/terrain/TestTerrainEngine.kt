@@ -15,7 +15,7 @@ class TestTerrainEngine {
 	
 	companion object {
 		private fun createEngine(fileName: String): TerrainTemplate? {
-			return SWGParser.parse(File("clientdata/terrain/$fileName"))
+			return SWGParser.parse("terrain/$fileName")
 		}
 	}
 	

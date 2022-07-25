@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers;
 
+import com.projectswg.common.data.swgiff.IffForm;
 import com.projectswg.common.data.swgiff.parsers.appearance.*;
 import com.projectswg.common.data.swgiff.parsers.appearance.extents.*;
 import com.projectswg.common.data.swgiff.parsers.creation.CombinedProfessionTemplateParser;
@@ -22,62 +23,95 @@ import com.projectswg.common.data.swgiff.parsers.terrain.boundaries.BoundaryRect
 import com.projectswg.common.data.swgiff.parsers.terrain.filters.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 enum SWGParserFactory {
 	INSTANCE;
 	
-	private static final Map<String, Supplier<SWGParser>> PARSERS = new HashMap<>();
+	private final Map<String, Supplier<SWGParser>> parsers = new HashMap<>();
+	private final AtomicReference<String> basePath = new AtomicReference<>("clientdata");
 	
-	static {
+	SWGParserFactory() {
 		// Terrain
-		PARSERS.put("PTAT", TerrainTemplate::new);
-		PARSERS.put("LAYR", TerrainListLayer::new);
-		PARSERS.put("AHCN", AffectorHeightConstant::new);
-		PARSERS.put("AHFR", AffectorHeightFractal::new);
-		PARSERS.put("AHTR", AffectorHeightTerrace::new);
-		PARSERS.put("AROA", AffectorHeightRoad::new);
-		PARSERS.put("BREC", BoundaryRectangle::new);
-		PARSERS.put("BCIR", BoundaryCircle::new);
-		PARSERS.put("BPLN", BoundaryPolyLine::new);
-		PARSERS.put("BPOL", BoundaryPolygon::new);
-		PARSERS.put("FBIT", FilterBitmap::new);
-		PARSERS.put("FDIR", FilterDirection::new);
-		PARSERS.put("FFRA", FilterFractal::new);
-		PARSERS.put("FHGT", FilterHeight::new);
-		PARSERS.put("FSLP", FilterSlope::new);
-		PARSERS.put("FSHD", FilterShader::new);
+		parsers.put("PTAT", TerrainTemplate::new);
+		parsers.put("LAYR", TerrainListLayer::new);
+		parsers.put("AHCN", AffectorHeightConstant::new);
+		parsers.put("AHFR", AffectorHeightFractal::new);
+		parsers.put("AHTR", AffectorHeightTerrace::new);
+		parsers.put("AROA", AffectorHeightRoad::new);
+		parsers.put("BREC", BoundaryRectangle::new);
+		parsers.put("BCIR", BoundaryCircle::new);
+		parsers.put("BPLN", BoundaryPolyLine::new);
+		parsers.put("BPOL", BoundaryPolygon::new);
+		parsers.put("FBIT", FilterBitmap::new);
+		parsers.put("FDIR", FilterDirection::new);
+		parsers.put("FFRA", FilterFractal::new);
+		parsers.put("FHGT", FilterHeight::new);
+		parsers.put("FSLP", FilterSlope::new);
+		parsers.put("FSHD", FilterShader::new);
 		
-		PARSERS.put("APT ", AppearanceTemplateList::new);
-		PARSERS.put("APPR", AppearanceTemplate::new);
-		PARSERS.put("ARGD", SlotArrangementParser::new);
-		PARSERS.put("CELL", PortalLayoutCellTemplate::new);
-		PARSERS.put("CMPT", ComponentExtentParser::new);
-		PARSERS.put("CMSH", MeshExtentParser::new);
-		PARSERS.put("CPST", CompositeExtentParser::new);
-		PARSERS.put("CSTB", CrcStringDataParser::new);
-		PARSERS.put("DTAL", DetailExtentParser::new);
-		PARSERS.put("DTLA", DetailAppearanceTemplate::new);
-		PARSERS.put("EXBX", BoxExtentParser::new);
-		PARSERS.put("EXSP", SphereExtentParser::new);
-		PARSERS.put("FOOT", FootprintDataParser::new);
-		PARSERS.put("IDTL", IndexedTriangleListParser::new);
-		PARSERS.put("MESH", MeshAppearanceTemplate::new);
-		PARSERS.put("NULL", NullExtentParser::new);
-		PARSERS.put("PFDT", CombinedProfessionTemplateParser::new);
-		PARSERS.put("PRFI", ProfessionTemplateParser::new);
-		PARSERS.put("PRTL", PortalLayoutCellPortalTemplate::new);
-		PARSERS.put("PRTO", PortalLayoutTemplate::new);
-		PARSERS.put("SLTD", SlotDescriptorParser::new);
-		PARSERS.put("XCYL", CylinderExtentParser::new);
-		PARSERS.put("XOCL", OrientedCylinderExtentParser::new);
+		parsers.put("APT ", AppearanceTemplateList::new);
+		parsers.put("APPR", AppearanceTemplate::new);
+		parsers.put("ARGD", SlotArrangementParser::new);
+		parsers.put("CELL", PortalLayoutCellTemplate::new);
+		parsers.put("CMPT", ComponentExtentParser::new);
+		parsers.put("CMSH", MeshExtentParser::new);
+		parsers.put("CPST", CompositeExtentParser::new);
+		parsers.put("CSTB", CrcStringDataParser::new);
+		parsers.put("DTAL", DetailExtentParser::new);
+		parsers.put("DTLA", DetailAppearanceTemplate::new);
+		parsers.put("EXBX", BoxExtentParser::new);
+		parsers.put("EXSP", SphereExtentParser::new);
+		parsers.put("FOOT", FootprintDataParser::new);
+		parsers.put("IDTL", IndexedTriangleListParser::new);
+		parsers.put("MESH", MeshAppearanceTemplate::new);
+		parsers.put("NULL", NullExtentParser::new);
+		parsers.put("PFDT", CombinedProfessionTemplateParser::new);
+		parsers.put("PRFI", ProfessionTemplateParser::new);
+		parsers.put("PRTL", PortalLayoutCellPortalTemplate::new);
+		parsers.put("PRTO", PortalLayoutTemplate::new);
+		parsers.put("SLTD", SlotDescriptorParser::new);
+		parsers.put("XCYL", CylinderExtentParser::new);
+		parsers.put("XOCL", OrientedCylinderExtentParser::new);
+	}
+	
+	public void setBasePath(String basePath) {
+		this.basePath.set(basePath);
+	}
+	
+	public String getBasePath() {
+		return this.basePath.get();
 	}
 	
 	@Nullable
 	public static SWGParser createParser(String tag) {
-		Supplier<SWGParser> parser = PARSERS.get(tag);
+		Supplier<SWGParser> parser = INSTANCE.parsers.get(tag);
 		return parser == null ? null : parser.get();
 	}
+	
+	static <T extends SWGParser> T parse(String file) {
+		return parse(new File(INSTANCE.basePath.get(), file));
+	}
+	
+	static <T extends SWGParser> T parse(File file) {
+		return SWGParserCache.parseIfAbsent(file);
+	}
+	
+	@Nullable
+	static <T extends SWGParser> T parse(IffForm form) {
+		SWGParser parser = createParser(form.getTag());
+		if (parser == null)
+			return null;
+		parser.read(form);
+		{
+			@SuppressWarnings("unchecked")
+			T ret = (T) parser;
+			return ret;
+		}
+	}
+	
 }

@@ -46,7 +46,7 @@ class AffectorHeightFractal : AffectorHeightLayer(), SWGParser {
 		data.writeInt(transformType)
 		data.writeFloat(height)
 		
-		return IffForm.of("AHFR", 3, writeHeaderChunk(), IffForm.of("DATA", -1, data))
+		return IffForm.of("AHFR", 3, writeHeaderChunk(), IffForm.of("DATA", data))
 	}
 	
 	override fun toString(): String {

@@ -114,6 +114,7 @@ class FractalFamily : SWGParser {
 	
 	override fun write(): IffForm {
 		val data = IffChunk("DATA")
+		data.writeInt(seed)
 		data.writeInt(if (useBias) 1 else 0)
 		data.writeFloat(bias)
 		data.writeInt(if (useGain) 1 else 0)

@@ -251,7 +251,9 @@ public class IffChunk extends IffNode {
 		while (limit < additionalLength)
 			limit *= 2;
 		
-		this.data = ByteBuffer.wrap(Arrays.copyOf(data.array(), limit));
+		int newPosition = data.position();
+		this.data = ByteBuffer.wrap(Arrays.copyOf(data.array(), limit)).order(ByteOrder.LITTLE_ENDIAN);
+		data.position(newPosition);
 	}
 	
 	@Override

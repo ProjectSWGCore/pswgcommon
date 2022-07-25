@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -263,6 +264,53 @@ public class IffForm extends IffNode {
 			}
 		}
 		return new IffForm(tag, version, children);
+	}
+	
+	public static ByteBuffer write(IffForm form) {
+		ByteBuffer data = ByteBuffer.allocate(getIffSize(form));
+		data.order(ByteOrder.BIG_ENDIAN);
+		write(form, data);
+		assert(data.remaining() == 0);
+		data.flip();
+		return data;
+	}
+	
+	private static void write(IffForm form, ByteBuffer data) {
+		int expectedPosition = data.position() + getIffSize(form);
+		data.putInt(0x464F524D); // FORM
+		data.putInt(getIffSize(form) - 8);
+		data.put(form.getTag().getBytes(StandardCharsets.US_ASCII));
+		if (form.getVersion() != -1) {
+			data.putInt(0x464F524D); // FORM
+			data.putInt(getIffSize(form) - 20);
+			data.put(String.format("%04d", form.getVersion()).getBytes(StandardCharsets.US_ASCII));
+		}
+		
+		for (IffNode node : form.getChildren()) {
+			if (!node.isForm()) { // Start with chunks
+				byte [] chunkData = ((IffChunk) node).getData().array();
+				int chunkLength = ((IffChunk) node).getData().position();
+				data.put(node.getTag().getBytes(StandardCharsets.US_ASCII));
+				data.putInt(chunkLength);
+				data.put(chunkData, 0, chunkLength);
+			} else {
+				write((IffForm) node, data);
+			}
+		}
+		assert data.position() == expectedPosition;
+	}
+	
+	private static int getIffSize(IffForm form) {
+		int size = (form.getVersion() == -1) ? 12 : 24;
+		
+		for (IffNode node : form.getChildren()) {
+			if (!node.isForm()) { // Start with chunks
+				size += 8 + ((IffChunk) node).getData().position();
+			} else {
+				size += getIffSize((IffForm) node);
+			}
+		}
+		return size;
 	}
 	
 	private static boolean isValidIff(ByteBuffer buffer, int size) {

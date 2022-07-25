@@ -40,7 +40,7 @@ class FractalGroup : SWGParser {
 			familyData.writeInt(family.fractalId)
 			familyData.writeString(family.fractalLabel)
 			
-			families.add(IffForm.of("MFAM", family.write()))
+			families.add(IffForm.of("MFAM", familyData, family.write()))
 		}
 		
 		return IffForm.of("MGRP", 0, families)

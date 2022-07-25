@@ -6,31 +6,32 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface SWGParser {
 	
 	void read(@NotNull IffForm form);
 	IffForm write();
 	
+	static void setBasePath(String basePath) {
+		SWGParserFactory.INSTANCE.setBasePath(basePath);
+	}
+	
+	static String getBasePath() {
+		return SWGParserFactory.INSTANCE.getBasePath();
+	}
+	
 	static <T extends SWGParser> T parse(String file) {
-		return parse(new File("clientdata/"+file));
+		return SWGParserFactory.parse(file);
 	}
 	
 	static <T extends SWGParser> T parse(File file) {
-		return SWGParserCache.parseIfAbsent(file);
+		return SWGParserFactory.parse(file);
 	}
 	
 	@Nullable
 	static <T extends SWGParser> T parse(IffForm form) {
-		SWGParser parser = SWGParserFactory.createParser(form.getTag());
-		if (parser == null)
-			return null;
-		parser.read(form);
-		{
-			@SuppressWarnings("unchecked")
-			T ret = (T) parser;
-			return ret;
-		}
+		return SWGParserFactory.parse(form);
 	}
 	
 	@NotNull

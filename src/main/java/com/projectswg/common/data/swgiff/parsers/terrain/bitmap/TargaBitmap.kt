@@ -1,5 +1,6 @@
 package com.projectswg.common.data.swgiff.parsers.terrain.bitmap
 
+import com.projectswg.common.data.swgiff.parsers.SWGParser
 import java.io.FileInputStream
 import java.io.InputStream
 
@@ -24,7 +25,7 @@ class TargaBitmap {
 	
 	fun readFile(filePath: String) {
 		fileName = filePath
-		FileInputStream("$BASE_PATH/$filePath").use { inputStream ->
+		FileInputStream("${SWGParser.getBasePath()}/$filePath").use { inputStream ->
 			idLength = inputStream.readByte()
 			colorMapType = inputStream.readByte()
 			dataTypeCode = inputStream.readByte()
@@ -83,8 +84,6 @@ class TargaBitmap {
 	}
 	
 	companion object {
-		
-		private const val BASE_PATH = "clientdata"
 		
 		private fun read4ByteColorPixel(src: InputStream, dst: ByteArray, indexIn: Int) {
 			var index: Int = indexIn

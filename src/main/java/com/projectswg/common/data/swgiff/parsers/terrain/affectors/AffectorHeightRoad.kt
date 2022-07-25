@@ -138,7 +138,19 @@ class AffectorHeightRoad : AffectorHeightLayer(), SWGParser {
 		data.writeFloat(0f)
 		data.writeInt(if (hasFixedHeights) 1 else 0)
 		
-		return IffForm.of("AROA", 6, writeHeaderChunk(), data)
+		val roadSegments = ArrayList<IffChunk>()
+		for (segment in segments) {
+			val segmentChunk = IffChunk("SGMT")
+			for (point in segment) {
+				segmentChunk.writeFloat(point.x.toFloat())
+				segmentChunk.writeFloat(point.y.toFloat())
+				segmentChunk.writeFloat(point.z.toFloat())
+			}
+			roadSegments.add(segmentChunk)
+		}
+		val roadSegmentsForm = IffForm.of("ROAD", 1, roadSegments)
+		
+		return IffForm.of("AROA", 6, writeHeaderChunk(), IffForm.of("DATA", roadSegmentsForm, data))
 	}
 	
 	private fun readRoadSegments(form: IffForm) {

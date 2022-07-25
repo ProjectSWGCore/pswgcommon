@@ -100,7 +100,7 @@ class BoundaryRectangle : BoundaryLayer() {
 		data.writeString(shaderName)
 		data.writeInt(waterType)
 		
-		return IffForm.of("BREC", 0, writeHeaderChunk(), data)
+		return IffForm.of("BREC", 4, writeHeaderChunk(), data)
 	}
 	
 	override fun toString(): String {

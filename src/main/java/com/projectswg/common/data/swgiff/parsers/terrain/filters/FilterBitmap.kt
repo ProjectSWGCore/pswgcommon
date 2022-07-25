@@ -9,7 +9,7 @@ import com.projectswg.common.data.swgiff.parsers.terrain.bitmap.TargaBitmap
 
 class FilterBitmap : FilterLayer() {
 	
-	private var bitmapId = 0
+	var bitmapId = 0
 	private var min = 0f
 	private var max = 0f
 	private var gain = 0f

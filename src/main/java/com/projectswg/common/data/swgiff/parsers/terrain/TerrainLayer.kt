@@ -22,12 +22,12 @@ abstract class TerrainLayer : SWGParser {
 		}
 	}
 	
-	fun writeHeaderChunk(): IffChunk {
+	fun writeHeaderChunk(): IffForm {
 		val data = IffChunk("DATA")
 		data.writeInt(if (isEnabled) 1 else 0)
 		data.writeString(customName)
 		
-		return data
+		return IffForm.of("IHDR", 1, data)
 	}
 	
 	companion object {
