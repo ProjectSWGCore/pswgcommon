@@ -40,6 +40,7 @@ import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 import com.projectswg.common.network.packets.swg.zone.object_controller.combat.CombatAction;
 import com.projectswg.common.network.packets.swg.zone.object_controller.combat.CombatSpam;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class ObjectController extends SWGPacket {
 	
@@ -72,7 +73,6 @@ public abstract class ObjectController extends SWGPacket {
 			Log.e("Attempting to process invalid controller");
 		objectId = data.getLong();
 		data.getInt();
-		return;
 	}
 	
 	protected final void encodeHeader(NetBuffer data) {
@@ -85,7 +85,7 @@ public abstract class ObjectController extends SWGPacket {
 	}
 	
 	@Override
-	public abstract void decode(NetBuffer data);
+	public abstract void decode(@NotNull NetBuffer data);
 	@Override
 	public abstract NetBuffer encode();
 	
@@ -132,6 +132,9 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x01DB: return new BiographyUpdate(data);
 			case 0x0229: return new BuffAddUpdate(data);
 			case 0x022A: return new BuffRemoveUpdate(data);
+			case ImageDesignStartMessage.CRC: return new ImageDesignStartMessage(data);
+			case ImageDesignChangeMessage.CRC: return new ImageDesignChangeMessage(data);
+			case ImageDesignEndMessage.CRC: return new ImageDesignEndMessage(data);
 			case 0x043D: return new GroupOpenLotteryWindow(data);
 			case 0x043E: return new GroupCloseLotteryWindow(data);
 			case 0x0440: return new GroupRequestLotteryItems(data);
