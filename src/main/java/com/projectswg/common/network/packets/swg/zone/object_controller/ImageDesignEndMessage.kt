@@ -61,7 +61,18 @@ class ImageDesignEndMessage : ObjectController {
 	}
 
 	override fun encode(): NetBuffer {
-		val data = NetBuffer.allocate(HEADER_LENGTH + 26)
+		val booleanBytes = 3
+		var morphParametersSize = Integer.BYTES
+		for (morphParameter in morphParameters) {
+			morphParametersSize += morphParameter.length
+		}
+		var indexParametersSize = Integer.BYTES
+		for (indexParameter in indexParameters) {
+			indexParametersSize += indexParameter.length
+		}
+		val holoemoteLength = 2 + holoemote.length
+		val hairLength = 2 + hair.length
+		val data = NetBuffer.allocate(HEADER_LENGTH + Long.SIZE_BYTES * 3 + booleanBytes + Integer.BYTES * 9 + hairLength + hairCustomization.length + morphParametersSize + indexParametersSize + holoemoteLength)
 		encodeHeader(data)
 		data.addLong(designerId)
 		data.addLong(clientId)
