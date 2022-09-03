@@ -24,4 +24,8 @@ class MorphParameter : Encodable {
 
 	override val length: Int
 		get() = 6 + name.length
+
+	override fun toString(): String {
+		return "$name -> $value"
+	}
 }
