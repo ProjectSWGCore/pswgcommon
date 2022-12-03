@@ -27,27 +27,31 @@
 package com.projectswg.common.data.combat;
 
 public enum TargetType {
-	NONE	("none"),
-	REQUIRED("required"),
-	OPTIONAL("optional"),
-	LOCATION("location"),
-	ALL		("all");
+	NONE	("none", 0),
+	REQUIRED("required", 1),
+	OPTIONAL("optional", 2);
 	
 	private static final TargetType [] VALUES = values();
 	
 	private final String name;
+	private final int num;
 	
-	TargetType(String name) {
+	TargetType(String name, int num) {
 		this.name = name;
+		this.num = num;
 	}
 	
 	public String getName() {
 		return name;
 	}
-	
-	public static TargetType getTargetType(String name) {
+
+	public int getNum() {
+		return num;
+	}
+
+	public static TargetType getByNum(int num) {
 		for (TargetType p : VALUES) {
-			if (p.getName().equals(name))
+			if (p.getNum() == num)
 				return p;
 		}
 		return NONE;
