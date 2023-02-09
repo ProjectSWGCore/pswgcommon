@@ -56,13 +56,11 @@ public enum Race {
 	private static final EnumLookup<String, Race> SPECIES_TO_RACE = new EnumLookup<>(Race.class, r -> r.species);
 	private static final EnumLookup<String, Race> FILE_TO_RACE = new EnumLookup<>(Race.class, Race::getFilename);
 	
-	private final boolean male;
 	private final int crc;
 	private final String species;
 	private final String displayName;
 	
 	Race(String species, String displayName) {
-		this.male = !species.endsWith("female");
 		this.crc = CRC.getCrc("object/creature/player/"+species+".iff");
 		this.species = species;
 		this.displayName = displayName;
@@ -72,8 +70,6 @@ public enum Race {
 		return displayName;
 	}
 	
-	public boolean isMale() { return male; }
-	public boolean isFemale() { return !male; }
 	public int getCrc() { return crc; }
 	public String getFilename() { return "object/creature/player/shared_"+species+".iff"; }
 	public String getSpecies() { return species.substring(0, species.indexOf('_')); }
