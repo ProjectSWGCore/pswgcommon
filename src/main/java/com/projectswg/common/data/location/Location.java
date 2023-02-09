@@ -310,6 +310,14 @@ public class Location implements Encodable, MongoPersistable {
 			return point.getZ();
 		}
 		
+		public Point3D getPosition() {
+			return point;
+		}
+		
+		public Quaternion getOrientation() {
+			return orientation;
+		}
+		
 		public double getOrientationX() {
 			return orientation.getX();
 		}

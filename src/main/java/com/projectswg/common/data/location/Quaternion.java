@@ -164,10 +164,18 @@ public class Quaternion implements Encodable, MongoPersistable {
 	public void rotateDegrees(double degrees, double axisX, double axisY, double axisZ) {
 		double rad = Math.toRadians(degrees) / 2;
 		double sin = Math.sin(rad);
-		w = Math.cos(rad);
-		x = sin * axisX;
-		y = sin * axisY;
-		z = sin * axisZ;
+		double w = Math.cos(rad);
+		double x = sin * axisX;
+		double y = sin * axisY;
+		double z = sin * axisZ;
+		double nW = w * this.w - x * this.x - y * this.y - z * this.z;
+		double nX = w * this.x + x * this.w + y * this.z - z * this.y;
+		double nY = w * this.y + y * this.w + z * this.x - x * this.z;
+		double nZ = w * this.z + z * this.w + x * this.y - y * this.x;
+		this.w = nW;
+		this.x = nX;
+		this.y = nY;
+		this.z = nZ;
 		normalize();
 	}
 	

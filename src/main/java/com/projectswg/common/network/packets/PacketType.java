@@ -30,6 +30,7 @@ import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
 import com.projectswg.common.network.packets.swg.zone.*;
+import com.projectswg.common.network.packets.swg.zone.space.ShipUpdateTransformMessage;
 import com.projectswg.common.network.packets.swg.zone.structures.EnterStructurePlacementModeMessage;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.packets.swg.ErrorMessage;
@@ -307,6 +308,9 @@ public enum PacketType {
 		NEW_TICKET_ACTIVITY_RESPONSE_MESSAGE	(NewTicketActivityResponseMessage.CRC, 		NewTicketActivityResponseMessage.class),
 		ATTRIBUTE_LIST_MESSAGE					(AttributeListMessage.CRC, 					AttributeListMessage.class),
 		OPENED_CONTAINER_MESSAGE				(ClientOpenContainerMessage.CRC, 			ClientOpenContainerMessage.class),
+	
+		// Space
+		SHIP_UPDATE_TRANSFORM_MESSAGE			(ShipUpdateTransformMessage.CRC,			ShipUpdateTransformMessage.class),
 
 		// Combat
 		UPDATE_PVP_STATUS_MESSAGE				(UpdatePvpStatusMessage.CRC, 	UpdatePvpStatusMessage.class),
