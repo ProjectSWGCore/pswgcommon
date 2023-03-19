@@ -34,8 +34,12 @@ public class MissionListRequest extends ObjectController{
 	public static final int CRC = 0x00F5;
 
 	private long terminalId;
-	private byte tickCount;	
-	
+	private byte tickCount;
+
+	public MissionListRequest(long objectId) {
+		super(objectId, CRC);
+	}
+
 	public MissionListRequest(NetBuffer data) {
 		super(CRC);
 		decode(data);
