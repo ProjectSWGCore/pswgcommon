@@ -35,7 +35,12 @@ public class MissionAcceptRequest extends ObjectController{
 
 	private long missionId;
 	private long terminalId;
-	
+	private byte terminalType;
+
+	public MissionAcceptRequest(long objectId) {
+		super(objectId, CRC);
+	}
+
 	public MissionAcceptRequest(NetBuffer data) {
 		super(CRC);
 		decode(data);
@@ -56,13 +61,21 @@ public class MissionAcceptRequest extends ObjectController{
 	public void setMissionId(long missionId) {
 		this.missionId = missionId;
 	}
-	
+
+	public byte getTerminalType() {
+		return terminalType;
+	}
+
+	public void setTerminalType(byte terminalType) {
+		this.terminalType = terminalType;
+	}
+
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
 		setMissionId(data.getLong());
 		setTerminalId(data.getLong());
-		data.getByte();
+		setTerminalType(data.getByte());
 	}
 
 	@Override
@@ -71,7 +84,7 @@ public class MissionAcceptRequest extends ObjectController{
 		encodeHeader(data);
 		data.addLong(getMissionId());
 		data.addLong(getTerminalId());
-		data.addByte(0);
+		data.addByte(terminalType);
 		return data;
 	}
 }
