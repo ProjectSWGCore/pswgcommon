@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -144,6 +144,7 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x04C5: return new IntendedTarget(data);
 			case 0x00F5: return new MissionListRequest(data);
 			case 0x00F9: return new MissionAcceptRequest(data);
+			case MissionAbort.CRC: return new MissionAbort(data);
 			case MissionAcceptResponse.CRC: return new MissionAcceptResponse(data);
 			case 0x041C: return new JTLTerminalSharedMessage(data);
 			case 0x0115: return new SecureTrade(data);
