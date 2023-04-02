@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -26,10 +26,9 @@
  ***********************************************************************************/
 package com.projectswg.common.data;
 
-import java.awt.Color;
-
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
+import org.jetbrains.annotations.NotNull;
 
 public class RGB implements Encodable {
 	
@@ -46,13 +45,9 @@ public class RGB implements Encodable {
 		setG(g);
 		setB(b);
 	}
-	
-	public RGB(Color c) {
-		this(c.getRed(), c.getGreen(), c.getBlue());
-	}
-	
+
 	@Override
-	public byte[] encode() {
+	public byte @NotNull [] encode() {
 		NetBuffer buffer = NetBuffer.allocate(3);
 		buffer.addByte(r);
 		buffer.addByte(g);
