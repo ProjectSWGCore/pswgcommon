@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -28,7 +28,7 @@ package com.projectswg.common.encoding;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import me.joshlarson.jlcommon.log.Log;
 
@@ -41,12 +41,12 @@ public class Encoder {
 	public static byte[] encode(Object object, StringType strType) {
 		if (strType != StringType.UNSPECIFIED && object instanceof String) {
 			switch (strType) {
-				case ASCII:
+				case ASCII -> {
 					return encodeAscii((String) object);
-				case UNICODE:
+				}
+				case UNICODE -> {
 					return encodeUnicode((String) object);
-				default:
-					break;
+				}
 			}
 		} else {
 			if (object instanceof Encodable) {
@@ -83,7 +83,7 @@ public class Encoder {
 	}
 	
 	private static byte[] encodeByte(Byte object) {
-		return new byte[] {(object.byteValue())};
+		return new byte[] {(object)};
 	}
 	
 	private static byte[] encodeBoolean(boolean object) {
@@ -111,14 +111,14 @@ public class Encoder {
 	public static byte[] encodeAscii(String string) {
 		ByteBuffer buffer = ByteBuffer.allocate(2 + string.length()).order(ByteOrder.LITTLE_ENDIAN);
 		buffer.putShort((short) string.length());
-		buffer.put(string.getBytes(Charset.forName("UTF-8")));
+		buffer.put(string.getBytes(StandardCharsets.UTF_8));
 		return buffer.array();
 	}
 	
 	public static byte[] encodeUnicode(String string) {
 		ByteBuffer buffer = ByteBuffer.allocate(4 + (string.length() * 2)).order(ByteOrder.LITTLE_ENDIAN);
 		buffer.putInt(string.length());
-		buffer.put(string.getBytes(Charset.forName("UTF-16LE")));
+		buffer.put(string.getBytes(StandardCharsets.UTF_16LE));
 		return buffer.array();
 	}
 	
