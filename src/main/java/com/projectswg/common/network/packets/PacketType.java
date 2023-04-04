@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import com.projectswg.common.data.EnumLookup;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginRequestPacket;
 import com.projectswg.common.network.packets.swg.holo.login.HoloLoginResponsePacket;
 import com.projectswg.common.network.packets.swg.zone.*;
+import com.projectswg.common.network.packets.swg.zone.auction.*;
 import com.projectswg.common.network.packets.swg.zone.space.ShipUpdateTransformMessage;
 import com.projectswg.common.network.packets.swg.zone.structures.EnterStructurePlacementModeMessage;
 import me.joshlarson.jlcommon.log.Log;
@@ -93,18 +94,6 @@ import com.projectswg.common.network.packets.swg.zone.UpdatePostureMessage;
 import com.projectswg.common.network.packets.swg.zone.UpdatePvpStatusMessage;
 import com.projectswg.common.network.packets.swg.zone.UpdateTransformMessage;
 import com.projectswg.common.network.packets.swg.zone.UpdateTransformWithParentMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.AuctionQueryHeadersResponseMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.CancelLiveAuctionMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.CancelLiveAuctionResponseMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.CommoditiesItemTypeListRequest;
-import com.projectswg.common.network.packets.swg.zone.auction.CommoditiesItemTypeListResponse;
-import com.projectswg.common.network.packets.swg.zone.auction.GetAuctionDetails;
-import com.projectswg.common.network.packets.swg.zone.auction.GetAuctionDetailsResponse;
-import com.projectswg.common.network.packets.swg.zone.auction.IsVendorOwnerMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.IsVendorOwnerResponseMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.RetrieveAuctionItemMessage;
-import com.projectswg.common.network.packets.swg.zone.auction.RetrieveAuctionItemResponseMessage;
 import com.projectswg.common.network.packets.swg.zone.baselines.Baseline;
 import com.projectswg.common.network.packets.swg.zone.building.UpdateCellPermissionMessage;
 import com.projectswg.common.network.packets.swg.zone.chat.ChatAddModeratorToRoom;
@@ -334,6 +323,7 @@ public enum PacketType {
 		IS_VENDOR_OWNER_MESSAGE					(IsVendorOwnerMessage.CRC,					IsVendorOwnerMessage.class),
 		COMMODITIES_ITEM_TYPE_LIST_REPSONSE		(CommoditiesItemTypeListResponse.CRC,		CommoditiesItemTypeListResponse.class),
 		COMMODITIES_ITEM_TYPE_LIST_REQUEST		(CommoditiesItemTypeListRequest.CRC,		CommoditiesItemTypeListRequest.class),
+		CREATE_IMMEDIATE_AUCTION_MESSAGE		(CreateImmediateAuctionMessage.Companion.getCrc(),	CreateImmediateAuctionMessage.class),
 		
 		// Travel
 		ENTER_TICKET_PURCHASE_MODE_MESSAGE		(EnterTicketPurchaseModeMessage.CRC,		EnterTicketPurchaseModeMessage.class),
