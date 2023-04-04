@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -52,11 +52,11 @@ public class IsVendorOwnerResponseMessage extends SWGPacket {
 	@Override
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
-			return;	
-		containerId = data.getLong();
-		auctionResult = data.getInt();
-		marketName = data.getAscii();
+			return;
 		ownerResult = data.getInt();
+		auctionResult = data.getInt();
+		containerId = data.getLong();
+		marketName = data.getAscii();
 		maxPageSize = data.getShort();
 	}
 	
@@ -65,10 +65,10 @@ public class IsVendorOwnerResponseMessage extends SWGPacket {
 		NetBuffer data = NetBuffer.allocate(26 + marketName.length());
 		data.addShort(5);
 		data.addInt(CRC);
-		data.addLong(containerId);
-		data.addInt(auctionResult);
-		data.addAscii(marketName);
 		data.addInt(ownerResult);
+		data.addInt(auctionResult);
+		data.addLong(containerId);
+		data.addAscii(marketName);
 		data.addShort(maxPageSize);
 		return data;
 	}	
