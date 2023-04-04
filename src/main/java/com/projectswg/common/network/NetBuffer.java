@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,8 +42,8 @@ import com.projectswg.common.encoding.StringType;
 
 public class NetBuffer {
 	
-	public final Charset ASCII   = Charset.forName("UTF-8");
-	public final Charset UNICODE = Charset.forName("UTF-16LE");
+	public final Charset ASCII   = StandardCharsets.UTF_8;
+	public final Charset UNICODE = StandardCharsets.UTF_16LE;
 	
 	private final ByteBuffer data;
 	private final int size;
