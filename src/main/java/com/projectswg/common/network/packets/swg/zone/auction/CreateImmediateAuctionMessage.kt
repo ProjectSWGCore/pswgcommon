@@ -53,8 +53,10 @@ data class CreateImmediateAuctionMessage(
 	}
 
 	override fun encode(): NetBuffer {
-		val data = NetBuffer.allocate(29 + (description.length * 2))
+		val data = NetBuffer.allocate(35 + (description.length * 2))
 
+		data.addShort(6)
+		data.addInt(crc)
 		data.addLong(objectId)
 		data.addLong(vendorId)
 		data.addInt(price)
