@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -38,12 +39,12 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 	
 	public static final int CRC = com.projectswg.common.data.CRC.getCrc("AuctionQueryHeadersResponseMessage");
 	
-	private int counter;
-	private int screen;
+	private int updateCounter;
+	private int windowType;
 	private List <AuctionItem> items;
 	
 	public AuctionQueryHeadersResponseMessage() {
-		items = new ArrayList<AuctionItem>();
+		items = new ArrayList<>();
 	}
 	
 	public AuctionQueryHeadersResponseMessage(NetBuffer data) {
@@ -54,8 +55,8 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
-		counter = data.getInt();
-		screen = data.getInt();
+		updateCounter = data.getInt();
+		data.getInt();
 		String [] locations = new String[data.getInt()];
 		for (int i = 0; i < locations.length; i++)
 			locations[i] = data.getAscii();
@@ -74,7 +75,7 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 			item.setObjectId(data.getLong());
 			data.getByte();
 			item.setPrice(data.getInt());
-			item.setExpireTime(data.getInt()*1000L+System.currentTimeMillis());
+			item.setExpireTime(data.getInt());
 			if (data.getInt() != item.getPrice())
 				throw new IllegalStateException("I WAS LIED TO AT INDEX " + itemI);
 			item.setVuid(locations[data.getShort()]);
@@ -95,62 +96,86 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 	
 	@Override
 	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(6);
+		Set<String> stringList = new LinkedHashSet<>();
+		for (AuctionItem item : items) {
+			stringList.add(item.getVuid());
+			stringList.add(item.getOwnerName());
+			stringList.add(item.getBidderName());
+		}
+		int locationsSize = (stringList.size() * Short.BYTES) +  String.join("", stringList).length();
+		int itemNamesSize = 4 + (items.size() * 4) + items.stream().map(AuctionItem::getItemName).collect(Collectors.joining()).length() * 2;
+		int auctionItemMetadataSize = 4 + (items.size() * 60);
+		NetBuffer data = NetBuffer.allocate(21 + locationsSize + itemNamesSize + auctionItemMetadataSize);
 		data.addShort(8);
 		data.addInt(CRC);
-		data.addInt(counter);
-		data.addInt(screen);
+		data.addInt(updateCounter);
+		data.addInt(windowType);
 		
-		Set <String> locations = new LinkedHashSet<String>();
-		for (AuctionItem item : items) {
-			locations.add(item.getVuid());
-			locations.add(item.getOwnerName());
-		}
-		data.addInt(items.size());
-		for (String item : locations) {
-			data.addAscii(item);
+		data.addInt(stringList.size());
+		for (String string : stringList) {
+			data.addAscii(string);
 		}
 		
 		data.addInt(items.size());
 		for (AuctionItem item : items)
 			data.addUnicode(item.getItemName());
 		
-		data.addInt(items.size());
-		
 		int i = 0;
+		data.addInt(items.size());
 		for(AuctionItem item : items) {
 			data.addLong(item.getObjectId());
 			data.addByte(i);
 			data.addInt(item.getPrice());
-			data.addInt((int) ((item.getExpireTime() - System.currentTimeMillis()) / 1000));
-			data.addInt(item.getPrice()); // if != price then auction instead of instant sale
-			//data.addInt(0);
-			data.addShort(getString(locations, item.getVuid()));
+			data.addInt(item.getExpireTime());
+			data.addBoolean(item.isInstant());
+			data.addShort(getString(stringList, item.getVuid()));
 			data.addLong(item.getOwnerId());
-			data.addShort(getString(locations, item.getOwnerName()));
-			data.addLong(0);
-			data.addInt(0); // unk seen as 2 mostly, doesnt seem to have any effect
-			data.addInt(0);
-			data.addShort((short) 0);
+			data.addShort(getString(stringList, item.getOwnerName()));
+			data.addLong(item.getOfferToId());	// the highest bidder
+			data.addShort(getString(stringList, item.getBidderName()));
+			data.addInt(item.getProxyBid());
+			data.addInt(0);	// My high bid
 			data.addInt(item.getItemType()); // gameObjectType/category bitmask
-
-			data.addInt(0); 
-			int options = 0;
-			
-			if (item.getStatus() == AuctionState.OFFERED || item.getStatus() == AuctionState.FORSALE) 
-				options |= 0x800;
-			
-			data.addInt(item.getAuctionOptions() | options);
-			data.addInt(0);
+			data.addInt(getAuctionItemFlags(item));
+			data.addInt(0);	// Possibly access fee to the building that a vendor is located inside
 			i++;
 		}
 		
-		data.addShort(0);
-		
-		data.addByte((byte) 0);
+		data.addShort(0);	// number of the first auction being displayed, possibly used for pagination
+		data.addBoolean(false);	// true if there are more pages, false if there are not
 		return data;
 	}
-	
+
+	private static int getAuctionItemFlags(AuctionItem item) {
+		int options = 0;
+
+		if (item.getStatus() == AuctionState.OFFERED || item.getStatus() == AuctionState.FORSALE) 
+			options |= 0x800;
+
+		int i1 = item.getAuctionOptions() | options;
+		return i1;
+	}
+
+	public void addItem(AuctionItem item) {
+		items.add(item);
+	}
+
+	public int getUpdateCounter() {
+		return updateCounter;
+	}
+
+	public void setUpdateCounter(int updateCounter) {
+		this.updateCounter = updateCounter;
+	}
+
+	public int getWindowType() {
+		return windowType;
+	}
+
+	public void setWindowType(int windowType) {
+		this.windowType = windowType;
+	}
+
 	private int getString(Set <String> strings, String str) {
 		int index = 0;
 		for (String s : strings) {
@@ -161,7 +186,7 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 		return index;
 	}
 	
-	public static enum AuctionState {
+	public enum AuctionState {
 		PREMIUM		(0x400),
 		WITHDRAW	(0x800),
 		FORSALE		(1),
@@ -186,19 +211,15 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 		private long buyerId;
 		private long offerToId;
 		private int itemType;
-		private int itemTypeCRC;
 		private String ownerName;
 		private String bidderName;
 		private String itemName;
 		private String itemDescription;
-		private String planet;
-		private String location;
 		private int price;
 		private int proxyBid;
-		private boolean auction;
+		private boolean instant;
 		private String vuid;
-		private boolean onBazaar = false;
-		private long expireTime;
+		private int expireTime;
 		private int auctionOptions;
 		private AuctionState state;
 		
@@ -211,16 +232,12 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 		public String getOwnerName() { return ownerName; }
 		public String getBidderName() { return bidderName; }
 		public String getItemName() { return itemName; }
-		public String getLocation() { return location; }
 		public int getPrice() { return price; }
 		public int getProxyBid() { return proxyBid; }
-		public boolean isAuction() { return auction; }
+		public boolean isInstant() { return instant; }
 		public String getVuid() { return vuid; }
 		public AuctionState getStatus() { return state; }
-		public boolean isOnBazaar() { return onBazaar; }
 		public int getAuctionOptions() { return auctionOptions; }
-		public String getPlanet() { return planet; }
-		public int getItemTypeCRC() { return itemTypeCRC; }
 		
 		public String getItemDescription() { return itemDescription; }
 		public void setObjectId(long objectId) { this.objectId = objectId; }
@@ -232,19 +249,15 @@ public class AuctionQueryHeadersResponseMessage extends SWGPacket {
 		public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 		public void setBidderName(String bidderName) { this.bidderName = bidderName; }
 		public void setItemName(String itemName) { this.itemName = itemName; }
-		public void setLocation(String location) { this.location = location; }
 		public void setItemDescription(String itemDescription) { this.itemDescription = itemDescription; }
 		public void setPrice(int price) { this.price = price; }
 		public void setProxyBid(int proxyBid) { this.proxyBid = proxyBid; }
-		public void setAuction(boolean auction) { this.auction = auction; }
+		public void setInstant(boolean instant) { this.instant = instant; }
 		public void setVuid(String vuid) { this.vuid = vuid; }
 		public void setStatus(AuctionState state) { this.state = state; }
-		public void setOnBazaar(boolean onBazaar) { this.onBazaar = onBazaar; }
-		public long getExpireTime() { return expireTime; }
-		public void setExpireTime(long expireTime) { this.expireTime = expireTime; }
+		public int getExpireTime() { return expireTime; }
+		public void setExpireTime(int expireTime) { this.expireTime = expireTime; }
 		public void setAuctionOptions(int auctionOptions) { this.auctionOptions = auctionOptions; }
-		public void setPlanet(String planet) { this.planet = planet; }
-		public void setItemTypeCRC(int itemTypeCRC) { this.itemTypeCRC = itemTypeCRC; }
 	}
 
 }
