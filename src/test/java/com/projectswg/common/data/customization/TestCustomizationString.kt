@@ -26,7 +26,8 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization
 
-import org.junit.jupiter.api.Assertions
+import com.projectswg.common.network.NetBuffer
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class TestCustomizationString {
@@ -34,8 +35,8 @@ class TestCustomizationString {
 	fun testPut() {
 		val string = CustomizationString()
 		val key = "test"
-		Assertions.assertNull(string.put(key, 0)) // Nothing should be replaced because string's empty
-		Assertions.assertEquals(0, string.put(key, 1)) // Same key, so the variable we put earlier should be replaced
+		assertNull(string.put(key, 0)) // Nothing should be replaced because string's empty
+		assertEquals(0, string.put(key, 1)) // Same key, so the variable we put earlier should be replaced
 	}
 
 	@Test
@@ -43,29 +44,43 @@ class TestCustomizationString {
 		val string = CustomizationString()
 		val key = "test"
 		string.put(key, 0)
-		Assertions.assertEquals(0, string.remove(key)) // Same key, so the variable we put earlier should be returned
+		assertEquals(0, string.remove(key)) // Same key, so the variable we put earlier should be returned
 	}
 
 	@Test
 	fun testIsEmpty() {
 		val string = CustomizationString()
 		val key = "test"
-		Assertions.assertTrue(string.isEmpty)
+		assertTrue(string.isEmpty)
 		string.put(key, 0)
-		Assertions.assertFalse(string.isEmpty)
+		assertFalse(string.isEmpty)
 		string.remove(key)
-		Assertions.assertTrue(string.isEmpty)
+		assertTrue(string.isEmpty)
 	}
 
 	@Test
-	fun testGetLength() {
+	fun encoding() {
 		val string = CustomizationString()
-		Assertions.assertEquals(Short.SIZE_BYTES, string.length) // Should be an empty array at this point
-		string.put("first", 7)
-		var expected = Short.SIZE_BYTES + 7
-		Assertions.assertEquals(expected, string.length)
-		string.put("second", 0xFF)
-		expected += 4 // Two escape characters, an ID and a value
-		Assertions.assertEquals(expected, string.length)
+		string.put("/private/index_color_1", 237)
+		string.put("/private/index_color_2", 4)
+		val expected = byteArrayOf(10, 0, 2, 2, 2, -61, -83, 1, 4, -61, -65, 3)
+		
+		val actual = string.encode()
+
+		assertArrayEquals(expected, actual)
+	}
+
+	@Test
+	fun decoding() {
+		val string = CustomizationString()
+		string.put("/private/index_color_1", 237)
+		string.put("/private/index_color_2", 4)
+		val input = byteArrayOf(10, 0, 2, 2, 2, -61, -83, 1, 4, -61, -65, 3)
+		
+		string.decode(NetBuffer.wrap(input))
+
+		assertEquals(2, string.variables.size)
+		assertEquals(string.get("/private/index_color_1"), 237)
+		assertEquals(string.get("/private/index_color_2"), 4)
 	}
 }
