@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -33,14 +33,14 @@ public class GetAuctionDetails extends SWGPacket {
 	
 	public static final int CRC = com.projectswg.common.data.CRC.getCrc("GetAuctionDetails");
 	
-	private long auctionId;
+	private long objectId;
 	
 	public GetAuctionDetails() {
 		this(0);
 	}
 	
-	public GetAuctionDetails(long auctionId) {
-		this.auctionId = auctionId;
+	public GetAuctionDetails(long objectId) {
+		this.objectId = objectId;
 	}
 	
 	public GetAuctionDetails(NetBuffer data) {
@@ -50,15 +50,22 @@ public class GetAuctionDetails extends SWGPacket {
 	public void decode(NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
-		auctionId = data.getLong();
+		objectId = data.getLong();
 	}
 	
 	public NetBuffer encode() {
 		NetBuffer data = NetBuffer.allocate(14);
 		data.addShort(2);
 		data.addInt(CRC);
-		data.addLong(auctionId);
+		data.addLong(objectId);
 		return data;
 	}
 
+	public long getObjectId() {
+		return objectId;
+	}
+
+	public void setObjectId(long objectId) {
+		this.objectId = objectId;
+	}
 }

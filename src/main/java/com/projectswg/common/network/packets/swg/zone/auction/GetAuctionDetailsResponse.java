@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.projectswg.common.data.customization.CustomizationString;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
 
@@ -39,16 +40,20 @@ public class GetAuctionDetailsResponse extends SWGPacket {
 	
 	private long itemId;
 	private Map <String, String> properties;
-	private String itemName;
-	
+	private String itemDescription;
+	private String itemTemplate;
+	private CustomizationString customizationString;
+
 	public GetAuctionDetailsResponse() {
-		this(0, new HashMap<String, String>(), "");
+		this(0, new HashMap<String, String>(), "", "", new CustomizationString());
 	}
 	
-	public GetAuctionDetailsResponse(long itemId, Map <String, String> properties, String itemName) {
+	public GetAuctionDetailsResponse(long itemId, Map <String, String> properties, String itemDescription, String itemTemplate, CustomizationString customizationString) {
 		this.itemId = itemId;
 		this.properties = properties;
-		this.itemName = itemName;
+		this.itemDescription = itemDescription;
+		this.itemTemplate = itemTemplate;
+		this.customizationString = customizationString;
 	}
 	
 	public GetAuctionDetailsResponse(NetBuffer data) {
@@ -59,32 +64,35 @@ public class GetAuctionDetailsResponse extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		itemId = data.getLong();
-		data.getInt();
+		itemDescription = data.getUnicode();
 		int count = data.getInt();
 		for (int i = 0; i < count; i++) {
 			String key = data.getAscii();
 			String val = data.getUnicode();
 			properties.put(key, val);
 		}
-		itemName = data.getAscii();
-		data.getShort(); // 0
+		itemTemplate = data.getAscii();
+		customizationString.decode(data);
 	}
 	
 	public NetBuffer encode() {
 		int strSize = 0;
 		for (Entry <String, String> e : properties.entrySet())
 			strSize += 6 + e.getKey().length() + e.getValue().length()*2;
-		NetBuffer data = NetBuffer.allocate(18 + strSize);
+		strSize += itemDescription.length() * 2;
+		strSize += itemTemplate.length();
+		NetBuffer data = NetBuffer.allocate(24 + customizationString.getLength() + strSize);
 		data.addShort(9);
 		data.addInt(CRC);
 		data.addLong(itemId);
+		data.addUnicode(itemDescription);
 		data.addInt(properties.size());
 		for (Entry <String, String> e : properties.entrySet()) {
 			data.addAscii(e.getKey());
 			data.addUnicode(e.getValue());
 		}
-		data.addAscii(itemName);
-		data.addShort(0);
+		data.addAscii(itemTemplate);
+		data.addEncodable(customizationString);
 		return data;
 	}
 
