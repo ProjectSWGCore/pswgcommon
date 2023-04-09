@@ -324,6 +324,7 @@ public enum PacketType {
 		COMMODITIES_ITEM_TYPE_LIST_REPSONSE		(CommoditiesItemTypeListResponse.CRC,		CommoditiesItemTypeListResponse.class),
 		COMMODITIES_ITEM_TYPE_LIST_REQUEST		(CommoditiesItemTypeListRequest.CRC,		CommoditiesItemTypeListRequest.class),
 		CREATE_IMMEDIATE_AUCTION_MESSAGE		(CreateImmediateAuctionMessage.Companion.getCrc(),	CreateImmediateAuctionMessage.class),
+		BID_AUCTION_MESSAGE						(BidAuctionMessage.Companion.getCrc(),		BidAuctionMessage.class),
 		
 		// Travel
 		ENTER_TICKET_PURCHASE_MODE_MESSAGE		(EnterTicketPurchaseModeMessage.CRC,		EnterTicketPurchaseModeMessage.class),
