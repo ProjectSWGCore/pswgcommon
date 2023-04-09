@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,37 +24,34 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.network.packets.swg.zone.auction;
+package com.projectswg.common.network.packets.swg.zone.auction
 
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.SWGPacket;
+import com.projectswg.common.network.NetBuffer
+import com.projectswg.common.network.packets.SWGPacket
 
-public class RetrieveAuctionItemResponseMessage extends SWGPacket {
-	
-	public static final int CRC = com.projectswg.common.data.CRC.getCrc("RetrieveAuctionItemResponseMessage");
-	
-	public RetrieveAuctionItemResponseMessage() {
-		
-	}
-	
-	public RetrieveAuctionItemResponseMessage(String command) {
-		
-	}
-	
-	public RetrieveAuctionItemResponseMessage(NetBuffer data) {
-		decode(data);
-	}
-	
-	public void decode(NetBuffer data) {
-		if (!super.checkDecode(data, CRC))
-			return;
-	}
-	
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(6);
-		data.addShort(2);
-		data.addInt(CRC);
-		return data;
+data class RetrieveAuctionItemMessage(
+	var objectId: Long = 0L,
+	var vendorId: Long = 0L,
+) : SWGPacket() {
+
+	companion object {
+		val crc = getCrc("RetrieveAuctionItemMessage")
 	}
 
+	override fun decode(data: NetBuffer) {
+		if (!super.checkDecode(data, crc)) return
+		objectId = data.long
+		vendorId = data.long
+	}
+
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(22)
+
+		data.addShort(3)
+		data.addInt(crc)
+		data.addLong(objectId)
+		data.addLong(vendorId)
+
+		return data
+	}
 }
