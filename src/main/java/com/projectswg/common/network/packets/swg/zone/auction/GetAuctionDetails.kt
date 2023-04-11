@@ -24,48 +24,31 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.network.packets.swg.zone.auction;
+package com.projectswg.common.network.packets.swg.zone.auction
 
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.SWGPacket;
+import com.projectswg.common.network.NetBuffer
+import com.projectswg.common.network.packets.SWGPacket
 
-public class GetAuctionDetails extends SWGPacket {
-	
-	public static final int CRC = com.projectswg.common.data.CRC.getCrc("GetAuctionDetails");
-	
-	private long objectId;
-	
-	public GetAuctionDetails() {
-		this(0);
-	}
-	
-	public GetAuctionDetails(long objectId) {
-		this.objectId = objectId;
-	}
-	
-	public GetAuctionDetails(NetBuffer data) {
-		decode(data);
-	}
-	
-	public void decode(NetBuffer data) {
-		if (!super.checkDecode(data, CRC))
-			return;
-		objectId = data.getLong();
-	}
-	
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(14);
-		data.addShort(2);
-		data.addInt(CRC);
-		data.addLong(objectId);
-		return data;
+data class GetAuctionDetails(
+	var objectId: Long = 0L,
+) : SWGPacket() {
+
+	companion object {
+		val crc = getCrc("GetAuctionDetails")
 	}
 
-	public long getObjectId() {
-		return objectId;
+	override fun decode(data: NetBuffer) {
+		if (!super.checkDecode(data, crc)) return
+		objectId = data.long
 	}
 
-	public void setObjectId(long objectId) {
-		this.objectId = objectId;
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(14)
+
+		data.addShort(2)
+		data.addInt(crc)
+		data.addLong(objectId)
+
+		return data
 	}
 }
