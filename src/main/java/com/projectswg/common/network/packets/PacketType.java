@@ -320,7 +320,7 @@ public enum PacketType {
 		AUCTION_QUERY_HEADERS_RESPONSE_MESSAGE	(AuctionQueryHeadersResponseMessage.CRC, 	AuctionQueryHeadersResponseMessage.class),
 		RETRIEVE_AUCTION_ITEM_MESSAGE			(RetrieveAuctionItemMessage.Companion.getCrc(),	RetrieveAuctionItemMessage.class),
 		RETRIEVE_AUCTION_ITEM_RESPONSE_MESSAGE	(RetrieveAuctionItemResponseMessage.Companion.getCrc(), RetrieveAuctionItemResponseMessage.class),
-		IS_VENDOR_OWNER_MESSAGE					(IsVendorOwnerMessage.CRC,					IsVendorOwnerMessage.class),
+		IS_VENDOR_OWNER_MESSAGE					(IsVendorOwnerMessage.Companion.getCrc(), IsVendorOwnerMessage.class),
 		COMMODITIES_ITEM_TYPE_LIST_REPSONSE		(CommoditiesItemTypeListResponse.CRC,		CommoditiesItemTypeListResponse.class),
 		COMMODITIES_ITEM_TYPE_LIST_REQUEST		(CommoditiesItemTypeListRequest.CRC,		CommoditiesItemTypeListRequest.class),
 		CREATE_IMMEDIATE_AUCTION_MESSAGE		(CreateImmediateAuctionMessage.Companion.getCrc(),	CreateImmediateAuctionMessage.class),

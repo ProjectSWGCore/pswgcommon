@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,35 +24,31 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
+package com.projectswg.common.network.packets.swg.zone.auction
 
-package com.projectswg.common.network.packets.swg.zone.auction;
+import com.projectswg.common.network.NetBuffer
+import com.projectswg.common.network.packets.SWGPacket
 
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.SWGPacket;
+data class IsVendorOwnerMessage(
+	var terminalId: Long = 0L,
+) : SWGPacket() {
 
-public class IsVendorOwnerMessage extends SWGPacket {
-
-	public static final int CRC = com.projectswg.common.data.CRC.getCrc("IsVendorOwnerMessage");
-	
-	private long terminalId;
-	
-	@Override
-	public void decode(NetBuffer data) {
-		if (!super.checkDecode(data, CRC))
-			return;
-		terminalId = data.getLong();
+	companion object {
+		val crc = getCrc("IsVendorOwnerMessage")
 	}
 
-	@Override
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(14);
-		data.addShort(2);
-		data.addInt(CRC);
-		data.addLong(terminalId);
-		return data;
+	override fun decode(data: NetBuffer) {
+		if (!super.checkDecode(data, crc)) return
+		terminalId = data.long
 	}
-	
-	public long getTerminalId() {
-		return terminalId;
+
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(14)
+
+		data.addShort(2)
+		data.addInt(crc)
+		data.addLong(terminalId)
+
+		return data
 	}
 }
