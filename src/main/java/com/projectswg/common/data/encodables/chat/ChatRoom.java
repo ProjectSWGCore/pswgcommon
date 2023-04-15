@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -28,16 +28,15 @@ package com.projectswg.common.data.encodables.chat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.projectswg.common.encoding.CachedEncode;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class ChatRoom implements Encodable, Persistable {
+public class ChatRoom implements Encodable {
 	
 	private final CachedEncode cache;
 	private final Set<ChatAvatar> moderators;
@@ -286,49 +285,22 @@ public class ChatRoom implements Encodable, Persistable {
 	}
 	
 	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(0);
-		owner.save(stream);
-		creator.save(stream);
-		stream.addInt(id);
-		stream.addInt(type);
-		stream.addAscii(path);
-		stream.addUnicode(title);
-		stream.addBoolean(moderated);
-		stream.addList(moderators, (a) -> a.save(stream));
-		stream.addList(invited, (a) -> a.save(stream));
-		stream.addList(banned, (a) -> a.save(stream));
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		stream.getByte();
-		owner.read(stream);
-		creator.read(stream);
-		id = stream.getInt();
-		type = stream.getInt();
-		path = stream.getAscii();
-		title = stream.getUnicode();
-		moderated = stream.getBoolean();
-		stream.getList((i) -> moderators.add(inflateAvatar(stream)));
-		stream.getList((i) -> invited.add(inflateAvatar(stream)));
-		stream.getList((i) -> banned.add(inflateAvatar(stream)));
-	}
-	
-	private ChatAvatar inflateAvatar(NetBufferStream stream) {
-		ChatAvatar avatar = new ChatAvatar();
-		avatar.read(stream);
-		return avatar;
-	}
-	
-	@Override
 	public String toString() {
 		return "ChatRoom[id=" + id + ", type=" + type + ", path='" + path + "', title='" + title + '\'' + ", creator=" + creator + ", moderated=" + moderated + ", isPublic=" + isPublic() + "]";
 	}
-	
-	public static ChatRoom create(NetBufferStream stream) {
-		ChatRoom room = new ChatRoom();
-		room.read(stream);
-		return room;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		ChatRoom chatRoom = (ChatRoom) o;
+		return id == chatRoom.id && type == chatRoom.type && moderated == chatRoom.moderated && Objects.equals(moderators, chatRoom.moderators) && Objects.equals(invited, chatRoom.invited) && Objects.equals(banned, chatRoom.banned) && Objects.equals(path, chatRoom.path) && Objects.equals(owner, chatRoom.owner) && Objects.equals(creator, chatRoom.creator) && Objects.equals(title, chatRoom.title);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(moderators, invited, banned, id, type, path, owner, creator, title, moderated);
 	}
 }

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -31,10 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.NetBufferStream;
-import com.projectswg.common.persistable.Persistable;
 
-public class ChatAvatar implements Encodable, Persistable {
+public class ChatAvatar implements Encodable {
 	
 	private static final AtomicReference<String> GALAXY = new AtomicReference<>("");
 	private static final ChatAvatar SYSTEM_AVATAR = new ChatAvatar("system");
@@ -76,20 +74,6 @@ public class ChatAvatar implements Encodable, Persistable {
 		data.getAscii(); // SWG
 		data.getAscii();
 		name = data.getAscii().toLowerCase(Locale.US);
-	}
-	
-	@Override
-	public void save(NetBufferStream stream) {
-		stream.addByte(1);
-		stream.addAscii(name);
-	}
-	
-	@Override
-	public void read(NetBufferStream stream) {
-		byte ver = stream.getByte();
-		if (ver == 0)
-			stream.getAscii();
-		name = stream.getAscii();
 	}
 	
 	@Override

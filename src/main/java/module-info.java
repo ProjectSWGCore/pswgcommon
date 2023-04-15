@@ -74,7 +74,6 @@ module com.projectswg.common {
 	exports com.projectswg.common.network.packets.swg.zone.structures;
 	exports com.projectswg.common.network.packets.swg.zone.trade;
 	exports com.projectswg.common.network.hcap;
-	exports com.projectswg.common.persistable;
 	exports com.projectswg.common.process;
 	exports com.projectswg.common.utilities;
 }
