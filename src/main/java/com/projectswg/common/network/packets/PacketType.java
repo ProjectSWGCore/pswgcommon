@@ -262,7 +262,7 @@ public enum PacketType {
 		CHAT_DELETE_PERSISTENT_MESSAGE			(ChatDeletePersistentMessage.CRC, 	ChatDeletePersistentMessage.class),
 		CHAT_REQUEST_PERSISTENT_MESSAGE			(ChatRequestPersistentMessage.CRC, 	ChatRequestPersistentMessage.class),
 		CHAT_REQUEST_ROOM_LIST					(ChatRequestRoomList.CRC, 			ChatRequestRoomList.class),
-		CHAT_ENTER_ROOM_BY_ID					(ChatEnterRoomById.CRC, 			ChatEnterRoomById.class),
+		CHAT_ENTER_ROOM_BY_ID					(ChatEnterRoomById.Companion.getCrc(), 			ChatEnterRoomById.class),
 		CHAT_QUERY_ROOM							(ChatQueryRoom.CRC, 				ChatQueryRoom.class),
 		CHAT_ROOM_LIST							(ChatRoomList.CRC, 					ChatRoomList.class),
 		CHAT_ROOM_MESSAGE						(ChatRoomMessage.CRC,				ChatRoomMessage.class),

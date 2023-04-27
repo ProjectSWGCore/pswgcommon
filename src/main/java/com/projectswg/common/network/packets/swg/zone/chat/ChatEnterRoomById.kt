@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,47 +24,34 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
+package com.projectswg.common.network.packets.swg.zone.chat
 
-package com.projectswg.common.network.packets.swg.zone.chat;
+import com.projectswg.common.network.NetBuffer
+import com.projectswg.common.network.packets.SWGPacket
 
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.SWGPacket;
+data class ChatEnterRoomById(
+	var sequence: Int = 0,
+	var roomId: Int = 0,
+) : SWGPacket() {
 
-/**
- * @author Waverunner
- */
-public class ChatEnterRoomById extends SWGPacket {
-	public static final int CRC = getCrc("ChatEnterRoomById");
-
-	private int sequence;
-	private int roomId;
-	private String roomPath;
-
-	@Override
-	public void decode(NetBuffer data) {
-		if (!super.checkDecode(data, CRC))
-			return;
-
-		sequence = data.getInt();
-		roomId = data.getInt();
-		roomPath = data.getAscii();
+	companion object {
+		val crc = getCrc("ChatEnterRoomById")
 	}
 
-	@Override
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(10 + roomPath.length());
-		data.addShort(4);
-		data.addInt(sequence);
-		data.addInt(roomId);
-		data.addAscii(roomPath);
-		return data;
+	override fun decode(data: NetBuffer) {
+		if (!super.checkDecode(data, crc)) return
+		sequence = data.int
+		roomId = data.int
 	}
 
-	public int getSequence() {
-		return sequence;
-	}
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(10)
 
-	public int getRoomId() {
-		return roomId;
+		data.addShort(2)
+		data.addInt(crc)
+		data.addInt(sequence)
+		data.addInt(roomId)
+
+		return data
 	}
 }
