@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,14 +30,17 @@ import com.projectswg.common.data.swgfile.visitors.*;
 import com.projectswg.common.data.swgfile.visitors.appearance.*;
 import com.projectswg.common.data.swgfile.visitors.shader.CustomizableShaderData;
 import com.projectswg.common.data.swgfile.visitors.shader.StaticShaderData;
+import me.joshlarson.jlcommon.log.Log;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class ClientFactory extends DataFactory {
+public class ClientFactory {
 	
 	private static final ClientFactory INSTANCE = new ClientFactory();
 	private static final Map <String, ClientData> DATA_MAP = new ConcurrentHashMap<>();
@@ -64,7 +67,34 @@ public class ClientFactory extends DataFactory {
 	private ClientFactory() {
 		
 	}
-	
+
+	protected ClientData readFile(String filename) {
+		return readFile(new File(getFolder() + filename));
+	}
+
+	protected ClientData readFile(File file) {
+		if (!file.isFile()) {
+			return null;
+		}
+
+		SWGFile swgFile = new SWGFile();
+
+		try {
+			swgFile.read(file);
+		} catch (IOException e) {
+			if (!(e instanceof ClosedChannelException))
+				Log.e(e);
+			return null;
+		}
+		
+		ClientData clientData = createDataObject(swgFile.getType());
+		if (clientData == null)
+			return null;
+
+		clientData.readIff(swgFile);
+		return clientData;
+	}
+
 	public static void freeMemory() {
 		DATA_MAP.clear();
 	}
@@ -119,7 +149,6 @@ public class ClientFactory extends DataFactory {
 	// of that instance so the file can be parsed. The type is the name of the folder/node which is then used to get the value associated
 	// with it in the typeMap (value being the name of the Class preferably). If populateTypeMap() does not contain that node, then null is returned
 	// and getFileType method will print out what the type is along with a "not implemented!" message.
-	@Override
 	protected ClientData createDataObject(String type) {
 		ClientFactoryType c = TYPE_MAP.get(type);
 		if (c != null)
@@ -181,7 +210,6 @@ public class ClientFactory extends DataFactory {
 		//
 	}
 	
-	@Override
 	protected String getFolder() {
 		return "clientdata/";
 	}
