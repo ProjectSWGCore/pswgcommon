@@ -63,7 +63,7 @@ class TestCustomizationString {
 		val string = CustomizationString()
 		string.put("/private/index_color_1", 237)
 		string.put("/private/index_color_2", 4)
-		val expected = byteArrayOf(10, 0, 2, 2, 2, -61, -83, 1, 4, -61, -65, 3)
+		val expected = byteArrayOf(10, 0, 2, 2, (2 or 0x80).toByte(), 237.toByte(), 255.toByte(), 1, 1, 4, 255.toByte(), 3)
 		
 		val actual = string.encode()
 
