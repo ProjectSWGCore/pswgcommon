@@ -29,10 +29,6 @@ package com.projectswg.common.data.schematic;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.projectswg.common.data.CRC;
-import com.projectswg.common.data.encodables.oob.StringId;
-import com.projectswg.common.data.schematic.IngridientSlot.IngridientType;
-
 public class DraftSchematic {
 
 	private final List<IngridientSlot> ingridientSlot; // needed for both
@@ -52,7 +48,6 @@ public class DraftSchematic {
 		this.combinedCrc = 0;
 		this.volume = 0;
 		this.canManufacture = false;
-		createSchematic();
 	}
 
 	public int getItemsPerContainer() {
@@ -107,22 +102,4 @@ public class DraftSchematic {
 		return ingridientSlot;
 	}
 
-	// hardcoded for testing
-	private void createSchematic() {
-		String serverTemplate = "object/draft_schematic/food/component/shared_container_small_glass.iff";
-		String clientTemplate = "object/tangible/component/food/shared_container_small_glass.iff";
-
-		CRC serverCrc = new CRC(serverTemplate);
-		CRC clientCrc = new CRC(clientTemplate);
-
-		combinedCrc = (((long) serverCrc.getCrc() << 32) & 0xFFFFFFFF00000000l)	| (clientCrc.getCrc() & 0x00000000FFFFFFFFl);
-		volume = 1;
-		itemsPerContainer = 25;
-		complexity = 5;
-		canManufacture = true;
-		craftedSharedTemplate = clientTemplate;
-		IngridientSlot slot = new IngridientSlot(new StringId("craft_food_ingredients_n", "crystal"), false);
-		slot.addSlotDataOption(new DraftSlotDataOption(new StringId("craft_food_ingredients_n", "crystal"), "crystal", IngridientType.IT_RESOURCE_CLASS, 10));
-		ingridientSlot.add(slot);
-	}
 }
