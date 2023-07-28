@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.projectswg.common.data.CRC;
+import com.projectswg.common.data.encodables.oob.StringId;
 import com.projectswg.common.data.schematic.IngridientSlot.IngridientType;
 
 public class DraftSchematic {
@@ -120,8 +121,8 @@ public class DraftSchematic {
 		complexity = 5;
 		canManufacture = true;
 		craftedSharedTemplate = clientTemplate;
-		IngridientSlot slot = new IngridientSlot("craft_food_ingredients_n.crystal", false);
-		slot.addSlotDataOption(new DraftSlotDataOption("craft_food_ingredients_n", "crystal", IngridientType.IT_RESOURCE_CLASS, 10));
+		IngridientSlot slot = new IngridientSlot(new StringId("craft_food_ingredients_n", "crystal"), false);
+		slot.addSlotDataOption(new DraftSlotDataOption(new StringId("craft_food_ingredients_n", "crystal"), "crystal", IngridientType.IT_RESOURCE_CLASS, 10));
 		ingridientSlot.add(slot);
 	}
 }

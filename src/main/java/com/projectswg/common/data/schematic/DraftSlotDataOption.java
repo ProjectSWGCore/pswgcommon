@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -26,18 +26,19 @@
  ***********************************************************************************/
 package com.projectswg.common.data.schematic;
 
+import com.projectswg.common.data.encodables.oob.StringId;
 import com.projectswg.common.data.schematic.IngridientSlot.IngridientType;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 
 public class DraftSlotDataOption implements Encodable {
 	
-	private String stfName;
+	private StringId stfName;
 	private String ingredientName;
 	private IngridientType ingredientType;
 	private int amount;
 	
-	public DraftSlotDataOption(String stfName, String ingredientName, IngridientType ingredientType, int amount) {
+	public DraftSlotDataOption(StringId stfName, String ingredientName, IngridientType ingredientType, int amount) {
 		this.stfName = stfName;
 		this.ingredientName = ingredientName;
 		this.ingredientType = ingredientType;
@@ -45,13 +46,13 @@ public class DraftSlotDataOption implements Encodable {
 	}
 
 	public DraftSlotDataOption(){
-		this.stfName = "";
+		this.stfName = new StringId("", "");
 		this.ingredientName = "";
 		this.ingredientType = IngridientType.IT_NONE;
 		this.amount = 0;
 	}
 	
-	public String getStfName() {
+	public StringId getStfName() {
 		return stfName;
 	}
 	
@@ -69,24 +70,24 @@ public class DraftSlotDataOption implements Encodable {
 	
 	@Override
 	public void decode(NetBuffer data) {
-		stfName = data.getAscii();
+		stfName = data.getEncodable(StringId.class);
 		ingredientName = data.getUnicode();
-		ingredientType =  IngridientType.getTypeForInt(data.getInt());
+		ingredientType =  IngridientType.getTypeForInt(data.getByte());
 		amount = data.getInt();		
 	}
 	
 	@Override
 	public byte[] encode() {
 		NetBuffer data = NetBuffer.allocate(getLength());
-		data.addAscii(stfName);
+		data.addEncodable(stfName);
 		data.addUnicode(ingredientName);
-		data.addInt(ingredientType.getId());
+		data.addByte(ingredientType.getId());
 		data.addInt(amount);
 		return data.array();
 	}
 	
 	@Override
 	public int getLength() {
-		return 14 + stfName.length() + ingredientName.length() * 2;
+		return 9 + stfName.getLength() + ingredientName.length() * 2;
 	}	
 }

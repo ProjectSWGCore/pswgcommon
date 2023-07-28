@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.projectswg.common.data.EnumLookup;
+import com.projectswg.common.data.encodables.oob.StringId;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 
@@ -38,11 +39,11 @@ public class IngridientSlot implements Encodable{
 	
 	private final List<DraftSlotDataOption> slotOptions;
 	
-	private String name;
+	private StringId name;
 	private boolean optional;
 	private String hardPoint;
 	
-	public IngridientSlot(String name, boolean optional) {
+	public IngridientSlot(StringId name, boolean optional) {
 		this.name = name;
 		this.optional = optional;
 		this.slotOptions = new ArrayList<>();
@@ -50,13 +51,13 @@ public class IngridientSlot implements Encodable{
 	}
 	
 	public IngridientSlot(){
-		this.name = "";
+		this.name = new StringId("", "");
 		this.optional = false;
 		this.slotOptions = new ArrayList<>();
 		this.hardPoint = "";
 	}
 	
-	public String getName() {
+	public StringId getName() {
 		return name;
 	}
 
@@ -80,7 +81,7 @@ public class IngridientSlot implements Encodable{
 
 	@Override
 	public void decode(NetBuffer data) {
-		name = data.getAscii();
+		name = data.getEncodable(StringId.class);
 		optional = data.getBoolean();
 		slotOptions.clear();
 		slotOptions.addAll(data.getList(DraftSlotDataOption.class));
@@ -90,7 +91,7 @@ public class IngridientSlot implements Encodable{
 	@Override
 	public byte[] encode() {
 		NetBuffer data = NetBuffer.allocate(getLength());
-		data.addAscii(name);
+		data.addEncodable(name);
 		data.addBoolean(optional);
 		data.addList(slotOptions);
 		data.addAscii(hardPoint);
@@ -103,7 +104,7 @@ public class IngridientSlot implements Encodable{
 		for (DraftSlotDataOption draftSlotDataOption : slotOptions) {
 			length += draftSlotDataOption.getLength();
 		}
-		return 9 + name.length() + hardPoint.length() + length;
+		return 7 + name.getLength() + hardPoint.length() + length;
 	}
 
 	public enum IngridientType {
