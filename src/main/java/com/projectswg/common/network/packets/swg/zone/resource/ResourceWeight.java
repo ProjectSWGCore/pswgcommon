@@ -55,15 +55,14 @@ public class ResourceWeight extends ObjectController {
 		decodeHeader(data);
 		schematicId = data.getInt();
 		schematicCrc = data.getInt();
-		int count = data.getByte();
-		decodeWeights(data, attributes, count);
-		decodeWeights(data, resourceMaxWeights, count);
+		decodeWeights(data, attributes);
+		decodeWeights(data, resourceMaxWeights);
 		packetAssert(attributes.size() == resourceMaxWeights.size(), "attributes must equal resource weight size");
 	}
 	
 	@Override
 	public NetBuffer encode() {
-		int len = HEADER_LENGTH + 9;
+		int len = HEADER_LENGTH + 14;
 		for (List<Weight> weights : attributes.values())
 			len += 3 + weights.size();
 		for (List<Weight> weights : resourceMaxWeights.values())
@@ -71,13 +70,16 @@ public class ResourceWeight extends ObjectController {
 		packetAssert(attributes.size() == resourceMaxWeights.size(), "attributes must equal resource weight size");
 		NetBuffer data = NetBuffer.allocate(len);
 		encodeHeader(data);
+		data.addInt(schematicId);
+		data.addInt(schematicCrc);
 		encodeWeights(data, attributes);
 		encodeWeights(data, resourceMaxWeights);
 		data.addInt(attributes.size());
 		return data;
 	}
 	
-	private void decodeWeights(NetBuffer data, Map<Integer, List<Weight>> map, int count) {
+	private void decodeWeights(NetBuffer data, Map<Integer, List<Weight>> map) {
+		byte count = data.getByte();
 		for (int i = 0; i < count; i++) {
 			data.getByte(); // index
 			int slot = data.getByte();
@@ -93,6 +95,7 @@ public class ResourceWeight extends ObjectController {
 	
 	private void encodeWeights(NetBuffer data, Map<Integer, List<Weight>> map) {
 		int i = 0;
+		data.addByte(map.size());
 		for (Entry<Integer, List<Weight>> e : map.entrySet()) {
 			List<Weight> weights = e.getValue();
 			data.addByte(i++);
