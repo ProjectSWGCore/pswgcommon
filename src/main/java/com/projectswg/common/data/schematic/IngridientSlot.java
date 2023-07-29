@@ -41,20 +41,17 @@ public class IngridientSlot implements Encodable{
 	
 	private StringId name;
 	private boolean optional;
-	private String hardPoint;
-	
+
 	public IngridientSlot(StringId name, boolean optional) {
 		this.name = name;
 		this.optional = optional;
 		this.slotOptions = new ArrayList<>();
-		this.hardPoint = "";
 	}
 	
 	public IngridientSlot(){
 		this.name = new StringId("", "");
 		this.optional = false;
 		this.slotOptions = new ArrayList<>();
-		this.hardPoint = "";
 	}
 	
 	public StringId getName() {
@@ -75,17 +72,12 @@ public class IngridientSlot implements Encodable{
 		return Collections.unmodifiableList(slotOptions);
 	}
 	
-	public String getHardPoint() {
-		return hardPoint;
-	}
-
 	@Override
 	public void decode(NetBuffer data) {
 		name = data.getEncodable(StringId.class);
 		optional = data.getBoolean();
 		slotOptions.clear();
 		slotOptions.addAll(data.getList(DraftSlotDataOption.class));
-		hardPoint = data.getAscii();	
 	}
 	
 	@Override
@@ -94,7 +86,6 @@ public class IngridientSlot implements Encodable{
 		data.addEncodable(name);
 		data.addBoolean(optional);
 		data.addList(slotOptions);
-		data.addAscii(hardPoint);
 		return data.array();
 	}
 	
@@ -104,32 +95,38 @@ public class IngridientSlot implements Encodable{
 		for (DraftSlotDataOption draftSlotDataOption : slotOptions) {
 			length += draftSlotDataOption.getLength();
 		}
-		return 7 + name.getLength() + hardPoint.length() + length;
+		return 5 + name.getLength() + length;
 	}
 
 	public enum IngridientType {
-		UNDEFINED					(Integer.MIN_VALUE),
-		IT_NONE						(0),
-		IT_ITEM						(1),
-		IT_TEMPLATE					(2),
-		IT_RESOURCE_TYPE			(3),
-		IT_RESOURCE_CLASS			(4),
-		IT_TEMPLATE_GENERIC			(5),
-		IT_SCHEMATIC				(6),
-		IT_SCHEMATIC_GENERIC		(7);
+		UNDEFINED					(Integer.MIN_VALUE, SlotType.RESOURCES),
+		IT_NONE						(0, SlotType.RESOURCES),
+		IT_ITEM						(1, SlotType.SIMILAR_COMPONENTS),
+		IT_TEMPLATE					(2, SlotType.IDENTICAL),
+		IT_RESOURCE_TYPE			(3, SlotType.RESOURCES),
+		IT_RESOURCE_CLASS			(4, SlotType.RESOURCES),
+		IT_TEMPLATE_GENERIC			(5, SlotType.IDENTICAL),
+		IT_SCHEMATIC				(6, SlotType.SIMILAR_COMPONENTS),
+		IT_SCHEMATIC_GENERIC		(7, SlotType.SIMILAR_COMPONENTS);
 		
 		private static final EnumLookup<Integer, IngridientType> LOOKUP = new EnumLookup<>(IngridientType.class, i -> i.getId());
 		
-		private int id;
+		private final int id;
+		private final SlotType slotType;
 		
-		IngridientType(int id) {
+		IngridientType(int id, SlotType slotType) {
 			this.id = id;
+			this.slotType = slotType;
 		}	
 		
 		public int getId() {
 			return id;
 		}
-		
+
+		public SlotType getSlotType() {
+			return slotType;
+		}
+
 		public static IngridientType getTypeForInt(int id) {
 			return LOOKUP.getEnum(id, UNDEFINED);
 		}

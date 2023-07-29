@@ -33,12 +33,16 @@ import com.projectswg.common.network.NetBuffer;
 public class DraftSlotsQueryResponse extends ObjectController {
 
 	private final static int CRC = 0x01BF;
-	
+
 	private DraftSchematic schematic;
-	
-	public DraftSlotsQueryResponse(DraftSchematic schematic, long objectId) {
+	private int clientCrc;
+	private int serverCrc;
+
+	public DraftSlotsQueryResponse(DraftSchematic schematic, long objectId, int clientCrc, int serverCrc) {
 		super(objectId, CRC);
 		this.schematic = schematic;
+		this.clientCrc = clientCrc;
+		this.serverCrc = serverCrc;
 	}
 
 	public DraftSlotsQueryResponse(NetBuffer data){
@@ -49,7 +53,8 @@ public class DraftSlotsQueryResponse extends ObjectController {
 	@Override
 	public void decode(NetBuffer data) {
 		decodeHeader(data);
-		schematic.setCombinedCrc(data.getLong());
+		clientCrc = data.getInt();
+		serverCrc = data.getInt();
 		schematic.setComplexity(data.getInt());
 		schematic.setVolume(data.getInt());
 		schematic.setCanManufacture(data.getBoolean());
@@ -65,11 +70,12 @@ public class DraftSlotsQueryResponse extends ObjectController {
 		}
 		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 21 + length);
 		encodeHeader(data);
-		data.addLong(schematic.getCombinedCrc());
+		data.addInt(clientCrc);
+		data.addInt(serverCrc);
 		data.addInt(schematic.getComplexity());
 		data.addInt(schematic.getVolume());
 		data.addBoolean(schematic.isCanManufacture());
-		data.addList(schematic.getIngridientSlot());		
+		data.addList(schematic.getIngridientSlot());
 		return data;
 	}
 	
