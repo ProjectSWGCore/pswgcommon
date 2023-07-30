@@ -100,25 +100,6 @@ public class CustomizationString implements Encodable, MongoPersistable {
 		return variables.isEmpty();
 	}
 
-	/**
-	 * @return the amount of characters that would require escaping to be valid UTF-8
-	 */
-	int valuesToEscape() {
-		return (int) variables.values().stream().filter(CustomizationString::isReserved).count();
-	}
-
-	int valueLengths() {
-		return variables.values().stream().mapToInt(value -> {
-			boolean singleByte = value <= Byte.MAX_VALUE && value >= Byte.MIN_VALUE;
-
-			if (singleByte) {
-				return 1;
-			} else {
-				return 2;
-			}
-		}).sum();
-	}
-
 	@Override
 	public void saveMongo(MongoData data) {
 		data.putMap("variables", variables);
@@ -265,37 +246,33 @@ public class CustomizationString implements Encodable, MongoPersistable {
 
 		int encodableLength = getLength();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(encodableLength - Short.BYTES);
-		Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
 
 		try {
-			writer.write(2);    // Marks start of text
-			writer.write(variables.size());
+			out.write(2);    // Marks start of text
+			addCustomizationStringByte(out, variables.size());
 
 			variables.forEach((variableName, variableValue) -> {
-				short variableId = VAR_NAME_TO_ID.get(variableName);
+				int variableId = VAR_NAME_TO_ID.get(variableName);
+				boolean variableValueOneByte = variableValue >= 0 && variableValue < 128;
+				if (!variableValueOneByte)
+					variableId |= 0x80;
 
 				try {
-					writer.write(variableId);
-
-					switch (variableValue) {
-						case 0x00 -> {
-							writer.write(0xFF);    // Escape
-							writer.write(0x01);    // Put variable value
-						}
-						case 0xFF -> {
-							writer.write(0xFF);    // Escape
-							writer.write(0x02);    // Put variable value
-						}
-						default -> writer.write(variableValue);
+					out.write(variableId);
+					if (variableValueOneByte) {
+						addCustomizationStringByte(out, variableValue);
+					} else {
+						addCustomizationStringByte(out, variableValue & 0xFF);
+						addCustomizationStringByte(out, (variableValue >> 8) & 0xFF);
 					}
 				} catch (Exception e) {
 					Log.e(e);
 				}
 			});
 
-			writer.write(0x0FF);    // Escape
-			writer.write(3);    // Marks end of text
-			writer.flush();
+			out.write(0xFF);    // Escape
+			out.write(3);    // Marks end of text
+			out.flush();
 
 			byte[] result = out.toByteArray();
 			NetBuffer data = NetBuffer.allocate(encodableLength);
@@ -309,32 +286,44 @@ public class CustomizationString implements Encodable, MongoPersistable {
 		}
 	}
 
+	private void addCustomizationStringByte(ByteArrayOutputStream out, int c) throws IOException {
+		assert(c >= 0 && c <= 0xFF);
+		switch (c) {
+			case 0x00 -> {
+				out.write(0xFF);    // Escape
+				out.write(0x01);    // Put variable value
+			}
+			case 0xFF -> {
+				out.write(0xFF);    // Escape
+				out.write(0x02);    // Put variable value
+			}
+			default -> out.write(c);
+		}
+	}
+
 	@Override
 	public int getLength() {
 		int length = Short.BYTES;    // Array size declaration field
 
-		if (isEmpty()) {    // No need to send more than an empty array in this case
-			return length;
+		length += 3; // UTF-8 start of text, escape, UTF-8 end of text
+		length += getValueLength(variables.size()); // variable count
+		for (Integer i : variables.values()) {
+			length += 1; // variableId
+			int firstByte = i & 0xFF;
+			int secondByte = (i >> 8) & 0xFF;
+			length += getValueLength(firstByte);
+			if (i < 0 || i >= 128) { // signed short
+				length += getValueLength(secondByte);
+			}
 		}
-
-		length += 1;    // UTF-8 start of text
-		length += 1;    // Variable count
-		length += variables.size();    // Variable IDs
-		length += valuesToEscape() * Short.BYTES;    // If there are escaped values in there, there will be 0xC3 0xBF to indicate escape
-		length += valueLengths();    // Variable value
-		length += Short.BYTES;    //	Escape flag
-		length += 1;    //	UTF-8 end of text
 
 		return length;
 	}
 
-	/**
-	 * @param value the value to check
-	 * @return {@code true} if the value is reserved by UTF-8 and escaping it
-	 * would be necessary for proper compatibility.
-	 */
-	private static boolean isReserved(int value) {
-		return value == 0x00 || value == 0xFF;
+	private static int getValueLength(int c) {
+		if (c == 0x00 || c == 0xFF)
+			return 2;
+		return 1;
 	}
 
 }
