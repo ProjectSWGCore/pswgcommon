@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2021 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -38,7 +38,6 @@ public class CommPlayerMessage extends SWGPacket {
 	
 	public static final int CRC = getCrc("CommPlayerMessage");
 	
-	private boolean chronicles;
 	private long objectId;
 	private OutOfBandPackage message;
 	private CRC modelCrc;
@@ -47,7 +46,6 @@ public class CommPlayerMessage extends SWGPacket {
 	
 	/**
 	 *
-	 * @param chronicles displays the comm window with Chronicles styling.
 	 * @param objectId ID for object to show. Can be overridden by {@code modelCrc} param.
 	 * @param message text that is displayed.
 	 * @param modelCrc override displayed object from {@code objectId} param with CRC for a shared template to display instead.
@@ -56,8 +54,7 @@ public class CommPlayerMessage extends SWGPacket {
 	 *                    If 0, the client tries to automatically determine an appropriate amount of time based on the amount of text shown.
 	 *                    If be
 	 */
-	public CommPlayerMessage(boolean chronicles, long objectId, OutOfBandPackage message, CRC modelCrc, String soundFile, float displayTime) {
-		this.chronicles = chronicles;
+	public CommPlayerMessage(long objectId, OutOfBandPackage message, CRC modelCrc, String soundFile, float displayTime) {
 		this.objectId = objectId;
 		this.message = message;
 		this.modelCrc = modelCrc;
@@ -74,7 +71,6 @@ public class CommPlayerMessage extends SWGPacket {
 		if (!super.checkDecode(data, CRC))
 			return;
 		
-		chronicles = data.getBoolean();
 		objectId = data.getLong();
 		message = data.getEncodable(OutOfBandPackage.class);
 		modelCrc = data.getEncodable(CRC.class);
@@ -88,7 +84,6 @@ public class CommPlayerMessage extends SWGPacket {
 		
 		length += Short.BYTES;
 		length += Integer.BYTES;
-		length += Byte.BYTES;
 		length += Long.BYTES;
 		length += message.getLength();
 		length += Integer.BYTES;
@@ -98,7 +93,6 @@ public class CommPlayerMessage extends SWGPacket {
 		NetBuffer data = NetBuffer.allocate(length);
 		data.addShort(2);
 		data.addInt(CRC);
-		data.addBoolean(chronicles);
 		data.addLong(objectId);
 		data.addEncodable(message);
 		data.addEncodable(modelCrc);
@@ -111,7 +105,6 @@ public class CommPlayerMessage extends SWGPacket {
 	@Override
 	protected String getPacketData() {
 		return createPacketInformation(
-				"chronicles", chronicles,
 				"objectId", objectId,
 				"message", message,
 				"modelCrc", modelCrc,
