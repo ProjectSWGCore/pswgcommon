@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2021 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -34,13 +34,15 @@ public class QuestTaskCounterMessage extends ObjectController {
 	public static final int CRC = 0x0441;
 
 	private String questName;
+	private int taskId;
 	private String counterText;
 	private int current;
 	private int max;
 	
-	public QuestTaskCounterMessage(long objectId, String questName, String counterText, int current, int max) {
+	public QuestTaskCounterMessage(long objectId, String questName, int taskId, String counterText, int current, int max) {
 		super(objectId, CRC);
 		this.questName = questName;
+		this.taskId = taskId;
 		this.counterText = counterText;
 		this.current = current;
 		this.max = max;
@@ -67,10 +69,10 @@ public class QuestTaskCounterMessage extends ObjectController {
 		encodeHeader(data);
 		
 		data.addAscii(questName);
-		data.addInt(max);
+		data.addInt(taskId);
 		data.addUnicode(counterText);
-		data.addInt(0);
 		data.addInt(current);
+		data.addInt(max);
 		
 		return data;
 	}
