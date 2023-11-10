@@ -66,4 +66,16 @@ public class ErrorMessage extends SWGPacket {
 		data.addBoolean(fatal);
 		return data;
 	}
+
+	public String getType() {
+		return type;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public boolean isFatal() {
+		return fatal;
+	}
 }
