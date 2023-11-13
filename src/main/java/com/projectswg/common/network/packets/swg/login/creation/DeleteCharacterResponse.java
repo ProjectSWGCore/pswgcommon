@@ -56,4 +56,8 @@ public class DeleteCharacterResponse extends SWGPacket {
 		data.addInt(deleted ? 0 : 1);
 		return data;
 	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
 }

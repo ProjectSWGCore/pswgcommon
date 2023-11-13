@@ -58,8 +58,12 @@ public class CreateCharacterFailure extends SWGPacket {
 		data.addAscii(errorString);
 		return data;
 	}
-	
-	private String nameFailureTranslation(NameFailureReason reason) {
+
+	public NameFailureReason getReason() {
+		return reason;
+	}
+
+	public String nameFailureTranslation(NameFailureReason reason) {
 		switch (reason) {
 			case NAME_DECLINED_EMPTY:
 				return "name_declined_empty";
