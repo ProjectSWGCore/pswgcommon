@@ -35,6 +35,7 @@ import com.projectswg.common.network.packets.swg.zone.object_controller.loot.Gro
 import com.projectswg.common.network.packets.swg.zone.object_controller.loot.GroupRequestLotteryItems;
 import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestCompletedMessage;
 import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestTaskCounterMessage;
+import com.projectswg.common.network.packets.swg.zone.object_controller.quest.QuestTaskTimerData;
 import me.joshlarson.jlcommon.log.Log;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
@@ -149,6 +150,7 @@ public abstract class ObjectController extends SWGPacket {
 			case 0x041C: return new JTLTerminalSharedMessage(data);
 			case 0x0115: return new SecureTrade(data);
 			case QuestTaskCounterMessage.CRC: return new QuestTaskCounterMessage(data);
+			case QuestTaskTimerData.CRC: return new QuestTaskTimerData(data);
 			case QuestCompletedMessage.CRC: return new QuestCompletedMessage(data);
 		}
 		Log.w("Unknown object controller: %08X", crc);
