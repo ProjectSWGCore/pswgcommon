@@ -56,7 +56,7 @@ dependencies {
 	api(group="me.joshlarson", name="jlcommon", version="1.10.1")
 	api(group="org.bouncycastle", name="bcprov-jdk18on", version="1.71")
 	implementation(kotlin("stdlib"))
-	implementation(group="org.mongodb", name="mongodb-driver-sync", version="3.12.2")
+	implementation(group="org.mongodb", name="mongodb-driver-sync", version="4.11.1")
 
 	testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version="5.8.1")
 	testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version="5.8.1")
