@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -152,6 +152,7 @@ public abstract class ObjectController extends SWGPacket {
 			case QuestTaskCounterMessage.CRC: return new QuestTaskCounterMessage(data);
 			case QuestTaskTimerData.CRC: return new QuestTaskTimerData(data);
 			case QuestCompletedMessage.CRC: return new QuestCompletedMessage(data);
+			case EntertainerFlourishType.CRC: return new EntertainerFlourishType(data);
 		}
 		Log.w("Unknown object controller: %08X", crc);
 		return new GenericObjectController(crc, data);
