@@ -34,7 +34,7 @@ class TestCustomizationString {
 	@Test
 	fun testPut() {
 		val string = CustomizationString()
-		val key = "test"
+		val key = "/private/index_color_pattern"
 		assertNull(string.put(key, 0)) // Nothing should be replaced because string's empty
 		assertEquals(0, string.put(key, 1)) // Same key, so the variable we put earlier should be replaced
 	}
@@ -42,7 +42,7 @@ class TestCustomizationString {
 	@Test
 	fun testRemove() {
 		val string = CustomizationString()
-		val key = "test"
+		val key = "/private/index_color_pattern"
 		string.put(key, 0)
 		assertEquals(0, string.remove(key)) // Same key, so the variable we put earlier should be returned
 	}
@@ -50,7 +50,7 @@ class TestCustomizationString {
 	@Test
 	fun testIsEmpty() {
 		val string = CustomizationString()
-		val key = "test"
+		val key = "/private/index_color_pattern"
 		assertTrue(string.isEmpty)
 		string.put(key, 0)
 		assertFalse(string.isEmpty)
@@ -71,16 +71,15 @@ class TestCustomizationString {
 	}
 
 	@Test
-	fun decoding() {
+	fun encodeDecode() {
 		val string = CustomizationString()
 		string.put("/private/index_color_1", 237)
 		string.put("/private/index_color_2", 4)
-		val input = byteArrayOf(10, 0, 2, 2, 2, -61, -83, 1, 4, -61, -65, 3)
-		
-		string.decode(NetBuffer.wrap(input))
 
+		val decoded = CustomizationString()
+		decoded.decode(NetBuffer.wrap(string.encode()))
 		assertEquals(2, string.variables.size)
-		assertEquals(string.get("/private/index_color_1"), 237)
-		assertEquals(string.get("/private/index_color_2"), 4)
+		assertEquals(decoded.get("/private/index_color_1"), 237)
+		assertEquals(decoded.get("/private/index_color_2"), 4)
 	}
 }
