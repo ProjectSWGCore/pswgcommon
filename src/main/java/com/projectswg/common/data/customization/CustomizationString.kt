@@ -72,8 +72,8 @@ class CustomizationString : Encodable, MongoPersistable {
 		return _variables[name]
 	}
 
-	fun forEach(consumer: BiConsumer<in String?, in Int?>?) {
-		_variables.forEach(consumer!!)
+	fun forEach(consumer: BiConsumer<in String, in Int>) {
+		_variables.forEach(consumer)
 	}
 
 	fun clear() {
