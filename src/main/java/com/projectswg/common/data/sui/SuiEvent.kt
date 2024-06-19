@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,10 +24,37 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.sui;
+package com.projectswg.common.data.sui
 
-import java.util.Map;
+enum class SuiEvent(val value: Int) {
+	NONE(0),
+	BUTTON(1),
+	CHECKBOX(2),
+	ENABLE_DISABLE(3),
+	GENERIC(4),
+	SLIDER(5),
+	TAB_PANE(6),
+	TEXTBOX(7),
+	VISIBILITY_CHANGED(8),
+	OK_PRESSED(9),
+	CANCEL_PRESSED(10);
 
-public interface ISuiCallback {
-	void handleEvent(SuiEvent event, Map<String, String> parameters);
+	companion object {
+		fun valueOf(value: Int): SuiEvent {
+			return when (value) {
+				0    -> NONE
+				1    -> BUTTON
+				2    -> CHECKBOX
+				3    -> ENABLE_DISABLE
+				4    -> GENERIC
+				5    -> SLIDER
+				6    -> TAB_PANE
+				7    -> TEXTBOX
+				8    -> VISIBILITY_CHANGED
+				9    -> OK_PRESSED
+				10   -> CANCEL_PRESSED
+				else -> NONE
+			}
+		}
+	}
 }
