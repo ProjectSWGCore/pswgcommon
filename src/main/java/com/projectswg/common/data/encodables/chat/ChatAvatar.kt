@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,45 +24,58 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.combat;
+package com.projectswg.common.data.encodables.chat
 
-import java.util.EnumSet;
-import java.util.Set;
+import com.projectswg.common.encoding.Encodable
+import com.projectswg.common.network.NetBuffer
+import java.util.concurrent.atomic.AtomicReference
 
-public enum TrailLocation {
-	LEFT_FOOT	(0x01),
-	RIGHT_FOOT	(0x02),
-	LEFT_HAND	(0x04),
-	RIGHT_HAND	(0x08),
-	WEAPON		(0x10);
-	
-	private static final TrailLocation [] VALUES = values();
-	
-	private int num;
-	
-	TrailLocation(int num) {
-		this.num = num;
-	}
-	
-	public int getNum() {
-		return num;
-	}
-	
-	public static TrailLocation getTrailLocation(int num) {
-		for (TrailLocation type : VALUES) {
-			if ((num & type.getNum()) != 0)
-				return type;
+class ChatAvatar(name: String) : Encodable {
+	var name: String = name
+		get() {
+			assert(field.isNotEmpty())
+			return field
 		}
-		return WEAPON;
+
+	val galaxy: String
+		get() = GALAXY.get()
+
+	override val length: Int
+		get() = 9 + name.length + GALAXY.get().length
+
+	override fun encode(): ByteArray {
+		val buffer = NetBuffer.allocate(length)
+		buffer.addAscii("SWG")
+		buffer.addAscii(GALAXY.get())
+		buffer.addAscii(name)
+		return buffer.array()
 	}
-	
-	public static Set<TrailLocation> getTrailLocations(int num) {
-		Set<TrailLocation> types = EnumSet.noneOf(TrailLocation.class);
-		for (TrailLocation type : VALUES) {
-			if ((num & type.getNum()) != 0)
-				types.add(type);
+
+	override fun decode(data: NetBuffer) {
+		data.ascii // SWG
+		data.ascii
+		name = data.ascii.lowercase()
+	}
+
+	override fun toString(): String {
+		return String.format("ChatAvatar[name='%s']", name)
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (other !is ChatAvatar) return false
+		return other.name == this.name
+	}
+
+	override fun hashCode(): Int {
+		return name.hashCode()
+	}
+
+	companion object {
+		private val GALAXY = AtomicReference("")
+		val systemAvatar: ChatAvatar = ChatAvatar("system")
+
+		fun setGalaxy(galaxy: String) {
+			GALAXY.set(galaxy)
 		}
-		return types;
 	}
-	
 }

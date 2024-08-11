@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,32 +24,20 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.combat;
+package com.projectswg.common.data.combat
 
-public enum HitLocation {
-	HIT_LOCATION_BODY			(0),
-	HIT_LOCATION_HEAD			(1),
-	HIT_LOCATION_R_ARM			(2),
-	HIT_LOCATION_L_ARM			(3),
-	HIT_LOCATION_R_LEG			(4),
-	HIT_LOCATION_L_LEG			(5),
-	HIT_LOCATION_NUM_LOCATIONS	(6);
-	
-	private static final HitLocation [] VALUES = values();
-	
-	private int num;
-	
-	HitLocation(int num) {
-		this.num = num;
-	}
-	
-	public int getNum() {
-		return num;
-	}
-	
-	public static HitLocation getHitLocation(int num) {
-		if (num < 0 || num >= VALUES.length)
-			return HIT_LOCATION_BODY;
-		return VALUES[num];
+import com.projectswg.common.data.EnumLookup
+
+enum class TargetType(val num: Int) {
+	NONE(0),
+	REQUIRED(1),
+	OPTIONAL(2);
+
+	companion object {
+		private val LOOKUP = EnumLookup(TargetType::class.java) { obj: TargetType -> obj.num }
+
+		fun getByNum(num: Int): TargetType {
+			return LOOKUP.getEnum(num, NONE)
+		}
 	}
 }

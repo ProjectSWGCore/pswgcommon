@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,37 +24,32 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.combat;
+package com.projectswg.common.data.encodables.chat
 
-public enum ValidTarget {
-	NONE	(-1),
-	STANDARD(0),
-	MOB		(1),
-	CREATURE(2),
-	NPC		(3),
-	DROID	(4),
-	PVP		(5),
-	JEDI	(6),
-	DEAD	(7),
-	FRIEND	(8);
-	
-	private static final ValidTarget [] VALUES = values();
-	
-	private int num;
-	
-	ValidTarget(int num) {
-		this.num = num;
+import com.projectswg.common.data.EnumLookup
+
+enum class ChatResult(val code: Int) {
+	NONE(-1),  // The client will just display an "unknown error code" if this is used.
+	SUCCESS(0),
+	TARGET_AVATAR_DOESNT_EXIST(4),
+	ROOM_INVALID_ID(5),
+	ROOM_INVALID_NAME(6),
+	CUSTOM_FAILURE(9),
+	ROOM_AVATAR_BANNED(12),
+	ROOM_PRIVATE(13),
+	ROOM_AVATAR_NO_PERMISSION(16),
+	IGNORED(23),
+	ROOM_ALREADY_EXISTS(24),
+	ROOM_ALREADY_JOINED(36),
+	CHAT_SERVER_UNAVAILABLE(1000000),
+	ROOM_DIFFERENT_FACTION(1000001),
+	ROOM_NOT_GCW_DEFENDER_FACTION(1000005);
+
+	companion object {
+		private val LOOKUP = EnumLookup(ChatResult::class.java) { obj: ChatResult -> obj.code }
+
+		fun fromInteger(code: Int): ChatResult {
+			return LOOKUP.getEnum(code, NONE)
+		}
 	}
-	
-	public int getNum() {
-		return num;
-	}
-	
-	public static ValidTarget getValidTarget(int num) {
-		++num;
-		if (num < 0 || num >= VALUES.length)
-			return STANDARD;
-		return VALUES[num];
-	}
-	
 }

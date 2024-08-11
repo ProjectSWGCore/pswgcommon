@@ -1,51 +1,53 @@
 /***********************************************************************************
  * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
- *                                                                                 *
+ * *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
  * Our goal is to create an emulator which will provide a server for players to    *
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
- *                                                                                 *
+ * *
  * This file is part of PSWGCommon.                                                *
- *                                                                                 *
+ * *
  * --------------------------------------------------------------------------------*
- *                                                                                 *
+ * *
  * PSWGCommon is free software: you can redistribute it and/or modify              *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
- *                                                                                 *
+ * *
  * PSWGCommon is distributed in the hope that it will be useful,                   *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
- *                                                                                 *
+ * *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
- ***********************************************************************************/
-package com.projectswg.common.data.combat;
+ * along with PSWGCommon.  If not, see <http:></http:>//www.gnu.org/licenses/>.             *
+ */
+package com.projectswg.common.data.combat
 
-import com.projectswg.common.data.EnumLookup;
+enum class AttackType(val num: Int) {
+	CONE(0),
+	SINGLE_TARGET(1),
+	AREA(2),
+	TARGET_AREA(3),
+	DUAL_WIELD(4),
+	RAMPAGE(5),
+	RANDOM_HATE_TARGET(6),
+	RANDOM_HATE_TARGET_CONE(7),
+	RANDOM_HATE_TARGET_CONE_TERMINUS(8),
+	HATE_LIST(9),
+	RANDOM_HATE_MULTI(10),
+	AREA_PROGRESSIVE(11),
+	SPLIT_DAMAGE_TARGET_AREA(12),
+	DISTANCE_FARTHEST(13);
 
-public enum DelayAttackEggPosition {
-	LOCATION	(1),
-	TARGET		(2),
-	SELF		(3);
-	
-	private static final EnumLookup<Integer, DelayAttackEggPosition> LOOKUP = new EnumLookup<>(DelayAttackEggPosition.class, DelayAttackEggPosition::getNum);
-	
-	private final int num;
-	
-	DelayAttackEggPosition(int num) {
-		this.num = num;
-	}
-	
-	public int getNum() {
-		return num;
-	}
-	
-	public static DelayAttackEggPosition getEggPosition(int num) {
-		return LOOKUP.getEnum(num, SELF);
+	companion object {
+		private val VALUES = entries.toTypedArray()
+
+		fun getAttackType(num: Int): AttackType {
+			if (num < 0 || num >= VALUES.size) return SINGLE_TARGET
+			return VALUES[num]
+		}
 	}
 }

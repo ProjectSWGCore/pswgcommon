@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -72,19 +72,19 @@ public class CombatSpam extends ObjectController {
 			if (info.isSuccess()) {
 				info.setArmor(data.getLong());
 				info.setRawDamage(data.getInt());
-				info.setDamageType(DamageType.getDamageType(data.getInt()));
+				info.setDamageType(DamageType.Companion.getDamageType(data.getInt()));
 				info.setElementalDamage(data.getInt());
-				info.setElementalDamageType(DamageType.getDamageType(data.getInt()));
+				info.setElementalDamageType(DamageType.Companion.getDamageType(data.getInt()));
 				info.setBleedDamage(data.getInt());
 				info.setCriticalDamage(data.getInt());
 				info.setBlockedDamage(data.getInt());
 				info.setFinalDamage(data.getInt());
-				info.setHitLocation(HitLocation.getHitLocation(data.getInt()));
+				info.setHitLocation(HitLocation.Companion.getHitLocation(data.getInt()));
 			}
 		} else if (isMessageData(dataType)) {
 			spamMessage = data.getEncodable(OutOfBandPackage.class);
 		}
-		spamType = CombatSpamType.getCombatSpamType(data.getInt());
+		spamType = CombatSpamType.Companion.getCombatSpamType(data.getInt());
 	}
 	
 	@Override

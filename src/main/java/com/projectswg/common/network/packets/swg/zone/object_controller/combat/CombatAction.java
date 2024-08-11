@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -67,7 +67,7 @@ public class CombatAction extends ObjectController {
 		attackerId = data.getLong();
 		weaponId = data.getLong();
 		posture = Posture.getFromId(data.getByte());
-		trail = TrailLocation.getTrailLocation(data.getByte());
+		trail = TrailLocation.Companion.getTrailLocation(data.getByte());
 		clientEffectId = data.getByte();
 		commandCrc = data.getInt();
 		int count = data.getShort();
@@ -77,7 +77,7 @@ public class CombatAction extends ObjectController {
 			d.setPosture(Posture.getFromId(data.getByte()));
 			d.setDefense(data.getBoolean());
 			d.setClientEffectId(data.getByte());
-			d.setHitLocation(HitLocation.getHitLocation(data.getByte()));
+			d.setHitLocation(HitLocation.Companion.getHitLocation(data.getByte()));
 			d.setDamage(data.getShort());
 			defenders.add(d);
 		}

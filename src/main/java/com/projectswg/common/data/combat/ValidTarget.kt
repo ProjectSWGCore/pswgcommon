@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,81 +24,27 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.encodables.chat;
+package com.projectswg.common.data.combat
 
-import java.util.Locale;
-import java.util.concurrent.atomic.AtomicReference;
+enum class ValidTarget(val num: Int) {
+	NONE(-1),
+	STANDARD(0),
+	MOB(1),
+	CREATURE(2),
+	NPC(3),
+	DROID(4),
+	PVP(5),
+	JEDI(6),
+	DEAD(7),
+	FRIEND(8);
 
-import com.projectswg.common.encoding.Encodable;
-import com.projectswg.common.network.NetBuffer;
+	companion object {
+		private val VALUES = entries.toTypedArray()
 
-public class ChatAvatar implements Encodable {
-	
-	private static final AtomicReference<String> GALAXY = new AtomicReference<>("");
-	private static final ChatAvatar SYSTEM_AVATAR = new ChatAvatar("system");
-	
-	private String name;
-	
-	public ChatAvatar() {
-		this(null);
+		fun getValidTarget(num: Int): ValidTarget {
+			val idx = num + 1
+			if (idx < 0 || idx >= VALUES.size) return STANDARD
+			return VALUES[idx]
+		}
 	}
-	
-	public ChatAvatar(String name) {
-		this.name = name;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getGalaxy() {
-		return GALAXY.get();
-	}
-	
-	@Override
-	public int getLength() {
-		return 9 + name.length() + GALAXY.get().length();
-	}
-	
-	@Override
-	public byte[] encode() {
-		NetBuffer buffer = NetBuffer.allocate(getLength());
-		buffer.addAscii("SWG");
-		buffer.addAscii(GALAXY.get());
-		buffer.addAscii(name);
-		return buffer.array();
-	}
-	
-	@Override
-	public void decode(NetBuffer data) {
-		data.getAscii(); // SWG
-		data.getAscii();
-		name = data.getAscii().toLowerCase(Locale.US);
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("ChatAvatar[name='%s']", name);
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof ChatAvatar))
-			return false;
-		return ((ChatAvatar) o).getName().equals(getName());
-	}
-	
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
-	
-	public static ChatAvatar getSystemAvatar() {
-		return SYSTEM_AVATAR;
-	}
-	
-	public static void setGalaxy(String galaxy) {
-		GALAXY.set(galaxy);
-	}
-	
 }
