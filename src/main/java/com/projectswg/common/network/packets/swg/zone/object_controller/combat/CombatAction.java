@@ -32,9 +32,9 @@ import java.util.Set;
 import com.projectswg.common.data.combat.HitLocation;
 import com.projectswg.common.data.combat.TrailLocation;
 import com.projectswg.common.data.encodables.tangible.Posture;
-import com.projectswg.common.data.location.Point3D;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.swg.zone.object_controller.ObjectController;
+import org.jetbrains.annotations.NotNull;
 
 public class CombatAction extends ObjectController {
 	
@@ -47,7 +47,7 @@ public class CombatAction extends ObjectController {
 	private TrailLocation trail;
 	private byte clientEffectId;
 	private int commandCrc;
-	private Set<Defender> defenders;
+	private final Set<Defender> defenders;
 	
 	public CombatAction(long objectId) {
 		super(objectId, CRC);
@@ -61,12 +61,12 @@ public class CombatAction extends ObjectController {
 	}
 	
 	@Override
-	public void decode(NetBuffer data) {
+	public void decode(@NotNull NetBuffer data) {
 		decodeHeader(data);
 		actionCrc = data.getInt();
 		attackerId = data.getLong();
 		weaponId = data.getLong();
-		posture = Posture.getFromId(data.getByte());
+		posture = Posture.Companion.getFromId(data.getByte());
 		trail = TrailLocation.Companion.getTrailLocation(data.getByte());
 		clientEffectId = data.getByte();
 		commandCrc = data.getInt();
@@ -74,7 +74,7 @@ public class CombatAction extends ObjectController {
 		for (int i = 0; i < count; i++) {
 			Defender d = new Defender();
 			d.setCreatureId(data.getLong());
-			d.setPosture(Posture.getFromId(data.getByte()));
+			d.setPosture(Posture.Companion.getFromId(data.getByte()));
 			d.setDefense(data.getBoolean());
 			d.setClientEffectId(data.getByte());
 			d.setHitLocation(HitLocation.Companion.getHitLocation(data.getByte()));

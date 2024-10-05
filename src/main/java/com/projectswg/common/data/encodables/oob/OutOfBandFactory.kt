@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,74 +24,30 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.encodables.tangible;
+package com.projectswg.common.data.encodables.oob
 
-import com.projectswg.common.data.encodables.mongo.MongoData;
-import com.projectswg.common.data.encodables.mongo.MongoPersistable;
-import com.projectswg.common.encoding.Encodable;
-import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.data.encodables.mongo.MongoData
+import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage
 
-public class SkillMod implements Encodable, MongoPersistable {
-	
-	private int base, modifier;
-	
-	public SkillMod() {
-		this(0, 0);
-	}
-	
-	public SkillMod(int base, int modifier) {
-		this.base = base;
-		this.modifier = modifier;
-	}
-	
-	@Override
-	public byte[] encode() {
-		NetBuffer data = NetBuffer.allocate(8);
-		
-		data.addInt(base);
-		data.addInt(modifier);
-		
-		return data.array();
+object OutOfBandFactory {
+	@JvmOverloads
+	fun save(oob: OutOfBandData, data: MongoData = MongoData()): MongoData {
+		when (oob.oobType) {
+			OutOfBandPackage.Type.STRING_ID, OutOfBandPackage.Type.PROSE_PACKAGE, OutOfBandPackage.Type.WAYPOINT -> data.putString("oobType", oob.oobType.name)
+			else                                                                                                 -> throw IllegalArgumentException("Unknown OOB data!")
+		}
+		oob.saveMongo(data)
+		return data
 	}
 
-	@Override
-	public void decode(NetBuffer data) {
-		base = data.getInt();
-		modifier = data.getInt();
+	fun create(data: MongoData): OutOfBandData {
+		val oob = when (OutOfBandPackage.Type.valueOf(data.getString("oobType", OutOfBandPackage.Type.UNDEFINED.name))) {
+			OutOfBandPackage.Type.STRING_ID     -> StringId.EMPTY
+			OutOfBandPackage.Type.PROSE_PACKAGE -> ProsePackage()
+			OutOfBandPackage.Type.WAYPOINT      -> WaypointPackage()
+			else                                -> throw IllegalArgumentException("Unknown OOB data: " + data.getString("oobType"))
+		}
+		oob.readMongo(data)
+		return oob
 	}
-	
-	@Override
-	public int getLength() {
-		return 8;
-	}
-	
-	@Override
-	public void readMongo(MongoData data) {
-		base = data.getInteger("base", 0);
-		modifier = data.getInteger("modifier", 0);
-	}
-	
-	@Override
-	public void saveMongo(MongoData data) {
-		data.putInteger("base", base);
-		data.putInteger("modifier", modifier);
-	}
-	
-	public void adjustBase(int adjustment) {
-		base += adjustment;
-	}
-	
-	public void adjustModifier(int adjustment) {
-		modifier += adjustment;
-	}
-	
-	public int getValue() {
-		return base + modifier;
-	}
-	
-	@Override
-	public String toString() {
-		return "SkillMod[Base="+base+", Modifier="+modifier+"]";
-	}
-
 }

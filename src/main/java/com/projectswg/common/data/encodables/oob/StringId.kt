@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,45 +24,86 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
+package com.projectswg.common.data.encodables.oob
 
-package com.projectswg.common.data.encodables.oob.waypoint;
+import com.projectswg.common.data.encodables.mongo.MongoData
+import com.projectswg.common.data.encodables.mongo.MongoPersistable
+import com.projectswg.common.network.NetBuffer
 
-import com.projectswg.common.data.EnumLookup;
+class StringId(file: String, key: String? = null) : OutOfBandData, MongoPersistable {
+	var key: String
+		private set
+	var file: String
+		private set
 
-public enum WaypointColor {
-	BLUE		(1, "blue"),
-	GREEN		(2, "green"),
-	ORANGE		(3, "orange"),
-	YELLOW		(4, "yellow"),
-	PURPLE		(5, "purple"),
-	WHITE		(6, "white"),
-	MULTICOLOR	(7, "multicolor");
-	
-	private static final EnumLookup<String, WaypointColor> NAME_LOOKUP = new EnumLookup<>(WaypointColor.class, WaypointColor::getName);
-	private static final EnumLookup<Integer, WaypointColor> VALUE_LOOKUP = new EnumLookup<>(WaypointColor.class, WaypointColor::getValue);
-	
-	private final String name;
-	private final int i;
-	
-	WaypointColor(int i, String name) {
-		this.name = name;
-		this.i = i;
+	init {
+		if (key == null) {
+			var stf = file
+			if (!stf.contains(":"))
+				throw IllegalArgumentException("Invalid stf format! Expected a semi-colon in '$stf'")
+
+			if (stf.startsWith("@")) stf = stf.substring(1)
+
+			val split = stf.split(":".toRegex(), limit = 2).toTypedArray()
+			this.file = split[0]
+			this.key = if ((split.size >= 2)) split[1] else ""
+		} else {
+			this.file = file
+			this.key = key
+		}
 	}
-	
-	public String getName() {
-		return name;
+
+	override fun encode(): ByteArray {
+		val buffer = NetBuffer.allocate(length)
+		buffer.addAscii(file)
+		buffer.addInt(0)
+		buffer.addAscii(key)
+		return buffer.array()
 	}
-	
-	public int getValue() {
-		return i;
+
+	override fun decode(data: NetBuffer) {
+		file = data.ascii
+		data.int
+		key = data.ascii
 	}
-	
-	public static WaypointColor valueOf(int colorId) {
-		return VALUE_LOOKUP.getEnum(colorId, WaypointColor.BLUE);
+
+	override val length: Int
+		get() = 8 + key.length + file.length
+
+	override fun readMongo(data: MongoData) {
+		file = data.getString("file") ?: ""
+		key = data.getString("key") ?: ""
 	}
-	
-	public static WaypointColor fromString(String str) {
-		return NAME_LOOKUP.getEnum(str, WaypointColor.BLUE);
+
+	override fun saveMongo(data: MongoData) {
+		data.putString("file", file)
+		data.putString("key", key)
 	}
-	
+
+	override val oobType: OutOfBandPackage.Type
+		get() = OutOfBandPackage.Type.STRING_ID
+
+	override val oobPosition: Int
+		get() = -1
+
+	override fun toString(): String {
+		return "@$file:$key"
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (other !is StringId) return false
+		return other.key == this.key && (other.file == this.file)
+	}
+
+	override fun hashCode(): Int {
+		return key.hashCode() * 67 + file.hashCode()
+	}
+
+	companion object {
+
+		val EMPTY: StringId
+			get() { return StringId("", "") }
+
+	}
+
 }

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -7,60 +7,46 @@
  * continue playing a game similar to the one they used to play. We are basing     *
  * it on the final publish of the game prior to end-game events.                   *
  *                                                                                 *
- * This file is part of Holocore.                                                  *
+ * This file is part of PSWGCommon.                                                *
  *                                                                                 *
  * --------------------------------------------------------------------------------*
  *                                                                                 *
- * Holocore is free software: you can redistribute it and/or modify                *
+ * PSWGCommon is free software: you can redistribute it and/or modify              *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
  *                                                                                 *
- * Holocore is distributed in the hope that it will be useful,                     *
+ * PSWGCommon is distributed in the hope that it will be useful,                   *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
  *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.encodables.gcw;
+package com.projectswg.common.data.encodables.oob.waypoint
 
-import com.projectswg.common.encoding.Encodable;
-import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.data.EnumLookup
 
-import java.util.Collection;
+enum class WaypointColor(val value: Int, val swgName: String) {
+	BLUE(1, "blue"),
+	GREEN(2, "green"),
+	ORANGE(3, "orange"),
+	YELLOW(4, "yellow"),
+	PURPLE(5, "purple"),
+	WHITE(6, "white"),
+	MULTICOLOR(7, "multicolor");
 
-public class GcwGroup implements Encodable {
-	
-	private final String planetName;
-	private final Collection<GcwGroupZone> zones;
-	
-	public GcwGroup(String planetName, Collection<GcwGroupZone> zones) {
-		this.planetName = planetName;
-		this.zones = zones;
-	}
-	
-	@Override
-	public void decode(NetBuffer data) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public byte[] encode() {
-		NetBuffer buffer = NetBuffer.allocate(getLength());
-		
-		buffer.addAscii(planetName);
-		buffer.addList(zones);
-		
-		return buffer.array();
-	}
-	
-	@Override
-	public int getLength() {
-		int nameLength = 2 + planetName.length();
-		int zonesLength = 4 + zones.stream().mapToInt(GcwGroupZone::getLength).sum();
-		
-		return nameLength + zonesLength;
+	companion object {
+		private val NAME_LOOKUP = EnumLookup(WaypointColor::class.java) { obj: WaypointColor -> obj.swgName }
+		private val VALUE_LOOKUP = EnumLookup(WaypointColor::class.java) { obj: WaypointColor -> obj.value }
+
+		fun valueOf(colorId: Int): WaypointColor {
+			return VALUE_LOOKUP.getEnum(colorId, BLUE)
+		}
+
+		fun fromString(str: String): WaypointColor {
+			return NAME_LOOKUP.getEnum(str, BLUE)
+		}
 	}
 }

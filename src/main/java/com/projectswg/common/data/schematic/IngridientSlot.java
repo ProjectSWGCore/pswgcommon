@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -49,7 +49,7 @@ public class IngridientSlot implements Encodable{
 	}
 	
 	public IngridientSlot(){
-		this.name = new StringId("", "");
+		this.name = StringId.Companion.getEMPTY();
 		this.optional = false;
 		this.slotOptions = new ArrayList<>();
 	}

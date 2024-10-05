@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -28,6 +28,7 @@ package com.projectswg.common.network.packets.swg.zone.object_controller;
 
 import com.projectswg.common.data.encodables.tangible.Posture;
 import com.projectswg.common.network.NetBuffer;
+import org.jetbrains.annotations.NotNull;
 
 public class PostureUpdate extends ObjectController {
 	
@@ -45,9 +46,9 @@ public class PostureUpdate extends ObjectController {
 		decode(data);
 	}
 	
-	public void decode(NetBuffer data) {
+	public void decode(@NotNull NetBuffer data) {
 		decodeHeader(data);
-		posture = Posture.getFromId(data.getByte());
+		posture = Posture.Companion.getFromId(data.getByte());
 		data.getBoolean(); // isClientImmediate
 	}
 	

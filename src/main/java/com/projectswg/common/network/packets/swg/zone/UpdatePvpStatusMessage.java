@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,6 +30,7 @@ import com.projectswg.common.data.encodables.tangible.PvpFaction;
 import com.projectswg.common.data.encodables.tangible.PvpFlag;
 import com.projectswg.common.network.NetBuffer;
 import com.projectswg.common.network.packets.SWGPacket;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -54,12 +55,12 @@ public class UpdatePvpStatusMessage extends SWGPacket {
 		this.objId = objId;
 	}
 	
-	public void decode(NetBuffer data) {
+	public void decode(@NotNull NetBuffer data) {
 		if (!super.checkDecode(data, CRC))
 			return;
 		
-		pvpFlags = PvpFlag.getFlags(data.getInt());
-		pvpFaction = PvpFaction.getFactionForCrc(data.getInt());
+		pvpFlags = PvpFlag.Companion.getFlags(data.getInt());
+		pvpFaction = PvpFaction.Companion.getFactionForCrc(data.getInt());
 		objId = data.getLong();
 	}
 	

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -24,48 +24,30 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.data.encodables.oob;
+package com.projectswg.common.data.encodables.gcw
 
-import com.projectswg.common.data.encodables.mongo.MongoData;
-import com.projectswg.common.data.encodables.oob.waypoint.WaypointPackage;
+import com.projectswg.common.encoding.Encodable
+import com.projectswg.common.network.NetBuffer
 
-public class OutOfBandFactory {
-	
-	public static MongoData save(OutOfBandData oob) {
-		return save(oob, new MongoData());
+class GcwRegion(private val planetName: String, private val zones: Collection<GcwRegionZone>) : Encodable {
+	override fun decode(data: NetBuffer) {
+		throw UnsupportedOperationException()
 	}
-	
-	public static MongoData save(OutOfBandData oob, MongoData data) {
-		switch (oob.getOobType()) {
-			case STRING_ID:
-			case PROSE_PACKAGE:
-			case WAYPOINT:
-				data.putString("oobType", oob.getOobType().name());
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown OOB data!");
+
+	override fun encode(): ByteArray {
+		val buffer = NetBuffer.allocate(length)
+
+		buffer.addAscii(planetName)
+		buffer.addList(zones)
+
+		return buffer.array()
+	}
+
+	override val length: Int
+		get() {
+			val nameLength = 2 + planetName.length
+			val zonesLength = 4 + zones.stream().mapToInt { obj: GcwRegionZone -> obj.length }.sum()
+
+			return nameLength + zonesLength
 		}
-		oob.saveMongo(data);
-		return data;
-	}
-	
-	public static OutOfBandData create(MongoData data) {
-		OutOfBandData oob;
-		switch (OutOfBandPackage.Type.valueOf(data.getString("oobType", OutOfBandPackage.Type.UNDEFINED.name()))) {
-			case STRING_ID:
-				oob = new StringId();
-				break;
-			case PROSE_PACKAGE:
-				oob = new ProsePackage();
-				break;
-			case WAYPOINT:
-				oob = new WaypointPackage();
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown OOB data: " + data.getString("oobType"));
-		}
-		oob.readMongo(data);
-		return oob;
-	}
-	
 }

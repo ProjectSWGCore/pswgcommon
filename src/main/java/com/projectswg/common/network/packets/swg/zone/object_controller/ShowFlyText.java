@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -45,7 +45,7 @@ public class ShowFlyText extends ObjectController {
 	private Set<Flag> display;
 	
 	public ShowFlyText(long objectId, String text, Scale scale, RGB rgb, Flag ... flags) {
-		this(objectId, new StringId(text), scale, rgb, flags);
+		this(objectId, new StringId(text, null), scale, rgb, flags);
 	}
 	
 	public ShowFlyText(long objectId, StringId text, Scale scale, RGB rgb, Flag ... flags) {
@@ -53,7 +53,7 @@ public class ShowFlyText extends ObjectController {
 	}
 	
 	public ShowFlyText(long objectId, OutOfBandPackage oob, Scale scale, RGB rgb, Flag ... flags) {
-		this(objectId, new StringId(), oob, scale, rgb, flags);
+		this(objectId, StringId.Companion.getEMPTY(), oob, scale, rgb, flags);
 	}
 	
 	public ShowFlyText(long objectId, StringId text, OutOfBandPackage oob, Scale scale, RGB rgb, Flag ... flags) {
