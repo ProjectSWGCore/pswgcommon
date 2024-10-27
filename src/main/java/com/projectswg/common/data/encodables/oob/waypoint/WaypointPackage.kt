@@ -1,11 +1,10 @@
 /***********************************************************************************
  * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -100,7 +99,7 @@ class WaypointPackage : OutOfBandData, MongoPersistable {
 		objectId = data.getLong("objectId", 0)
 		cellId = data.getLong("cellId", 0)
 		data.getDocument("position", position)
-		terrain = Terrain.valueOf(data.getString("terrain", "GONE")!!)
+		terrain = Terrain.valueOf(data.getString("terrain", "GONE"))
 		name = data.getString("name", "New Waypoint")
 		color = WaypointColor.Companion.valueOf(data.getInteger("color", WaypointColor.BLUE.value))
 		isActive = data.getBoolean("active", true)
