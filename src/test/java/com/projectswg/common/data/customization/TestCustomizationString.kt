@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -26,9 +25,15 @@
  ***********************************************************************************/
 package com.projectswg.common.data.customization
 
+import com.projectswg.common.encoding.StringType
 import com.projectswg.common.network.NetBuffer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
+import java.util.stream.Stream
 
 class TestCustomizationString {
 	@Test
@@ -59,27 +64,38 @@ class TestCustomizationString {
 	}
 
 	@Test
-	fun encoding() {
-		val string = CustomizationString()
-		string.put("/private/index_color_1", 237)
-		string.put("/private/index_color_2", 4)
-		val expected = byteArrayOf(10, 0, 2, 2, (2 or 0x80).toByte(), 237.toByte(), 255.toByte(), 1, 1, 4, 255.toByte(), 3)
-		
-		val actual = string.encode()
-
-		assertArrayEquals(expected, actual)
-	}
-
-	@Test
 	fun encodeDecode() {
 		val string = CustomizationString()
 		string.put("/private/index_color_1", 237)
 		string.put("/private/index_color_2", 4)
+		string.put("/private/index_color_tattoo", -100)
 
 		val decoded = CustomizationString()
 		decoded.decode(NetBuffer.wrap(string.encode()))
-		assertEquals(2, string.variables.size)
-		assertEquals(decoded.get("/private/index_color_1"), 237)
-		assertEquals(decoded.get("/private/index_color_2"), 4)
+		assertEquals(3, string.variables.size)
+		assertEquals(237, decoded.get("/private/index_color_1"))
+		assertEquals(4, decoded.get("/private/index_color_2"))
+		assertEquals(-100, decoded.get("/private/index_color_tattoo"))
+	}
+	
+	@ParameterizedTest
+	@MethodSource("provideRealWorldValues")
+	fun testRealWorld(input: ByteArray) {
+		val encodedFull = NetBuffer.allocate(input.size + 2)
+		encodedFull.addArray(input)
+		val decoded = CustomizationString()
+		decoded.decode(NetBuffer.wrap(encodedFull.buffer.array()))
+		
+		assertArrayEquals(encodedFull.buffer.array(), decoded.encode())
+	}
+	
+	companion object {
+		@JvmStatic
+		private fun provideRealWorldValues(): Stream<Arguments> {
+			return Stream.of(
+				Arguments.of(byteArrayOf(2, 35, 23, -62, -90, 24, -61, -65, 1, 28, 115, 27, -61, -65, 1, 5, -61, -65, 1, 26, -61, -65, 1, 25, -61, -67, 13, -61, -65, 1, 9, -62, -110, 18, 13, 19, -61, -65, 1, 32, -61, -65, 1, 16, 84, 33, -61, -116, 15, -61, -65, 1, 20, 10, 17, -61, -117, 14, -61, -65, 1, 3, -61, -76, 11, -61, -65, 1, 12, 11, 6, -61, -113, 8, -61, -65, 1, 21, -61, -65, 1, 22, -62, -128, 4, -61, -101, 7, -61, -65, 1, 10, -61, -83, 35, 7, 37, 3, 36, -61, -65, 1, 1, 21, 29, -61, -65, 1, 31, 7, 30, -61, -65, 1, -61, -65, 3,)),
+				Arguments.of(byteArrayOf(2, 29, 23, -61, -66, 24, -61, -65, 1, 28, -61, -65, 1, 27, 127, 5, -62, -82, 26, -61, -65, 1, 25, -61, -68, 13, -61, -65, 1, 9, 34, 18, 13, 19, -61, -65, 1, 16, -61, -122, 15, -61, -65, 1, 20, 9, 17, -61, -65, 1, 14, 117, 3, -61, -65, 1, 11, -61, -65, 2, 12, -61, -65, 1, 6, -61, -119, 8, -61, -65, 1, 21, -61, -65, 1, 22, -62, -106, 4, -62, -90, 7, -61, -65, 1, 10, -62, -95, 59, 25, 1, 16, 38, 3, -61, -65, 3)),
+			)
+		}
 	}
 }
