@@ -35,9 +35,13 @@ import java.util.*
 import java.util.function.BiConsumer
 
 /**
- * The Customization string is used to set special properties
- * on objects. This can be lightsaber color, vehicle speed,
- * facial hair, etc.
+ * Customization strings set specific attributes on game objects, such as
+ * lightsaber color, vehicle speed, or facial hair.
+ *
+ * These strings are encoded by first escaping 0x00 and 0xFF with [0xFF 0x01]
+ * and [0xFF 0x02] respectively, then encoded as UTF-8. The first byte
+ * indicates the version, and the string ends with the sequence [0xFF 0x03],
+ * marking "end of text."
  */
 class CustomizationString : Encodable, MongoPersistable {
 	private val _variables: MutableMap<String, Int> = Collections.synchronizedMap(LinkedHashMap()) // Ordered and synchronized
@@ -243,7 +247,8 @@ class CustomizationString : Encodable, MongoPersistable {
 		
 		init {
 			try {
-				BufferedReader(InputStreamReader(Objects.requireNonNull(CustomizationString::class.java.getResourceAsStream("customization_variables.sdb")))).use { reader ->
+				CustomizationString::class.java.getResourceAsStream("customization_variables.sdb").use {
+					val reader = BufferedReader(InputStreamReader(it ?: throw IllegalStateException("customization_variables.sdb does not exist")))
 					reader.lines().forEach { line: String ->
 						val tab = line.indexOf('\t')
 						val key = line.substring(0, tab)
