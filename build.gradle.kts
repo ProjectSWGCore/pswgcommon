@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 /***********************************************************************************
  * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
@@ -31,16 +33,15 @@ plugins {
 	kotlin("jvm")
 }
 
-val javaVersion: String by ext
-val javaMajorVersion: String by ext
-val kotlinTargetJdk: String by ext
+val javaVersion = JavaVersion.current()
+val kotlinTargetJdk = JvmTarget.fromTarget(javaVersion.majorVersion)
+val junit5Version: String by ext
 
 java {
 	modularity.inferModulePath.set(true)
 }
 
 idea {
-	targetVersion = javaVersion
 	module {
 		inheritOutputDirs = true
 	}
@@ -52,15 +53,15 @@ repositories {
 }
 
 dependencies {
-	api(group="org.jetbrains", name="annotations", version="20.1.0")
+	api(group="org.jetbrains", name="annotations", version="26.0.1")
 	api(group="me.joshlarson", name="jlcommon", version="1.10.1")
-	api(group="org.bouncycastle", name="bcprov-jdk18on", version="1.71")
+	api(group="org.bouncycastle", name="bcprov-jdk18on", version="1.79")
 	implementation(kotlin("stdlib"))
-	implementation(group="org.mongodb", name="mongodb-driver-sync", version="4.11.1")
+	implementation(group="org.mongodb", name="mongodb-driver-sync", version="5.2.1")
 
-	testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version="5.8.1")
-	testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version="5.8.1")
-	testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version="5.8.1")
+	testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version=junit5Version)
+	testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version=junit5Version)
+	testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version=junit5Version)
 }
 
 tasks.withType<Jar> {
@@ -68,8 +69,8 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-	kotlinOptions {
-		jvmTarget = kotlinTargetJdk
+	compilerOptions {
+		jvmTarget.set(kotlinTargetJdk)
 	}
 	destinationDirectory.set(File(destinationDirectory.get().asFile.path.replace("kotlin", "java")))
 }
