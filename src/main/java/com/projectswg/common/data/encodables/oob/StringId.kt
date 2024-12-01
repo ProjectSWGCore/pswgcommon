@@ -49,8 +49,8 @@ class StringId(file: String, key: String? = null) : OutOfBandData, MongoPersista
 			this.file = split[0]
 			this.key = if ((split.size >= 2)) split[1] else ""
 		} else {
-			this.file = file
-			this.key = key
+			this.file = file.intern()
+			this.key = key.intern()
 		}
 	}
 
