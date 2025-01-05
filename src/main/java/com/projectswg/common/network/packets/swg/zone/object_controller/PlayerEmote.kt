@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -24,59 +23,56 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.network.packets.swg.zone.object_controller;
+package com.projectswg.common.network.packets.swg.zone.object_controller
 
-import com.projectswg.common.network.NetBuffer;
+import com.projectswg.common.network.NetBuffer
 
-public class PlayerEmote extends ObjectController {
+class PlayerEmote : ObjectController {
 	
-	public static final int CRC = 0x012E;
-	
-	private long sourceId;
-	private long targetId;
-	private short emoteId;
-	
-	public PlayerEmote(long objectId) {
-		super(objectId, CRC);
+	private var sourceId: Long = 0
+	private var targetId: Long = 0
+	private var emoteId = 0
+	private var emoteFlags: Byte = 0
+
+	constructor(objectId: Long) : super(objectId, CRC)
+
+	constructor(data: NetBuffer) : super(CRC) {
+		decode(data)
 	}
-	
-	public PlayerEmote(NetBuffer data) {
-		super(CRC);
-		decode(data);
+
+	constructor(objectId: Long, sourceId: Long, targetId: Long, emoteId: Int, emoteFlags: Byte) : super(objectId, CRC) {
+		this.sourceId = sourceId
+		this.targetId = targetId
+		this.emoteId = emoteId
+		this.emoteFlags = emoteFlags
 	}
-	
-	public PlayerEmote(long objectId, long sourceId, long targetId, short emoteId) {
-		super(objectId, CRC);
-		this.sourceId = sourceId;
-		this.targetId = targetId;
-		this.emoteId = emoteId;
+
+	constructor(objectId: Long, emote: PlayerEmote) : super(objectId, CRC) {
+		this.sourceId = emote.sourceId
+		this.targetId = emote.targetId
+		this.emoteId = emote.emoteId
+		this.emoteFlags = emote.emoteFlags
 	}
-	
-	public PlayerEmote(long objectId, PlayerEmote emote) {
-		super(objectId, CRC);
-		this.sourceId = emote.sourceId;
-		this.targetId = emote.targetId;
-		this.emoteId = emote.emoteId;
+
+	override fun decode(data: NetBuffer) {
+		decodeHeader(data)
+		sourceId = data.long
+		targetId = data.long
+		emoteId = data.int
+		emoteFlags = data.byte
 	}
-	
-	public void decode(NetBuffer data) {
-		decodeHeader(data);
-		sourceId = data.getLong();
-		targetId = data.getLong();
-		emoteId = data.getShort();
-		data.getShort(); // Should be 0
-		data.getByte(); // Should be 3
+
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(HEADER_LENGTH + 21)
+		encodeHeader(data)
+		data.addLong(sourceId)
+		data.addLong(targetId)
+		data.addInt(emoteId)
+		data.addByte(emoteFlags.toInt())
+		return data
 	}
-	
-	public NetBuffer encode() {
-		NetBuffer data = NetBuffer.allocate(HEADER_LENGTH + 21);
-		encodeHeader(data);
-		data.addLong(sourceId);
-		data.addLong(targetId);
-		data.addShort(emoteId);
-		data.addShort((short) 0);
-		data.addByte((byte) 3);
-		return data;
+
+	companion object {
+		const val CRC: Int = 0x012E
 	}
-	
 }
