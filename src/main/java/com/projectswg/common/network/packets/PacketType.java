@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -254,16 +253,16 @@ public enum PacketType {
 		CHAT_ON_LEAVE_ROOM						(ChatOnLeaveRoom.CRC, 				ChatOnLeaveRoom.class),
 		CHAT_ON_RECEIVE_ROOM_INVITATION			(ChatOnReceiveRoomInvitation.CRC, 	ChatOnReceiveRoomInvitation.class),
 		CHAT_ON_SEND_INSTANT_MESSAGE			(ChatOnSendInstantMessage.CRC, 		ChatOnSendInstantMessage.class),
-		CHAT_ON_SEND_ROOM_MESSAGE				(ChatOnSendRoomMessage.CRC, 		ChatOnSendRoomMessage.class),
+		CHAT_ON_SEND_ROOM_MESSAGE				(ChatOnSendRoomMessage.Companion.getCRC(),	ChatOnSendRoomMessage.class),
 		CHAT_PERSISTENT_MESSAGE_TO_CLIENT		(ChatPersistentMessageToClient.CRC, ChatPersistentMessageToClient.class),
 		CHAT_PERSISTENT_MESSAGE_TO_SERVER		(ChatPersistentMessageToServer.CRC, ChatPersistentMessageToServer.class),
 		CHAT_DELETE_PERSISTENT_MESSAGE			(ChatDeletePersistentMessage.CRC, 	ChatDeletePersistentMessage.class),
 		CHAT_REQUEST_PERSISTENT_MESSAGE			(ChatRequestPersistentMessage.CRC, 	ChatRequestPersistentMessage.class),
 		CHAT_REQUEST_ROOM_LIST					(ChatRequestRoomList.CRC, 			ChatRequestRoomList.class),
-		CHAT_ENTER_ROOM_BY_ID					(ChatEnterRoomById.Companion.getCrc(), 			ChatEnterRoomById.class),
+		CHAT_ENTER_ROOM_BY_ID					(ChatEnterRoomById.Companion.getCrc(),	ChatEnterRoomById.class),
 		CHAT_QUERY_ROOM							(ChatQueryRoom.CRC, 				ChatQueryRoom.class),
 		CHAT_ROOM_LIST							(ChatRoomList.CRC, 					ChatRoomList.class),
-		CHAT_ROOM_MESSAGE						(ChatRoomMessage.CRC,				ChatRoomMessage.class),
+		CHAT_ROOM_MESSAGE						(ChatRoomMessage.Companion.getCRC(),	ChatRoomMessage.class),
 		CHAT_SEND_TO_ROOM						(ChatSendToRoom.CRC, 				ChatSendToRoom.class),
 		CHAT_REMOVE_AVATAR_FROM_ROOM			(ChatRemoveAvatarFromRoom.CRC, 		ChatRemoveAvatarFromRoom.class),
 		CHAT_SERVER_STATUS						(ChatServerStatus.CRC, 				ChatServerStatus.class),

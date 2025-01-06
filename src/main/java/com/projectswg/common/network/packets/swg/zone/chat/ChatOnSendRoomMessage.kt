@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -24,49 +23,29 @@
  * You should have received a copy of the GNU Affero General Public License        *
  * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
  ***********************************************************************************/
-package com.projectswg.common.network.packets.swg.zone.chat;
+package com.projectswg.common.network.packets.swg.zone.chat
 
-import com.projectswg.common.data.encodables.chat.ChatAvatar;
-import com.projectswg.common.data.encodables.oob.OutOfBandPackage;
-import com.projectswg.common.network.NetBuffer;
-import com.projectswg.common.network.packets.SWGPacket;
+import com.projectswg.common.network.NetBuffer
+import com.projectswg.common.network.packets.SWGPacket
 
-public class ChatRoomMessage extends SWGPacket {
-	public static final int CRC = getCrc("ChatRoomMessage");
+class ChatOnSendRoomMessage @JvmOverloads constructor(var result: Int = 0, var sequence: Int = 0) : SWGPacket() {
 
-	private ChatAvatar avatar;
-	private int roomId = 0;
-	private String message = "";
-	private OutOfBandPackage outOfBandPackage;
-
-	public ChatRoomMessage(ChatAvatar avatar, int roomId, String message, OutOfBandPackage oob) {
-		this.avatar = avatar;
-		this.roomId = roomId;
-		this.message = message;
-		this.outOfBandPackage = oob;
+	override fun decode(data: NetBuffer) {
+		if (!super.checkDecode(data, CRC)) return
+		result = data.int
+		sequence = data.int
 	}
-	
-	@Override
-	public void decode(NetBuffer data) {
-		if (!super.checkDecode(data, CRC))
-			return;
-		avatar				= data.getEncodable(ChatAvatar.class);
-		roomId 				= data.getInt();
-		message 			= data.getUnicode();
-		outOfBandPackage	= data.getEncodable(OutOfBandPackage.class);
+
+	override fun encode(): NetBuffer {
+		val data = NetBuffer.allocate(14)
+		data.addShort(3)
+		data.addInt(CRC)
+		data.addInt(result)
+		data.addInt(sequence)
+		return data
 	}
-	
-	@Override
-	public NetBuffer encode() {
-		byte[] oob = outOfBandPackage.encode();
-		int length = 14 + avatar.getLength() + oob.length + message.length() * 2;
-		NetBuffer data = NetBuffer.allocate(length);
-		data.addShort(5);
-		data.addInt(CRC);
-		data.addEncodable(avatar);
-		data.addInt(roomId);
-		data.addUnicode(message);
-		data.addRawArray(oob);
-		return data;
+
+	companion object {
+		val CRC: Int = getCrc("ChatOnSendRoomMessage")
 	}
 }
