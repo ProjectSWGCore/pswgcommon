@@ -47,6 +47,16 @@ idea {
 	}
 }
 
+sourceSets {
+	main {
+		java {
+			output.setResourcesDir(destinationDirectory.get())
+		}
+	}
+}
+
+tasks.named("processResources").configure { dependsOn("compileJava") }
+
 repositories {
 	maven("https://dev.joshlarson.me/maven2")
 	mavenCentral()
