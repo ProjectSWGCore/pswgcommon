@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -41,7 +41,7 @@ class StringId(file: String, key: String? = null) : OutOfBandData, MongoPersista
 		if (key == null) {
 			var stf = file
 			if (!stf.contains(":"))
-				throw IllegalArgumentException("Invalid stf format! Expected a semi-colon in '$stf'")
+				throw IllegalArgumentException("Invalid stf format! Expected a colon in '$stf'")
 
 			if (stf.startsWith("@")) stf = stf.substring(1)
 
