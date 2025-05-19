@@ -72,6 +72,7 @@ dependencies {
 	testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version=junit5Version)
 	testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version=junit5Version)
 	testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version=junit5Version)
+	testRuntimeOnly(group="org.junit.platform", name="junit-platform-launcher", version="1.12.2")
 }
 
 tasks.withType<Jar> {
