@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -31,63 +30,64 @@ import com.projectswg.common.data.encodables.mongo.MongoPersistable;
 import com.projectswg.common.encoding.Encodable;
 import com.projectswg.common.network.NetBuffer;
 import me.joshlarson.jlcommon.utilities.Arguments;
+import org.jetbrains.annotations.NotNull;
 
 public class Quaternion implements Encodable, MongoPersistable {
-	
-	private final double [][] rotationMatrix;
+
+	private final double [] rotationMatrix;
 	private double x;
 	private double y;
 	private double z;
 	private double w;
-	
+
 	public Quaternion(Quaternion q) {
 		this(q.x, q.y, q.z, q.w);
 	}
-	
+
 	public Quaternion(double x, double y, double z, double w) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.w = w;
-		this.rotationMatrix = new double[3][3];
+		this.rotationMatrix = new double[9];
 		updateRotationMatrix();
 	}
-	
-	public Quaternion(double [][] matrix) {
-		Arguments.validate(matrix.length >= 3 && matrix[0].length >= 3, "Matrix must be at least 3x3!");
-		this.rotationMatrix = new double[3][3];
+
+	public Quaternion(double [][] rotationMatrix) {
+		Arguments.validate(rotationMatrix.length >= 3 && rotationMatrix[0].length >= 3, "Matrix must be at least 3x3!");
+		this.rotationMatrix = new double[9];
 		for (int i = 0; i < 3; i++) {
-			System.arraycopy(matrix, 0, this.rotationMatrix, 0, 3);
+			System.arraycopy(rotationMatrix[i], 0, this.rotationMatrix, i * 3, 3);
 		}
-		
+
 		// Optimization and thread safe
-		matrix = rotationMatrix;
-		
+		double [] matrix = this.rotationMatrix;
+
 		// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
-		double tr = matrix[0][0] + matrix[1][1] + matrix[2][2];
+		double tr = matrix[0] + matrix[4] + matrix[8];
 		if (tr > 0) {
 			double S = Math.sqrt(tr+1.0) * 2; // S=4*w
 			w = S / 4;
-			x = (matrix[2][1] - matrix[1][2]) / S;
-			y = (matrix[0][2] - matrix[2][0]) / S;
-			z = (matrix[1][0] - matrix[0][1]) / S;
-		} else if ((matrix[0][0] > matrix[1][1])&(matrix[0][0] > matrix[2][2])) {
-			double S = Math.sqrt(1.0 + matrix[0][0] - matrix[1][1] - matrix[2][2]) * 2; // S=4*x 
-			w = (matrix[2][1] - matrix[1][2]) / S;
+			x = (matrix[7] - matrix[5]) / S;
+			y = (matrix[2] - matrix[6]) / S;
+			z = (matrix[3] - matrix[1]) / S;
+		} else if ((matrix[0] > matrix[4])&(matrix[0] > matrix[8])) {
+			double S = Math.sqrt(1.0 + matrix[0] - matrix[4] - matrix[8]) * 2; // S=4*x
+			w = (matrix[7] - matrix[5]) / S;
 			x = S / 4;
-			y = (matrix[0][1] + matrix[1][0]) / S;
-			z = (matrix[0][2] + matrix[2][0]) / S;
-		} else if (matrix[1][1] > matrix[2][2]) {
-			double S = Math.sqrt(1.0 + matrix[1][1] - matrix[0][0] - matrix[2][2]) * 2; // S=4*qy
-			w = (matrix[0][2] - matrix[2][0]) / S;
-			x = (matrix[0][1] + matrix[1][0]) / S;
+			y = (matrix[1] + matrix[3]) / S;
+			z = (matrix[2] + matrix[6]) / S;
+		} else if (matrix[4] > matrix[8]) {
+			double S = Math.sqrt(1.0 + matrix[4] - matrix[0] - matrix[8]) * 2; // S=4*qy
+			w = (matrix[2] - matrix[6]) / S;
+			x = (matrix[1] + matrix[3]) / S;
 			y = S / 4;
-			z = (matrix[1][2] + matrix[2][1]) / S;
+			z = (matrix[5] + matrix[7]) / S;
 		} else {
-			double S = Math.sqrt(1.0 + matrix[2][2] - matrix[0][0] - matrix[1][1]) * 2; // S=4*qz
-			w = (matrix[1][0] - matrix[0][1]) / S;
-			x = (matrix[0][2] + matrix[2][0]) / S;
-			y = (matrix[1][2] + matrix[2][1]) / S;
+			double S = Math.sqrt(1.0 + matrix[8] - matrix[0] - matrix[4]) * 2; // S=4*qz
+			w = (matrix[3] - matrix[1]) / S;
+			x = (matrix[2] + matrix[6]) / S;
+			y = (matrix[5] + matrix[7]) / S;
 			z = S / 4;
 		}
 	}
@@ -107,19 +107,19 @@ public class Quaternion implements Encodable, MongoPersistable {
 	public double getW() {
 		return w;
 	}
-	
+
 	public double getHeading() {
 		double heading = Math.toDegrees(Math.atan2(2*y*w - 2*x*z , 1 - 2*y*y - 2*z*z));
 		return (heading >= 0) ? heading : heading + 360;
 	}
-	
+
 	public void getRotationMatrix(double [][] rotationMatrix) {
 		Arguments.validate(rotationMatrix.length >= 3 && rotationMatrix[0].length >= 3, "Matrix must be at least 3x3!");
 		for (int i = 0; i < 3; i++) {
-			System.arraycopy(this.rotationMatrix, 0, rotationMatrix, 0, 3);
+			System.arraycopy(this.rotationMatrix, i * 3, rotationMatrix[i], 0, 3);
 		}
 	}
-	
+
 	public void setX(double x) {
 		this.x = x;
 		updateRotationMatrix();
@@ -139,7 +139,7 @@ public class Quaternion implements Encodable, MongoPersistable {
 		this.w = w;
 		updateRotationMatrix();
 	}
-	
+
 	public void set(double x, double y, double z, double w) {
 		this.x = x;
 		this.y = y;
@@ -147,20 +147,20 @@ public class Quaternion implements Encodable, MongoPersistable {
 		this.w = w;
 		updateRotationMatrix();
 	}
-	
+
 	public void set(Quaternion q) {
 		set(q.x, q.y, q.z, q.w);
 	}
-	
+
 	public void setHeading(double degrees) {
 		set(0, 0, 0, 1);
 		rotateHeading(degrees);
 	}
-	
+
 	public void rotateHeading(double degrees) {
 		rotateDegrees(degrees, 0, 1, 0);
 	}
-	
+
 	public void rotateDegrees(double degrees, double axisX, double axisY, double axisZ) {
 		double rad = Math.toRadians(degrees) / 2;
 		double sin = Math.sin(rad);
@@ -178,7 +178,7 @@ public class Quaternion implements Encodable, MongoPersistable {
 		this.z = nZ;
 		normalize();
 	}
-	
+
 	public void rotateByQuaternion(Quaternion q) {
 		double nW = w * q.w - x * q.x - y * q.y - z * q.z;
 		double nX = w * q.x + x * q.w + y * q.z - z * q.y;
@@ -187,14 +187,14 @@ public class Quaternion implements Encodable, MongoPersistable {
 		set(nX, nY, nZ, nW);
 		normalize();
 	}
-	
+
 	public void rotatePoint(Point3D p) {
-		double nX = rotationMatrix[0][0]*p.getX() + rotationMatrix[0][1]*p.getY() + rotationMatrix[0][2]*p.getZ();
-		double nY = rotationMatrix[1][0]*p.getX() + rotationMatrix[1][1]*p.getY() + rotationMatrix[1][2]*p.getZ();
-		double nZ = rotationMatrix[2][0]*p.getX() + rotationMatrix[2][1]*p.getY() + rotationMatrix[2][2]*p.getZ();
+		double nX = rotationMatrix[0]*p.getX() + rotationMatrix[1]*p.getY() + rotationMatrix[2]*p.getZ();
+		double nY = rotationMatrix[3]*p.getX() + rotationMatrix[4]*p.getY() + rotationMatrix[5]*p.getZ();
+		double nZ = rotationMatrix[6]*p.getX() + rotationMatrix[7]*p.getY() + rotationMatrix[8]*p.getZ();
 		p.set(nX, nY, nZ);
 	}
-	
+
 	public void normalize() {
 		double mag = Math.sqrt(x * x + y * y + z * z + w * w);
 		x /= mag;
@@ -205,7 +205,7 @@ public class Quaternion implements Encodable, MongoPersistable {
 	}
 
 	@Override
-	public byte[] encode() {
+	public byte @NotNull [] encode() {
 		NetBuffer buf = NetBuffer.allocate(16);
 		buf.addFloat((float) x);
 		buf.addFloat((float) y);
@@ -222,12 +222,12 @@ public class Quaternion implements Encodable, MongoPersistable {
 		w = data.getFloat();
 		updateRotationMatrix();
 	}
-	
+
 	@Override
 	public int getLength() {
 		return 16;
 	}
-	
+
 	@Override
 	public void readMongo(MongoData data) {
 		x = data.getDouble("x", 0);
@@ -235,7 +235,7 @@ public class Quaternion implements Encodable, MongoPersistable {
 		z = data.getDouble("z", 0);
 		w = data.getDouble("w", 1);
 	}
-	
+
 	@Override
 	public void saveMongo(MongoData data) {
 		data.putDouble("x", x);
@@ -243,12 +243,12 @@ public class Quaternion implements Encodable, MongoPersistable {
 		data.putDouble("z", z);
 		data.putDouble("w", w);
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("Quaternion[%.3f, %.3f, %.3f, %.3f]", x, y, z, w);
 	}
-	
+
 	private void updateRotationMatrix() {
 		double x2 = x * x;
 		double y2 = y * y;
@@ -258,22 +258,22 @@ public class Quaternion implements Encodable, MongoPersistable {
 		updateRotationMatrixY(x2, y2, z2, w2);
 		updateRotationMatrixZ(x2, y2, z2, w2);
 	}
-	
+
 	private void updateRotationMatrixX(double x2, double y2, double z2, double w2) {
-		rotationMatrix[0][0] = x2 + w2 - y2 - z2;
-		rotationMatrix[0][1] = 2*y*x - 2*z*w;
-		rotationMatrix[0][2] = 2*y*w + 2*z*x;
+		rotationMatrix[0] = x2 + w2 - y2 - z2;
+		rotationMatrix[1] = 2*y*x - 2*z*w;
+		rotationMatrix[2] = 2*y*w + 2*z*x;
 	}
-	
+
 	private void updateRotationMatrixY(double x2, double y2, double z2, double w2) {
-		rotationMatrix[1][0] = 2*x*y + 2*w*z;
-		rotationMatrix[1][1] = y2 - z2 + w2 - x2;
-		rotationMatrix[1][2] = 2*z*y - 2*x*w;
+		rotationMatrix[3] = 2*x*y + 2*w*z;
+		rotationMatrix[4] = y2 - z2 + w2 - x2;
+		rotationMatrix[5] = 2*z*y - 2*x*w;
 	}
-	
+
 	private void updateRotationMatrixZ(double x2, double y2, double z2, double w2) {
-		rotationMatrix[2][0] = 2*x*z - 2*w*y;
-		rotationMatrix[2][1] = 2*y*z + 2*w*x;
-		rotationMatrix[2][2] = z2 + w2 - x2 - y2;
+		rotationMatrix[6] = 2*x*z - 2*w*y;
+		rotationMatrix[7] = 2*y*z + 2*w*x;
+		rotationMatrix[8] = z2 + w2 - x2 - y2;
 	}
 }

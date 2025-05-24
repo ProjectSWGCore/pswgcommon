@@ -238,7 +238,7 @@ class TerrainTemplate : SWGParser {
 		val angleRight = ((tileLocalX.toInt() xor tileLocalZ.toInt()) and 1) == 0
 		val sideLeft = when (angleRight) {
 			false -> ((tileLocalX - tileLocalX.toInt()) <= 1 - (tileLocalZ - tileLocalZ.toInt())) // left
-			true  -> ((tileLocalX - tileLocalX.toInt()) <= (tileLocalZ - tileLocalZ.toInt()))      // top
+			true  -> ((tileLocalX - tileLocalX.toInt()) <= (tileLocalZ - tileLocalZ.toInt()))     // top
 		}
 
 		val planeInfo = FloatArray(9)
