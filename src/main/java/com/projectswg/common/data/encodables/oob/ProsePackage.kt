@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -203,14 +202,15 @@ class ProsePackage() : OutOfBandData {
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
-		base = data.getEncodable(StringId::class.java)
-		actor = data.getEncodable(Prose::class.java)
-		target = data.getEncodable(Prose::class.java)
-		other = data.getEncodable(Prose::class.java)
+	override fun decode(data: NetBuffer): Boolean {
+		base = data.getEncodable(StringId::class.java) ?: return false
+		actor = data.getEncodable(Prose::class.java) ?: return false
+		target = data.getEncodable(Prose::class.java) ?: return false
+		other = data.getEncodable(Prose::class.java) ?: return false
 		di = data.int
 		df = data.int.toFloat()
 		grammarFlag = data.boolean
+		return true
 	}
 
 	override val length: Int
@@ -288,10 +288,11 @@ class ProsePackage() : OutOfBandData {
 			return data.array()
 		}
 
-		override fun decode(data: NetBuffer) {
+		override fun decode(data: NetBuffer): Boolean {
 			objectId = data.long
-			stringId = data.getEncodable(StringId::class.java)
+			stringId = data.getEncodable(StringId::class.java) ?: return false
 			text = data.unicode
+			return true
 		}
 
 		override val length: Int

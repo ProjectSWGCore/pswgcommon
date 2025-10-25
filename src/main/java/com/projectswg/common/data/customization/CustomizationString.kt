@@ -91,9 +91,9 @@ class CustomizationString : Encodable, MongoPersistable {
 		return str.toString()
 	}
 	
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		val buffer = data.array
-		if (buffer.isEmpty()) return 
+		if (buffer.isEmpty()) return true
 		val stream = CustomizationStringInputStream(buffer)
 		stream.read() // version - should be 0x02
 		val variableCount = stream.read()
@@ -108,6 +108,7 @@ class CustomizationString : Encodable, MongoPersistable {
 		}
 		stream.read() // 0xFF
 		stream.read() // 0x03
+		return true
 	}
 	
 	override fun encode(): ByteArray {

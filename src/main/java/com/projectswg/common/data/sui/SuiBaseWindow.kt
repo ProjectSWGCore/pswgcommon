@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -212,7 +211,7 @@ open class SuiBaseWindow : Encodable {
 	override fun encode(): ByteArray {
 		val data = NetBuffer.allocate(length)
 		data.addInt(id)
-		data.addAscii(suiScript)
+		data.addAscii(suiScript ?: "")
 		data.addList(components)
 		data.addLong(rangeObjId)
 		data.addFloat(maxDistance)
@@ -221,14 +220,15 @@ open class SuiBaseWindow : Encodable {
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		id = data.int
 		suiScript = data.ascii
-		components = data.getList(SuiComponent::class.java)
+		components = data.getList(SuiComponent::class.java) ?: return false
 		rangeObjId = data.long
 		maxDistance = data.float
 		// unk long
 		// unk int
+		return true
 	}
 
 	override val length: Int

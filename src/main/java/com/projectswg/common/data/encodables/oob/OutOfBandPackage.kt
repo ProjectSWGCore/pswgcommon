@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -62,7 +61,7 @@ class OutOfBandPackage() : Encodable, MongoPersistable {
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		var remaining = data.int * 2
 		while (remaining > 0) {
 			val start = data.position()
@@ -72,6 +71,7 @@ class OutOfBandPackage() : Encodable, MongoPersistable {
 			data.seek(padding)
 			remaining -= data.position() - start
 		}
+		return true
 	}
 
 	override val length: Int
@@ -111,6 +111,10 @@ class OutOfBandPackage() : Encodable, MongoPersistable {
 				Log.e("Tried to decode an unsupported OutOfBandData Type: $type")
 				return
 			}
+		}
+		if (oob == null) {
+			Log.e("Failed to get encodable type $type")
+			return
 		}
 		_packages.add(oob)
 	}

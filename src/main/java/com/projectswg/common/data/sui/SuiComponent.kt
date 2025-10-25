@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -30,7 +30,6 @@ import com.projectswg.common.encoding.StringType
 import com.projectswg.common.network.NetBuffer
 import me.joshlarson.jlcommon.log.Log
 import java.nio.charset.StandardCharsets
-import kotlin.collections.ArrayList
 
 class SuiComponent(type: Type, widget: String) : Encodable {
 	var type: Type = type
@@ -122,10 +121,11 @@ class SuiComponent(type: Type, widget: String) : Encodable {
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		type = Type.valueOf(data.byte)
-		_wideParams = data.getList(StringType.UNICODE)
-		_narrowParams = data.getList(StringType.ASCII)
+		_wideParams = data.getList(StringType.UNICODE) ?: return false
+		_narrowParams = data.getList(StringType.ASCII) ?: return false
+		return true
 	}
 
 	override val length: Int

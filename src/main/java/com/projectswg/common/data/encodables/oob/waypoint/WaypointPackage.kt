@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -37,7 +37,7 @@ class WaypointPackage : OutOfBandData, MongoPersistable {
 	var position: Point3D
 
 	var objectId: Long = 0
-	var terrain: Terrain? = null
+	var terrain: Terrain = Terrain.GONE
 	var cellId: Long = 0
 	var name: String? = null
 	var color: WaypointColor? = null
@@ -63,23 +63,24 @@ class WaypointPackage : OutOfBandData, MongoPersistable {
 		data.addInt(0)
 		data.addEncodable(position)
 		data.addLong(cellId)
-		data.addInt(terrain!!.crc)
-		data.addUnicode(name)
+		data.addInt(terrain.crc)
+		data.addUnicode(name ?: "")
 		data.addLong(objectId)
 		data.addByte(color?.value ?: 0)
 		data.addBoolean(isActive)
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		data.int
 		position.decode(data)
 		cellId = data.long
 		terrain = Terrain.getTerrainFromCrc(data.int)
 		name = data.unicode
 		objectId = data.long
-		color = WaypointColor.Companion.valueOf(data.byte.toInt())
+		color = WaypointColor.valueOf(data.byte.toInt())
 		isActive = data.boolean
+		return true
 	}
 
 	override val length: Int
@@ -101,7 +102,7 @@ class WaypointPackage : OutOfBandData, MongoPersistable {
 		data.getDocument("position", position)
 		terrain = Terrain.valueOf(data.getString("terrain", "GONE"))
 		name = data.getString("name", "New Waypoint")
-		color = WaypointColor.Companion.valueOf(data.getInteger("color", WaypointColor.BLUE.value))
+		color = WaypointColor.valueOf(data.getInteger("color", WaypointColor.BLUE.value))
 		isActive = data.getBoolean("active", true)
 	}
 

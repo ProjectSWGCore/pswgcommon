@@ -1,11 +1,10 @@
 /***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
  *                                                                                 *
  * This file is part of PSWGCommon.                                                *
  *                                                                                 *
@@ -30,7 +29,6 @@ import com.projectswg.common.encoding.Encodable
 import com.projectswg.common.network.NetBuffer
 import java.text.NumberFormat
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 class AttributeList : Encodable {
 
@@ -68,12 +66,13 @@ class AttributeList : Encodable {
 		map[attribute] = formattedValue + suffix
 	}
 	
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		val size = data.int
 		
 		for (i in 0..size) {
 			map[data.ascii] = data.unicode
 		}
+		return true
 	}
 
 	override fun encode(): ByteArray {

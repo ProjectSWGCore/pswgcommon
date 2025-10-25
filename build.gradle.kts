@@ -1,89 +1,63 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-/***********************************************************************************
- * Copyright (c) 2023 /// Project SWG /// www.projectswg.com                       *
- *                                                                                 *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
- * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
- *                                                                                 *
- * This file is part of Holocore.                                                  *
- *                                                                                 *
- * --------------------------------------------------------------------------------*
- *                                                                                 *
- * Holocore is free software: you can redistribute it and/or modify                *
- * it under the terms of the GNU Affero General Public License as                  *
- * published by the Free Software Foundation, either version 3 of the              *
- * License, or (at your option) any later version.                                 *
- *                                                                                 *
- * Holocore is distributed in the hope that it will be useful,                     *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
- * GNU Affero General Public License for more details.                             *
- *                                                                                 *
- * You should have received a copy of the GNU Affero General Public License        *
- * along with Holocore.  If not, see <http://www.gnu.org/licenses/>.               *
- ***********************************************************************************/
-
 plugins {
 	idea
 	`java-library`
-	kotlin("jvm")
+	kotlin("jvm") version "2.2.21"
 }
 
+group = "com.projectswg"
+version = "1.0.0"
+description = "ProjectSWG's SWG Emulator Common Library"
+
 val javaVersion = JavaVersion.current()
-val kotlinTargetJdk = JvmTarget.fromTarget(javaVersion.majorVersion)
-val junit5Version: String by ext
+val kotlinTargetJdk: JvmTarget = JvmTarget.fromTarget(javaVersion.majorVersion)
 
 java {
 	modularity.inferModulePath.set(true)
+	
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(javaVersion.majorVersion))
+	}
+}
+
+kotlin {
+	compilerOptions {
+		jvmTarget.set(kotlinTargetJdk)
+	}
 }
 
 idea {
+	targetVersion = javaVersion.majorVersion
 	module {
 		inheritOutputDirs = true
 	}
 }
-
-sourceSets {
-	main {
-		java {
-			output.setResourcesDir(destinationDirectory.get())
-		}
-	}
-}
-
-tasks.named("processResources").configure { dependsOn("compileJava") }
 
 repositories {
 	maven("https://dev.joshlarson.me/maven2")
 	mavenCentral()
 }
 
-dependencies {
-	api(group="org.jetbrains", name="annotations", version="26.0.1")
-	api(group="me.joshlarson", name="jlcommon", version="1.10.1")
-	api(group="org.bouncycastle", name="bcprov-jdk18on", version="1.79")
-	implementation(kotlin("stdlib"))
-	implementation(group="org.mongodb", name="mongodb-driver-sync", version="5.2.1")
-
-	testImplementation(group="org.junit.jupiter", name="junit-jupiter-api", version=junit5Version)
-	testImplementation(group="org.junit.jupiter", name="junit-jupiter-params", version=junit5Version)
-	testRuntimeOnly(group="org.junit.jupiter", name="junit-jupiter-engine", version=junit5Version)
-	testRuntimeOnly(group="org.junit.platform", name="junit-platform-launcher", version="1.12.2")
-}
-
-tasks.withType<Jar> {
-	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-	compilerOptions {
-		jvmTarget.set(kotlinTargetJdk)
+sourceSets {
+	main {
+		dependencies {
+			api("org.jetbrains:annotations:20.1.0")
+			api("me.joshlarson:jlcommon:1.10.1")
+			api("org.bouncycastle:bcprov-jdk18on:1.71")
+			implementation(kotlin("stdlib"))
+			implementation("org.mongodb:mongodb-driver-sync:3.12.2")
+		}
+		kotlin.destinationDirectory = java.destinationDirectory
 	}
-	destinationDirectory.set(File(destinationDirectory.get().asFile.path.replace("kotlin", "java")))
+	test {
+		dependencies {
+			testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+			testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.1")
+			testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+		}
+		kotlin.destinationDirectory = java.destinationDirectory
+	}
 }
 
 tasks.withType<Test>().configureEach {

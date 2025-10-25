@@ -1,5 +1,5 @@
 /***********************************************************************************
- * Copyright (c) 2024 /// Project SWG /// www.projectswg.com                       *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
  *                                                                                 *
  * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
@@ -55,10 +55,11 @@ class Mail(var sender: String, subject: String, message: String, receiverId: Lon
 		return data.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		message = data.unicode
 		subject = data.unicode
-		outOfBandPackage = data.getEncodable(OutOfBandPackage::class.java)
+		outOfBandPackage = data.getEncodable(OutOfBandPackage::class.java) ?: return false
+		return true
 	}
 
 	override val length: Int

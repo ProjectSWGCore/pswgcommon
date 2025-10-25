@@ -62,10 +62,11 @@ class StringId(file: String, key: String? = null) : OutOfBandData, MongoPersista
 		return buffer.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		file = data.ascii
 		data.int
 		key = data.ascii
+		return true
 	}
 
 	override val length: Int

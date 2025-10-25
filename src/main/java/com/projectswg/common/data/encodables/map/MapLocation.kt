@@ -1,29 +1,28 @@
 /***********************************************************************************
- * Copyright (c) 2018 /// Project SWG /// www.projectswg.com                       *
- * *
- * ProjectSWG is the first NGE emulator for Star Wars Galaxies founded on          *
+ * Copyright (c) 2025 /// Project SWG /// www.projectswg.com                       *
+ *                                                                                 *
+ * ProjectSWG is an emulation project for Star Wars Galaxies founded on            *
  * July 7th, 2011 after SOE announced the official shutdown of Star Wars Galaxies. *
- * Our goal is to create an emulator which will provide a server for players to    *
- * continue playing a game similar to the one they used to play. We are basing     *
- * it on the final publish of the game prior to end-game events.                   *
- * *
+ * Our goal is to create one or more emulators which will provide servers for      *
+ * players to continue playing a game similar to the one they used to play.        *
+ *                                                                                 *
  * This file is part of PSWGCommon.                                                *
- * *
+ *                                                                                 *
  * --------------------------------------------------------------------------------*
- * *
+ *                                                                                 *
  * PSWGCommon is free software: you can redistribute it and/or modify              *
  * it under the terms of the GNU Affero General Public License as                  *
  * published by the Free Software Foundation, either version 3 of the              *
  * License, or (at your option) any later version.                                 *
- * *
+ *                                                                                 *
  * PSWGCommon is distributed in the hope that it will be useful,                   *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
  * GNU Affero General Public License for more details.                             *
- * *
+ *                                                                                 *
  * You should have received a copy of the GNU Affero General Public License        *
- * along with PSWGCommon.  If not, see <http:></http:>//www.gnu.org/licenses/>.             *
- */
+ * along with PSWGCommon.  If not, see <http://www.gnu.org/licenses/>.             *
+ ***********************************************************************************/
 package com.projectswg.common.data.encodables.map
 
 import com.projectswg.common.encoding.CachedEncode
@@ -122,7 +121,7 @@ class MapLocation() : Encodable {
 		return cache.encode()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		id = data.long
 		name = data.unicode
 		x = data.float
@@ -130,12 +129,13 @@ class MapLocation() : Encodable {
 		category = data.byte
 		subcategory = data.byte
 		isActive = data.boolean
+		return true
 	}
 
 	private fun encodeImpl(): ByteArray {
 		val data = NetBuffer.allocate(length)
 		data.addLong(id)
-		data.addUnicode(name)
+		data.addUnicode(name ?: "")
 		data.addFloat(x)
 		data.addFloat(y)
 		data.addByte(category.toInt())

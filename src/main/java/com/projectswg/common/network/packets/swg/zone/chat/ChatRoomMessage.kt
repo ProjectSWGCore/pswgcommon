@@ -39,10 +39,10 @@ class ChatRoomMessage(
 
 	override fun decode(data: NetBuffer) {
 		if (!super.checkDecode(data, CRC)) return
-		avatar = data.getEncodable(ChatAvatar::class.java)
+		avatar = data.getEncodable(ChatAvatar::class.java) ?: return
 		roomId = data.int
 		message = data.unicode
-		outOfBandPackage = data.getEncodable(OutOfBandPackage::class.java)
+		outOfBandPackage = data.getEncodable(OutOfBandPackage::class.java) ?: return
 	}
 
 	override fun encode(): NetBuffer {

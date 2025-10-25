@@ -215,12 +215,13 @@ public class Quaternion implements Encodable, MongoPersistable {
 	}
 
 	@Override
-	public void decode(NetBuffer data) {
+	public boolean decode(NetBuffer data) {
 		x = data.getFloat();
 		y = data.getFloat();
 		z = data.getFloat();
 		w = data.getFloat();
 		updateRotationMatrix();
+		return true;
 	}
 
 	@Override

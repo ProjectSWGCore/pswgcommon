@@ -52,10 +52,11 @@ class ChatAvatar(name: String) : Encodable {
 		return buffer.array()
 	}
 
-	override fun decode(data: NetBuffer) {
+	override fun decode(data: NetBuffer): Boolean {
 		data.ascii // SWG
 		data.ascii
 		name = data.ascii.lowercase()
+		return true
 	}
 
 	override fun toString(): String {
